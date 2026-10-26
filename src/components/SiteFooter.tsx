@@ -117,7 +117,6 @@ export function SiteFooter() {
         <div className="flex flex-col gap-4 border-t border-white/7 py-6 text-[0.8125rem] text-white/45 md:flex-row md:items-center md:justify-between md:gap-10">
           <p className="max-w-3xl">{format(footer.legal, { year })}</p>
           <div className="flex shrink-0 flex-wrap items-center gap-x-6 gap-y-2">
-            <span>{footer.prototypeNote}</span>
             <a href="#main" className="inline-flex items-center gap-1.5 text-white/70 transition-colors hover:text-white">
               {footer.backToTop}
               <ArrowUp className="size-3.5" aria-hidden="true" />

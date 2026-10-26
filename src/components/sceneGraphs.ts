@@ -46,9 +46,9 @@ const distance = (a: V3, b: V3) => length(sub(a, b));
 
 /** How each node is drawn; the order is the index the glyph shader switches on. */
 export const ROLES = [
-  "validator", // a ledger node: a shaded orb with a thin orbit
-  "endpoint", // a CLPR Endpoint: orb in a hexagon
-  "verifier", // a Verifier Contract: a diamond
+  "validator", // a ledger node: a soft four-ray star
+  "endpoint", // a CLPR Endpoint: a star in a hexagon
+  "verifier", // a Verifier Contract: a star in a diamond
   "custodian", // a bridge custodian or vault: a hollow grey square
   "commit", // a commit, or a node that is planned but not live: a hollow ring
   "leaf", // a small node with a soft glow
@@ -56,7 +56,7 @@ export const ROLES = [
   "proof", // the ring of a state proof around a bundle
   "city", // a validator on the globe
   "atmosphere", // the rim light of the globe
-  "hub", // an application or a well-connected node: orb with a double ring
+  "hub", // an application or a well-connected node: a larger star with a ring
   "ripple", // an expanding ring: arrival, verification, a new member
 ] as const;
 export type Role = (typeof ROLES)[number];

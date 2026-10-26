@@ -1,43 +1,23 @@
 import Image from "next/image";
-import { ArrowRight, ArrowUpRight } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 
+import { HeroMesh } from "@/components/HeroMesh";
 import { Button } from "@/components/ui/button";
 import { hero, links, origins } from "@/content/site";
 
-// The CLPR spiral itself is drawn by the WebGL background (ProtocolField),
-// which reads `data-scene="hero"` to know where it is.
+// The illustration is HeroMesh: ledgers joined directly by Channels. The WebGL
+// background (ProtocolField) reads `data-scene="hero"` to know where the hero is.
 export function Hero() {
-  const titleStart = hero.title.slice(0, hero.title.length - hero.titleHighlight.length);
-
   return (
-    <section data-scene="hero" aria-labelledby="hero-title" className="relative flex min-h-svh flex-col">
-      <div className="shell flex flex-1 flex-col justify-center pb-14 pt-[48svh] sm:pt-[44svh] lg:pb-16 lg:pt-28">
-        <div className="max-w-[40rem] lg:max-w-[50%]">
-          <a
-            data-hero-reveal
-            href={hero.pill.href}
-            target="_blank"
-            rel="noreferrer"
-            className="group inline-flex items-center gap-2.5 rounded-full border border-white/10 bg-white/4 py-1 pl-1 pr-3.5 text-[0.8125rem] text-white/80 backdrop-blur-md transition-colors hover:border-white/20 hover:text-white"
-          >
-            <span className="rounded-full bg-linear-to-r from-signal-glow to-proof-glow px-2 py-0.5 text-[0.6875rem] font-semibold text-night">
-              {hero.pill.badge}
-            </span>
-            <span>{hero.pill.label}</span>
-            <span className="h-3.5 w-px bg-white/15 max-sm:hidden" aria-hidden="true" />
-            <span className="inline-flex items-center gap-1 text-white">
-              <span className="max-sm:sr-only">{hero.pill.cta}</span>
-              <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
-            </span>
-          </a>
-
+    <section data-scene="hero" aria-labelledby="hero-title" className="relative flex min-h-svh flex-col overflow-x-clip">
+      <div className="shell grid flex-1 content-center items-center gap-6 pb-12 pt-20 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.08fr)] lg:gap-4 lg:pb-14 lg:pt-24">
+        <div className="relative z-10 max-w-[40rem] max-lg:order-2">
           <h1
             id="hero-title"
             data-hero-reveal
-            className="text-headline mt-8 text-[clamp(2.75rem,6vw,5rem)] font-medium leading-[1.02] tracking-[-0.045em] text-balance"
+            className="text-headline text-[clamp(2.6rem,5.4vw,4.75rem)] font-medium leading-[1.02] tracking-[-0.045em] text-balance"
           >
-            {titleStart}
-            <span className="text-brand">{hero.titleHighlight}</span>
+            {hero.title}
           </h1>
           <p data-hero-reveal className="mt-7 max-w-[54ch] text-[1.0625rem] leading-[1.7] text-muted-foreground sm:text-lg">
             {hero.lead}
@@ -54,8 +34,9 @@ export function Hero() {
               <a href={hero.secondaryCta.href}>{hero.secondaryCta.label}</a>
             </Button>
           </div>
-
         </div>
+
+        <HeroMesh className="mx-auto aspect-square w-[min(86vw,40svh)] max-lg:order-1 lg:mx-0 lg:-mr-4 lg:w-[min(calc(100%_+_1rem),80svh)] lg:justify-self-end xl:-mr-8 xl:w-[min(calc(100%_+_2rem),80svh)] min-[85rem]:-mr-20 min-[85rem]:w-[min(calc(100%_+_5rem),80svh)]" />
       </div>
 
       <div className="shell pb-8">

@@ -89,7 +89,7 @@ export function Layers() {
                   className="layer-plate rounded-[1.25rem] border border-dashed border-proof-glow/60"
                   style={{ "--z": count - 1.5 } as CSSProperties}
                 >
-                  <span className="absolute bottom-2 right-4 whitespace-nowrap text-[0.5625rem] font-medium uppercase tracking-[0.14em] text-proof-glow">
+                  <span className="absolute bottom-2 right-4 whitespace-nowrap text-[0.6875rem] font-medium text-proof-glow">
                     {layers.apiNote}
                   </span>
                 </div>
@@ -155,7 +155,7 @@ export function Layers() {
                     </span>
                   </span>
                   {index === 0 && (
-                    <span className="mt-4 flex items-center gap-2 pl-9 text-[0.6875rem] font-medium uppercase tracking-[0.14em] text-proof-glow">
+                    <span className="mt-4 flex items-center gap-2 pl-9 text-[0.75rem] font-medium text-proof-glow">
                       <span className="h-px flex-1 border-t border-dashed border-proof-glow/50" aria-hidden="true" />
                       {layers.apiNote}
                     </span>
