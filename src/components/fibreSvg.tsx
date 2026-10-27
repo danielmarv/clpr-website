@@ -3,12 +3,7 @@ import type { CSSProperties, ReactNode } from "react";
 import type { Point } from "@/components/fibres";
 import { seeded } from "@/components/sceneGraphs";
 
-/*
- * SVG building blocks for the fibre-language diagrams (PropertyArt,
- * MessageJourney): bundles of fine fibres between two points, soft stars with
- * four rays, ledger membranes and the Endpoint hexagon. Pure and deterministic,
- * so they render the same on the server and in the browser.
- */
+// SVG building blocks for the fibre diagrams; deterministic, so server and browser render the same.
 
 export type Tone = "violet" | "pink" | "warm" | "mist";
 
@@ -90,7 +85,6 @@ export function Glows({ id }: { id: string }) {
   );
 }
 
-/** A Channel's fibres, violet at Ledger A and pink at Ledger B. */
 export function LaneGradient({ id, x1, x2 }: { id: string; x1: number; x2: number }) {
   return (
     <defs>
@@ -199,7 +193,6 @@ export function Endpoint({ x, y, tone, offline = false }: { x: number; y: number
   );
 }
 
-/** A small ledger: a membrane with a handful of validators joined by fibres. */
 export function MiniLedger({ id, tone, x, y, r, seed }: { id: string; tone: "violet" | "pink" | "mist"; x: number; y: number; r: number; seed: number }) {
   const random = seeded(seed);
   const ring = Array.from({ length: 5 }, (_, k) => {

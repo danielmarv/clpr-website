@@ -1,14 +1,6 @@
 @import "tailwindcss";
 
-/*
- * CLPR design tokens
- * ------------------------------------------------------------------
- * Dark first, in the spirit of linear.app: a deep indigo ink, hairline borders, and color used sparingly and with meaning.
- * The brand range follows the CLPR artwork on hashgraph.com/clpr:
- *   signal violet = messages in transit
- *   proof magenta = state proofs and verification
- *   peach         = the warm end of the spiral, for highlights only
- */
+/* Brand range from hashgraph.com/clpr: violet for messages, magenta for state proofs, peach for highlights only. */
 :root {
   --bg: #120f2c;
   --bg-raised: #17143a;
@@ -103,7 +95,6 @@
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* The dark gradients of the CLPR brand. */
 @utility bg-aurora {
   background-color: var(--night);
   background-image: radial-gradient(
@@ -118,13 +109,11 @@
   background-image: linear-gradient(45deg, var(--indigo) -1%, var(--plum) 58%, var(--magenta) 117%);
 }
 
-/* Faint dot grid for dark stages. */
 @utility bg-dots {
   background-image: radial-gradient(rgb(255 255 255 / 0.08) 1px, transparent 1px);
   background-size: 22px 22px;
 }
 
-/* Headline ink: white fading to lavender, as on linear.app. */
 @utility text-headline {
   background-image: linear-gradient(180deg, #ffffff 30%, rgb(214 210 240 / 0.62) 110%);
   -webkit-background-clip: text;
@@ -132,7 +121,6 @@
   color: transparent;
 }
 
-/* The spiral's gradient, for one or two words at most. */
 @utility text-brand {
   background-image: var(--gradient-brand);
   -webkit-background-clip: text;
@@ -140,7 +128,6 @@
   color: transparent;
 }
 
-/* Hairline-bordered glass surface: the background illustrations glow through it. */
 @utility panel {
   border: 1px solid var(--line);
   border-radius: var(--radius-panel);
@@ -157,7 +144,6 @@
   }
 }
 
-/* Container: 1200px content width with a 20 → 32px gutter. */
 @utility shell {
   width: 100%;
   max-width: 76rem;
@@ -213,9 +199,7 @@
   }
 }
 
-/* ------------------------------------------------------------------ */
-/* The WebGL background                                                */
-/* ------------------------------------------------------------------ */
+/* The WebGL background */
 
 .protocol-field {
   position: fixed;
@@ -240,9 +224,7 @@
   display: none;
 }
 
-/* ------------------------------------------------------------------ */
-/* Hero illustration (HeroMesh)                                        */
-/* ------------------------------------------------------------------ */
+/* HeroMesh */
 
 /* A soft bloom around the network; also what shows before the canvas paints. */
 .hero-mesh {
@@ -252,9 +234,7 @@
   will-change: transform;
 }
 
-/* ------------------------------------------------------------------ */
-/* Cards that light up under the pointer                               */
-/* ------------------------------------------------------------------ */
+/* Pointer spotlight */
 
 [data-spotlight] {
   position: relative;
@@ -272,7 +252,6 @@
   opacity: 0;
   transition: opacity 400ms ease;
 }
-/* Wash inside the card. */
 [data-spotlight]::before {
   z-index: -1;
   background: radial-gradient(420px circle at var(--mx) var(--my), rgb(139 123 255 / 0.1), transparent 45%);
@@ -297,9 +276,7 @@
   opacity: 1;
 }
 
-/* ------------------------------------------------------------------ */
-/* Footer wordmark: an outline that glows where the pointer is         */
-/* ------------------------------------------------------------------ */
+/* Footer wordmark */
 
 @property --mx {
   syntax: "<length-percentage>";
@@ -349,9 +326,7 @@
   }
 }
 
-/* ------------------------------------------------------------------ */
-/* Footer: a message and its response cross the Channel along the edge */
-/* ------------------------------------------------------------------ */
+/* Footer channel edge */
 
 .footer-packet {
   left: 0;
@@ -377,15 +352,13 @@
   .footer-packet {
     animation: footer-packet 9s cubic-bezier(0.45, 0, 0.55, 1) infinite;
   }
-  /* Played backwards, it crosses in the second half of the cycle: the response, once the message has arrived. */
+  /* Reversed, it crosses in the second half of the cycle: the response. */
   .footer-packet-back {
     animation-direction: reverse;
   }
 }
 
-/* ------------------------------------------------------------------ */
-/* Story: words light up as the visitor scrolls                        */
-/* ------------------------------------------------------------------ */
+/* Story */
 
 .story-word {
   opacity: clamp(0.14, calc(var(--reveal, 1) * var(--words, 1) - var(--i, 0)), 1);
@@ -404,9 +377,7 @@
   transform: none;
 }
 
-/* ------------------------------------------------------------------ */
-/* Architecture: the layer stack in 3D                                 */
-/* ------------------------------------------------------------------ */
+/* Architecture layer stack */
 
 .layer-stack {
   perspective: 1600px;
@@ -459,9 +430,7 @@
   }
 }
 
-/* ------------------------------------------------------------------ */
-/* How it works: the message journey (MessageJourney)                  */
-/* ------------------------------------------------------------------ */
+/* MessageJourney */
 
 /* Messages ride the route (offset-path given inline) and travel to their next
    stop when the step changes; a long jump moves them without travelling. */
@@ -475,7 +444,6 @@
   transition: opacity 0.3s ease;
 }
 
-/* The Verifier rings once as it checks the proof. */
 .journey-ping {
   opacity: 0;
   transform-box: fill-box;
@@ -500,7 +468,6 @@
   }
 }
 
-/* Walkthrough: time left in the current step. */
 @keyframes step-progress {
   from {
     transform: scaleX(0);
@@ -514,9 +481,7 @@
   animation: step-progress linear forwards;
 }
 
-/* ------------------------------------------------------------------ */
-/* Protocol properties: looping diagrams (PropertyArt)                 */
-/* ------------------------------------------------------------------ */
+/* PropertyArt */
 
 /* Moving parts ride the offset-path given inline; without motion they rest at
    their inline offset-distance. Timing comes from --duration and --delay. */
@@ -580,7 +545,6 @@
   }
 }
 
-/* A message crosses in the first part of the cycle … */
 @keyframes prop-message {
   0% {
     offset-distance: 0%;
@@ -597,7 +561,6 @@
     opacity: 0;
   }
 }
-/* … and its response comes back in the second. */
 @keyframes prop-response {
   0%,
   50% {
@@ -679,7 +642,6 @@
     opacity: 0;
   }
 }
-/* A bridge stops for its own confirmations at every hop. */
 @keyframes prop-bridge {
   0% {
     offset-distance: 0%;
@@ -706,7 +668,6 @@
     opacity: 0;
   }
 }
-/* One stop in the middle, waiting for the bridge's own confirmations. */
 @keyframes prop-wait {
   0% {
     offset-distance: 0%;
@@ -784,9 +745,7 @@
   }
 }
 
-/* ------------------------------------------------------------------ */
-/* Small motion helpers                                                */
-/* ------------------------------------------------------------------ */
+/* Motion helpers */
 
 @keyframes fade-up {
   from {
@@ -802,7 +761,6 @@
   animation: fade-up 400ms cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 
-/* Comparison: the state proof travels between the two ledgers. */
 @keyframes proof-travel {
   0%,
   12% {
@@ -814,15 +772,12 @@
   }
 }
 
-/* Dashes that flow along an SVG path. */
 @keyframes dash-flow {
   to {
     stroke-dashoffset: -24;
   }
 }
 
-
-/* Scroll cue in the hero. */
 @keyframes scroll-cue {
   0% {
     transform: translateY(-100%);

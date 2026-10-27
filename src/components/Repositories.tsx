@@ -12,10 +12,8 @@ function repoPath(href: string): string {
   return href.replace(/^https:\/\/(github\.com\/)?/, "");
 }
 
-// The glossary's icons for the components the implementations cover.
 const COMPONENT_TERMS = { service: "CLPR Service", endpoint: "CLPR Endpoint", verifier: "Verifier Contract" } as const;
 
-/** Fibres from the specification down to each of the three implementations. */
 function ImplementedBy() {
   const from = { x: 600, y: 0 };
   const ends = [200, 600, 1000].map((x) => ({ x, y: 72 }));
@@ -153,7 +151,6 @@ export function Repositories() {
         ))}
       </ul>
 
-      {/* How the project is run: its governance and the licenses that cover the work. */}
       <div data-motion-reveal className="panel mt-3 grid gap-6 p-6 sm:p-7 lg:grid-cols-12 lg:items-center lg:gap-10">
         <a href={governance.href} target="_blank" rel="noreferrer" className="group flex items-start gap-4 lg:col-span-6">
           <span className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-linear-to-b from-white/8 to-white/2">

@@ -1,23 +1,4 @@
-/*
- * The networks the background draws: real topologies instead of point clouds.
- *
- * Every scene is a graph of nodes (validators, Endpoints, Verifier Contracts,
- * commits, cities …), links between them and packets that travel the links.
- * networkLayer.ts renders them as shaded nodes, glowing lines and moving
- * light; sceneForms.ts adds the particle dust around them. Coordinates are
- * the same local units as the particle drawings (roughly −2.3 … 2.3 wide).
- *
- *   hero       a ring of validators orbiting the CLPR spiral, gossiping
- *   story      two ledgers as validator meshes, a Channel between their Endpoints,
- *              bundles that cross, proofs that Ledger B's Verifier checks
- *   chain      a running-hash chain of blocks, attested by a validator quorum below
- *   route      the seven stops of one message across a Channel, and its response
- *   bridge     a hub of custodians that crumbles; the direct proof link stays
- *   mesh       a triangulated network floor under the layer stack
- *   globe      validators in real cities, four ledgers, Channels between them
- *   branches   a git history with contributors pushing commits
- *   community  a scale-free contributor network that keeps gaining members
- */
+// Scene graphs for networkLayer.ts, in the particle drawings' local units (roughly −2.3 … 2.3 wide).
 
 import type { FormName } from "@/components/sceneMotion";
 
@@ -42,18 +23,18 @@ const distance = (a: V3, b: V3) => length(sub(a, b));
 
 /** How each node is drawn; the order is the index the glyph shader switches on. */
 export const ROLES = [
-  "validator", // a ledger node: a soft four-ray star
-  "endpoint", // a CLPR Endpoint: a star in a hexagon
-  "verifier", // a Verifier Contract: a star in a diamond
-  "custodian", // a bridge custodian or vault: a hollow grey square
-  "commit", // a commit, or a node that is planned but not live: a hollow ring
-  "leaf", // a small node with a soft glow
-  "packet", // a message in transit
-  "proof", // the ring of a state proof around a bundle
-  "city", // a validator on the globe
-  "atmosphere", // the rim light of the globe
-  "hub", // an application or a well-connected node: a larger star with a ring
-  "ripple", // an expanding ring: arrival, verification, a new member
+  "validator",
+  "endpoint",
+  "verifier",
+  "custodian",
+  "commit",
+  "leaf",
+  "packet",
+  "proof",
+  "city",
+  "atmosphere",
+  "hub",
+  "ripple",
 ] as const;
 export type Role = (typeof ROLES)[number];
 
@@ -249,7 +230,7 @@ export class Graph {
   }
 }
 
-/** Evenly spread points on a sphere. */
+/** Fibonacci lattice. */
 function sphere(count: number, radius: number, center: V3 = [0, 0, 0], squash: V3 = [1, 1, 1]): V3[] {
   return Array.from({ length: count }, (_, i) => {
     const y = 1 - (2 * (i + 0.5)) / count;
@@ -259,7 +240,6 @@ function sphere(count: number, radius: number, center: V3 = [0, 0, 0], squash: V
   });
 }
 
-/** A deterministic force-directed layout in 3D, fitted into a box. */
 function forceLayout(count: number, edges: [number, number][], random: Random, box: V3, spacing = 1.4): V3[] {
   const points: V3[] = sphere(count, 1).map((p) => add(p, [(random() - 0.5) * 0.3, (random() - 0.5) * 0.3, (random() - 0.5) * 0.3]));
   const k = spacing / Math.cbrt(count);
@@ -298,7 +278,6 @@ function forceLayout(count: number, edges: [number, number][], random: Random, b
   return points.map((p) => [0, 1, 2].map((axis) => soft((p[axis] / extent[axis]) * box[axis], box[axis] * 1.05)) as V3);
 }
 
-/** The corners of a cube, and which pairs of corners form its 12 edges. */
 function cube(center: V3, size: number, rx: number, ry: number): { corners: V3[]; edges: [number, number][] } {
   const corners: V3[] = [];
   for (let i = 0; i < 8; i++) {
@@ -319,16 +298,11 @@ export function onGlobe(latitude: number, longitude: number, radius = 1): V3 {
   return [Math.cos(lat) * Math.sin(lon) * radius, Math.sin(lat) * radius, Math.cos(lat) * Math.cos(lon) * radius];
 }
 
-/** Brand tones per side of a Channel. */
 const TONE_A = 0.1;
 const TONE_B = 0.68;
 const TONE_PROOF = 0.86;
 
-/*
- * One bundle crossing a Channel: three messages, one state proof around them,
- * a ripple where it lands, and three responses on the way back. All timings are
- * fractions of one cycle of `speed`.
- */
+/** One bundle across a Channel and its responses; timings are fractions of one cycle of `speed`. */
 function bundleTraffic(
   graph: Graph,
   out: number,
@@ -342,19 +316,15 @@ function bundleTraffic(
     graph.packet(out, { speed, phase, start: 0, duration: 0.5, size, tone: 0.28, tail: 0.08, gate });
     graph.packet(back, { speed, phase, start: 0.55, duration: 0.4, size: size * 0.8, tone: 0.62, tail: 0.06, alpha: 0.75, gate });
   }
-  // One proof covers every message in the bundle.
   graph.packet(out, { speed, phase: lead - 0.03, start: 0, duration: 0.5, size: size * 2.6, role: "proof", tone: TONE_PROOF, tail: 0, gate: proofGate });
   // The lead message lands when the cycle reaches 0.5 - lead; the responses when it reaches 0.95 - lead.
   if (options.arriveAt) graph.ripple(options.arriveAt, speed, 0.5 - lead, { tone: TONE_B, size: 0.07, group: options.arriveGroup ?? 0, gate });
   if (options.returnAt) graph.ripple(options.returnAt, speed, 0.95 - lead, { tone: TONE_A, size: 0.05, group: options.returnGroup ?? 0, gate, alpha: 0.6 });
 }
 
-/* ---- The hero ------------------------------------------------------------ */
-
 /*
- * Drawn in orbit space: x is the angle, y the radius, z the height above the
- * ring's plane (all in units of the spiral's half width). The shader turns the
- * ring around the spiral like a planet's ring, so a straight link here follows it.
+ * Orbit space: x is the angle, y the radius, z the height above the ring's plane,
+ * in units of the spiral's half width. The shader wraps it around the spiral.
  */
 export function heroGraph(): Graph {
   const graph = new Graph(3);
@@ -369,7 +339,6 @@ export function heroGraph(): Graph {
       order: i / count,
     });
   });
-  // A ring lattice: each validator talks to its two neighbours on either side.
   const links: number[] = [];
   ids.forEach((id, i) => {
     for (const step of [1, 2]) {
@@ -383,14 +352,10 @@ export function heroGraph(): Graph {
   return graph;
 }
 
-/* ---- The scroll story -------------------------------------------------- */
-
 /*
- * Each ledger is drawn in its own unit sphere (the particle shell sits at
- * radius 0.9–1) and turns around the axis that points at the other ledger, so
- * its Endpoint stays put at the pole. The Channel is drawn in a space where
- * x = −1 is Ledger A's Endpoint and x = 1 is Ledger B's; y and z are in units of
- * the ledger radius.
+ * Each ledger lives in its own unit sphere, turning around the axis toward the other
+ * ledger so its Endpoint stays at the pole. In Channel space x = −1 is Ledger A's
+ * Endpoint and x = 1 is Ledger B's.
  */
 export const STORY_SPEED = 0.3;
 
@@ -424,7 +389,6 @@ export function storyGraph(): Graph {
     }
 
     if (group === GROUP.ledgerB) {
-      // The Verifier Contract, just inside the Endpoint.
       verifier = graph.node([-0.58, -0.24, 0.3], { size: 0.075, role: "verifier", tone: TONE_PROOF, group, order: 0.8 });
       graph.link(endpoint, verifier, { width: 1.1, alpha: 0.8, group, order: 0.85 });
       verifierLinks = graph
@@ -433,7 +397,6 @@ export function storyGraph(): Graph {
     }
   }
 
-  // The Channel: an outbound lane above, the responses below it.
   const out = graph.link([-1, 0, 0], [1, 0, 0], {
     lift: [0, 0.66, 0.36],
     tone: [TONE_A, TONE_B],
@@ -464,7 +427,6 @@ export function storyGraph(): Graph {
     size: 0.05,
   });
 
-  // Ledger B checks the proof, then the verified state spreads through its network.
   const toVerifier = graph.link(endpoints[1], graph.nodes[verifier].at, { group: GROUP.ledgerB, alpha: 0, gate: GATE.proof });
   graph.packet(toVerifier, { speed: STORY_SPEED, phase: 0.03, start: 0.5, duration: 0.08, size: 0.12, role: "proof", tone: TONE_PROOF, tail: 0, gate: GATE.proof });
   graph.ripple(graph.nodes[verifier].at, STORY_SPEED, 0.55, { tone: TONE_PROOF, size: 0.09, group: GROUP.ledgerB, gate: GATE.proof, alpha: 1.3 });
@@ -474,9 +436,6 @@ export function storyGraph(): Graph {
   return graph;
 }
 
-/* ---- Section illustrations ------------------------------------------------ */
-
-/** Guarantees: a running-hash chain of blocks, enforced by a validator quorum below. */
 function chain(): Graph {
   const graph = new Graph(5);
   const count = 6;
@@ -501,13 +460,11 @@ function chain(): Graph {
         alpha: 0.85,
         order,
       });
-      // The running hash: one pulse relays from block to block, then the chain grows.
       graph.packet(link, { speed, start: (k - 1) * hop, duration: hop, size: 0.04, tone, tail: 0.6 });
     }
     if (newest) graph.ripple(center, speed, (count - 1) * hop, { size: 0.16, tone: 0.95, order });
   });
 
-  // The ledger underneath: validators that attest each block.
   const validators = Array.from({ length: 12 }, (_, i) => {
     const angle = (i / 12) * Math.PI * 2 + (graph.rand() - 0.5) * 0.2;
     const x = Math.cos(angle) * 1.75;
@@ -523,12 +480,10 @@ function chain(): Graph {
   return graph;
 }
 
-/** How it works: the seven stops of one message across a Channel, and its response. */
 function route(): Graph {
   const graph = new Graph(11);
   const speed = 0.095;
 
-  // Each ledger is a small network of validators around the CLPR components.
   const ledgers = ([[-1.35, TONE_A], [1.35, TONE_B]] as const).map(([x, tone]) => {
     const validators = sphere(10, 0.82, [x, -0.1, -0.3], [1, 0.55, 0.7]).map((at) =>
       graph.node(at, { size: 0.028, role: "leaf", tone, alpha: 0.5 }),
@@ -566,7 +521,6 @@ function route(): Graph {
     graph.link(stops[2], stops[1], { width: 0.9, alpha: 0.35, lift: [0, -0.1, 0] }),
   ];
 
-  // The message: hop by hop, as in the walkthrough below.
   const hops: [number, number, number][] = [
     [path[0], 0, 0.07],
     [path[1], 0.07, 0.14],
@@ -583,7 +537,6 @@ function route(): Graph {
   });
   graph.packet(path[2], { speed, start: 0.14, duration: 0.2, size: 0.11, role: "proof", tone: TONE_PROOF, tail: 0 });
 
-  // Exactly one response, back over the same Channel.
   const responses: [number, number, number, number][] = [
     [returnPath[0], 0.6, 0.66, 3],
     [returnPath[1], 0.66, 0.84, 2],
@@ -596,7 +549,6 @@ function route(): Graph {
   return graph;
 }
 
-/** Why bridgeless: a hub of custodians between two ledgers crumbles; the direct proof link stays. */
 function bridge(): Graph {
   const graph = new Graph(13);
   const ledgers = ([[-2.0, TONE_A], [2.0, TONE_B]] as const).map(([x, tone]) => {
@@ -608,7 +560,6 @@ function bridge(): Graph {
     return { validators, endpoint };
   });
 
-  // The bridge: custodians around a vault of pooled assets, wired to both ledgers.
   const hub: V3 = [0, -0.52, 0];
   const ghost = { tone: -1, crumble: true } as const;
   const vault = graph.node(hub, { size: 0.11, role: "custodian", alpha: 1, ...ghost });
@@ -632,14 +583,12 @@ function bridge(): Graph {
     });
   }
 
-  // CLPR: state proofs straight from ledger to ledger.
   const out = graph.link(ledgers[0].endpoint, ledgers[1].endpoint, { lift: [0, 1.0, 0.28], tone: [TONE_A, TONE_B], width: 1.8, alpha: 1.1, segments: 40 });
   const back = graph.link(ledgers[1].endpoint, ledgers[0].endpoint, { lift: [0, 0.62, 0.14], tone: [TONE_B, TONE_A], width: 1, alpha: 0.42, segments: 40 });
   bundleTraffic(graph, out, back, 0.24, { arriveAt: graph.nodes[ledgers[1].endpoint].at, returnAt: graph.nodes[ledgers[0].endpoint].at });
   return graph;
 }
 
-/** Architecture: a triangulated network floor; the layer stack floats above it. */
 function mesh(): Graph {
   const graph = new Graph(17);
   const columns = 30;
@@ -674,11 +623,6 @@ function mesh(): Graph {
   return graph;
 }
 
-/*
- * Chain-agnostic: four ledgers whose validators run in real cities, Channels
- * between the ledgers, and the land under them (the land dots are particles,
- * see sceneForms.ts).
- */
 const GLOBE_LEDGERS: { tone: number; cities: [number, number][] }[] = [
   // Ashburn, San José, London, Singapore, Tokyo
   { tone: 0.04, cities: [[39.0, -77.5], [37.3, -121.9], [51.5, -0.1], [1.35, 103.8], [35.7, 139.7]] },
@@ -708,7 +652,7 @@ function globe(): Graph {
   const graph = new Graph(29);
   graph.node([0, 0, 0], { size: 1, role: "atmosphere", tone: 0.15, alpha: 0.5, order: 0 });
 
-  // Faint meridians and the equator, so the sphere reads even over the oceans.
+  // Meridians and the equator, so the sphere reads over the oceans.
   for (let k = 0; k < 6; k++) {
     const longitude = -180 + k * 30;
     for (const [from, to] of [[90, 0], [0, -90]]) {
@@ -736,7 +680,6 @@ function globe(): Graph {
     return graph.link(from, to, { arc: lift * (0.4 + angleBetween(a, b) / Math.PI), ...options });
   };
 
-  // Each ledger's own network.
   cities.forEach((ledger, index) => {
     const ring = [...ledger].sort((p, q) => Math.atan2(graph.nodes[p].at[0], graph.nodes[p].at[2]) - Math.atan2(graph.nodes[q].at[0], graph.nodes[q].at[2]));
     ring.forEach((city, i) => {
@@ -746,7 +689,6 @@ function globe(): Graph {
     });
   });
 
-  // Channels between ledgers, with bundles and their proofs.
   GLOBE_CHANNELS.forEach(([[ledgerA, cityA], [ledgerB, cityB]], index) => {
     const from = cities[ledgerA][cityA];
     const to = cities[ledgerB][cityB];
@@ -762,7 +704,6 @@ function globe(): Graph {
   return graph;
 }
 
-/** Open source: a git history; contributors push commits that merge back into main. */
 function branches(): Graph {
   const graph = new Graph(31);
   const main = graph.link([-2.3, 0, 0], [2.3, 0, 0], { tone: [0.05, 0.95], width: 1.5, alpha: 0.85 });
@@ -776,7 +717,6 @@ function branches(): Graph {
     graph.link([-0.1, -0.58, -0.35], [1.25, -0.58, -0.35], { tone: 0.75, width: 1.2 }),
     graph.link([1.25, -0.58, -0.35], [1.8, 0, 0], { lift: [0.25, -0.29, -0.17], tone: 0.75, width: 1.2 }),
   ];
-  // Light runs along the history toward HEAD.
   for (const phase of [0, 0.33, 0.66]) graph.packet(main, { speed: 0.07, phase, size: 0.03, tail: 0.18 });
   [feature, fix].forEach((branch, b) =>
     branch.forEach((link, i) => graph.packet(link, { speed: 0.12, start: i / 3, duration: 1 / 3, phase: b * 0.5, size: 0.026, tail: 0.6 })),
@@ -790,7 +730,6 @@ function branches(): Graph {
   for (const x of [0.05, 0.65, 1.2]) commits.push(graph.node([x, -0.58, -0.35], { size: 0.05, role: "commit", tone: 0.75 }));
   commits.push(head);
 
-  // Contributors around the history, each pushing to the commits nearest to them.
   for (let i = 0; i < 10; i++) {
     const x = -2 + i * 0.44 + (graph.rand() - 0.5) * 0.2;
     const above = i % 2 === 0;
@@ -806,7 +745,7 @@ function branches(): Graph {
   return graph;
 }
 
-/** Get involved: a scale-free contributor network (preferential attachment) that keeps gaining members. */
+/** Scale-free network by preferential attachment. */
 function community(): Graph {
   const graph = new Graph(47);
   const random = seeded(53);
@@ -843,7 +782,6 @@ function community(): Graph {
     const link = graph.link(ids[a], ids[b], { width: 0.9, alpha: 0.42, order: b / count });
     if (k % 2 === 0) graph.packet(link, { speed: 0.12 + random() * 0.18, phase: random(), size: 0.02, tail: 0.5, reverse: random() < 0.5 });
   });
-  // The newest members announce themselves.
   for (let i = count - 8; i < count; i++) graph.ripple(positions[i], 0.1 + random() * 0.08, random(), { size: 0.05, tone: 0.92, alpha: 0.8 });
   return graph;
 }

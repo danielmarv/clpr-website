@@ -12,9 +12,7 @@ import { cn } from "@/lib/utils";
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
-  // Transparent over the hero, frosted once the page scrolls.
   const [scrolled, setScrolled] = useState(false);
-  // The nav item of the section being read, if any.
   const [active, setActive] = useState<string | null>(null);
   const listRef = useRef<HTMLUListElement>(null);
   const markerRef = useRef<HTMLSpanElement>(null);
@@ -63,7 +61,6 @@ export function SiteHeader() {
     };
   }, []);
 
-  // The open menu covers the page: Escape closes it, and so does a wider window.
   useEffect(() => {
     if (!open) return;
     const wide = window.matchMedia("(min-width: 64rem)");

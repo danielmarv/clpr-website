@@ -3,18 +3,9 @@ import type { ReactNode } from "react";
 import { Bundle, Endpoint, fibre, Glows, LaneGradient, MiniLedger, Mover, Pulse, Star, TONES } from "@/components/fibreSvg";
 import type { Term } from "@/lib/glossary";
 
-/*
- * The glossary in the site's visual language: a small icon per term (the same
- * star, hexagon, diamond, proof ring and coin the illustrations use) and a
- * small looping diagram for each definition. Pure SVG; the motion is the
- * `prop-*` CSS of globals.css and only runs without reduced motion.
- */
+// Glossary icons and diagrams; the motion is the prop-* CSS of globals.css.
 
 type Name = Term["term"];
-
-/* ------------------------------------------------------------------------ */
-/* Icons                                                                      */
-/* ------------------------------------------------------------------------ */
 
 const ICONS: Record<Name, ReactNode> = {
   "Peer Ledger": (
@@ -98,10 +89,6 @@ export function TermIcon({ term, className }: { term: Name; className?: string }
     </svg>
   );
 }
-
-/* ------------------------------------------------------------------------ */
-/* Diagrams                                                                   */
-/* ------------------------------------------------------------------------ */
 
 const WIDTH = 240;
 const HEIGHT = 120;
@@ -247,7 +234,6 @@ const ART: Record<Name, (props: { id: string }) => ReactNode> = {
   Connector: ({ id }) => (
     <Art id={id}>
       <Lane id={id} />
-      {/* The Connector pays as each message passes. */}
       <Pulse x={120} y={60} motion="prop-bead" delay={2.4}>
         <circle r={11} fill="#0b0a13" stroke={TONES.warm} strokeWidth={1.6} />
         <circle r={4} fill={TONES.warm} />
@@ -292,7 +278,6 @@ const ART: Record<Name, (props: { id: string }) => ReactNode> = {
       <Bundle from={{ x: 60, y: 60 }} to={{ x: RIGHT.x - 10, y: 60 }} strands={5} spread={0.04} opacity={0.4} seed={9} />
       <Star id={id} tone="violet" r={16} x={44} y={60} />
       <Endpoint x={RIGHT.x} y={RIGHT.y} tone="pink" />
-      {/* ChainID, protocol version and throttle parameters, published to the peer. */}
       <Mover path={fibre({ x: 60, y: 60 }, { x: RIGHT.x - 10, y: 60 }, 0)} motion="prop-pass" at={50}>
         <path d="M-9 -6H5M-9 0H9M-9 6H1" stroke={TONES.mist} strokeWidth={2} strokeLinecap="round" />
       </Mover>
@@ -310,7 +295,6 @@ const ART: Record<Name, (props: { id: string }) => ReactNode> = {
         <Star id={id} tone="violet" r={9} />
         <circle r={9} stroke={TONES.pink} strokeWidth={1.2} />
       </Mover>
-      {/* Decoded into the local data format. */}
       <Mover path={fibre({ x: 132, y: 60 }, { x: 216, y: 60 }, 0)} motion="prop-response" at={50}>
         <rect x={-5} y={-5} width={10} height={10} rx={2} fill={TONES.pink} />
       </Mover>

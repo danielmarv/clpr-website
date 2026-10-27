@@ -3,14 +3,7 @@ import type { ReactNode } from "react";
 import { Bundle, Endpoint, fibre, Glows, LaneGradient, Mover, Pulse, Star, TONES } from "@/components/fibreSvg";
 import { extensibility } from "@/content/site";
 
-/*
- * Small looping diagrams for the three components a new ledger type needs
- * (Chain-agnostic): the CLPR Service with its ordered queue routing to
- * applications, two Endpoints syncing bundles and trust-anchor updates, and a
- * Verifier Contract checking a state proof against its trust anchor before it
- * hands the bundle on in the local format. Same fibre language and `prop-*`
- * motion as PropertyArt; decorative, the text carries the meaning.
- */
+// Decorative diagrams for the three components a new ledger type needs, with the same motion as PropertyArt.
 
 const WIDTH = 320;
 const HEIGHT = 168;
@@ -33,7 +26,6 @@ function Label({ x, y, anchor = "middle", children }: { x: number; y: number; an
   );
 }
 
-/** The Service takes messages from its ordered queue and routes each to its application. */
 function ServiceArt() {
   const id = "component-service";
   const service = { x: 132, y: 84 };
@@ -55,7 +47,6 @@ function ServiceArt() {
           <Star id={id} tone="pink" r={12} />
         </Pulse>
       ))}
-      {/* One message after the other: in from the queue, out to its application. */}
       {[0, 1, 2].map((k) => (
         <Mover key={`in-${k}`} path={fibre(queue, service, 0)} motion="prop-relay" at={35 + k * 25} delay={k * 1.6}>
           <Star id={id} tone="violet" r={10} />
@@ -83,7 +74,6 @@ function ServiceArt() {
   );
 }
 
-/** Endpoints sync bundles to their peer, and keep the peer's view of their trust anchor current. */
 function EndpointsArt() {
   const id = "component-endpoints";
   const a = { x: 50, y: 84 };
@@ -110,7 +100,6 @@ function EndpointsArt() {
   );
 }
 
-/** The Verifier checks the proof against its trust anchor, then hands the bundle on in the local format. */
 function VerifierArt() {
   const id = "component-verifier";
   const verifier = { x: 160, y: 96 };

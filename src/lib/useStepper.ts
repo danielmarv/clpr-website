@@ -15,13 +15,7 @@ function subscribeToVisibility(onChange: () => void) {
   return () => document.removeEventListener("visibilitychange", onChange);
 }
 
-/**
- * Steps that play on their own while in view, for the walkthroughs. Playback
- * follows the visitor's motion preference until they pick a step or press
- * play or pause; it waits while the element is off screen or the tab is hidden.
- * `jump` is true after a long jump (wrapping around, or picking a step far
- * away), so drawings can move without travelling.
- */
+/** Steps that play on their own while in view. `jump` is true after a long jump, so drawings can move without travelling. */
 export function useStepper(count: number, durationMs: number) {
   const root = useRef<HTMLElement>(null);
   const [index, setIndex] = useState(0);

@@ -4,9 +4,7 @@ import localFont from "next/font/local";
 import { site } from "@/content/site";
 import "./globals.css";
 
-// Self-hosted fonts: no request to a third-party font CDN at runtime.
-// Sora (OFL) stands in for Styrene A, the licensed typeface on hashgraph.com/clpr:
-// the same wide, round geometric letterforms.
+// Sora (OFL) stands in for Styrene A, the licensed typeface on hashgraph.com/clpr.
 const sora = localFont({
   src: "./fonts/sora-latin-wght-normal.woff2",
   variable: "--font-sora",

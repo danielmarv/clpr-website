@@ -1,10 +1,4 @@
-/**
- * All user-facing copy and links for the CLPR website live here, so content
- * can be reviewed (and later translated) without touching components.
- *
- * Sources: the CLPR LFDT Lab proposal (LF-Decentralized-Trust/lab-proposals#5),
- * the LFDT-CLPR GitHub organization and hashgraph.com/clpr.
- */
+// All user-facing copy and links. Sources: LF-Decentralized-Trust/lab-proposals#5, the LFDT-CLPR GitHub org and hashgraph.com/clpr.
 
 export const links = {
   githubOrg: "https://github.com/LFDT-CLPR",
@@ -41,10 +35,6 @@ export const hero = {
   scrollCue: "Scroll to see how",
 } as const;
 
-/* ------------------------------------------------------------------------ */
-/* Scroll story                                                               */
-/* ------------------------------------------------------------------------ */
-
 export const story = {
   id: "story",
   label: "CLPR in three steps",
@@ -72,10 +62,6 @@ export const story = {
     },
   ],
 } as const;
-
-/* ------------------------------------------------------------------------ */
-/* Protocol guarantees                                                        */
-/* ------------------------------------------------------------------------ */
 
 export const guarantees = {
   id: "guarantees",
@@ -115,7 +101,6 @@ export const guarantees = {
       visual: "speed",
     },
   ],
-  // Labels inside the small diagrams.
   art: {
     offline: "Endpoint offline",
     anyone: "Anyone can deliver",
@@ -123,10 +108,6 @@ export const guarantees = {
     clpr: "CLPR",
   },
 } as const;
-
-/* ------------------------------------------------------------------------ */
-/* Interactive channel walkthrough                                            */
-/* ------------------------------------------------------------------------ */
 
 export type DemoNodeId =
   | "a-app"
@@ -285,10 +266,6 @@ export const origins = {
   ],
 } as const;
 
-/* ------------------------------------------------------------------------ */
-/* Why bridgeless                                                             */
-/* ------------------------------------------------------------------------ */
-
 export const comparison = {
   id: "protocol",
   eyebrow: "Why bridgeless",
@@ -310,8 +287,7 @@ export const comparison = {
     },
     ledgerA: "Ledger A",
     ledgerB: "Ledger B",
-    // Labels inside the diagrams that change with the aspect.
-    labels: {
+      labels: {
       pooled: "Pooled assets",
       nothingHeld: "Nothing held",
       operatorOffline: "Operator offline",
@@ -357,10 +333,6 @@ export const comparison = {
   ],
 } as const;
 
-/* ------------------------------------------------------------------------ */
-/* Architecture                                                               */
-/* ------------------------------------------------------------------------ */
-
 export const layers = {
   id: "architecture",
   eyebrow: "Architecture",
@@ -370,7 +342,6 @@ export const layers = {
   apiNote: "CLPR Application API",
   listLabel: "CLPR protocol layers, from top to bottom",
   termsLabel: "Terms on this layer",
-  // The section the term links point to.
   glossaryId: "terminology",
   items: [
     {
@@ -395,10 +366,6 @@ export const layers = {
     },
   ],
 } as const;
-
-/* ------------------------------------------------------------------------ */
-/* Extensibility                                                              */
-/* ------------------------------------------------------------------------ */
 
 export const extensibility = {
   id: "extensibility",
@@ -452,7 +419,6 @@ export const extensibility = {
   ],
   footnote:
     "Once both ledgers implement CLPR natively, their validators become the Endpoints and no separate infrastructure is needed.",
-  // Labels inside the small diagrams.
   art: {
     queue: "Ordered queue",
     applications: "Applications",
@@ -463,10 +429,6 @@ export const extensibility = {
     local: "Local format",
   },
 } as const;
-
-/* ------------------------------------------------------------------------ */
-/* Code                                                                       */
-/* ------------------------------------------------------------------------ */
 
 export const repositories = {
   id: "code",
@@ -538,10 +500,6 @@ export const repositories = {
   },
 } as const;
 
-/* ------------------------------------------------------------------------ */
-/* Terminology                                                                */
-/* ------------------------------------------------------------------------ */
-
 export const glossary = {
   id: "terminology",
   eyebrow: "Shared vocabulary",
@@ -557,7 +515,6 @@ export const glossary = {
   position: "Term {index} of {count}",
   previous: "Previous term",
   next: "Next term",
-  // Where on this page each term can be seen at work.
   seeIn: {
     label: "See it in {section}",
     sections: {
@@ -599,10 +556,6 @@ export const glossary = {
   ],
 } as const;
 
-/* ------------------------------------------------------------------------ */
-/* Get involved                                                               */
-/* ------------------------------------------------------------------------ */
-
 export const involvement = {
   id: "get-involved",
   eyebrow: "Get involved",
@@ -636,10 +589,6 @@ export const involvement = {
     secondary: { label: "Follow LFDT-CLPR on GitHub", href: links.githubOrg },
   },
 } as const;
-
-/* ------------------------------------------------------------------------ */
-/* Footer                                                                     */
-/* ------------------------------------------------------------------------ */
 
 export const footer = {
   tagline: "Bridgeless cross-ledger messaging, specified in the open.",
@@ -677,7 +626,6 @@ export const footer = {
       ],
     },
   ],
-  // Who is behind CLPR, in the words of `origins.label`.
   backing: {
     label: "Who is behind CLPR",
     stewardedBy: "Stewarded by",

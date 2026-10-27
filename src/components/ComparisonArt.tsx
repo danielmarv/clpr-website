@@ -4,14 +4,7 @@ import { Bundle, Endpoint, fibre, Glows, LaneGradient, MiniLedger, Mover, Pulse,
 import { comparison } from "@/content/site";
 import { cn } from "@/lib/utils";
 
-/*
- * The two diagrams of "Why bridgeless": the same two ledgers, once joined
- * through a bridge in the middle (muted) and once directly by a CLPR Channel.
- * Each aspect of the comparison gets its own pair, and both sides run on the
- * same clock so the difference reads at a glance. Motion is the `prop-*` CSS
- * of globals.css and only runs without reduced motion; otherwise every part
- * rests where it tells the story. Decorative: the text below carries the meaning.
- */
+// Both sides of each pair run on the same clock, so the difference reads at a glance.
 
 type Visual = (typeof comparison.rows)[number]["visual"];
 
@@ -46,7 +39,6 @@ function Caption({ y = 172, children, className }: { y?: number; children: React
   );
 }
 
-/** A token: the only kind of thing most bridges move. */
 function Coin() {
   return (
     <g>
@@ -80,7 +72,6 @@ export function BridgeArt({ visual }: { visual: Visual }) {
       <MiniLedger id={id} tone="mist" x={A.x} y={A.y} r={RADIUS} seed={3} />
       <MiniLedger id={id} tone="mist" x={B.x} y={B.y} r={RADIUS} seed={4} />
 
-      {/* The bridge: a third party with its own validators and the pooled assets. */}
       <rect
         x={HUB.x - HUB.width / 2}
         y={HUB.y - HUB.height / 2}
@@ -121,7 +112,6 @@ export function BridgeArt({ visual }: { visual: Visual }) {
 
       {visual === "custody" && (
         <>
-          {/* Assets pile up in the middle and become a target. */}
           {[-24, -8, 8, 24, -16, 0, 16].map((dx, k) => (
             <g key={k} transform={`translate(${HUB.x + dx} ${HUB.y + (k < 4 ? 26 : 12)})`}>
               <Coin />
@@ -139,7 +129,6 @@ export function BridgeArt({ visual }: { visual: Visual }) {
 
       {offline && (
         <>
-          {/* Nothing gets past an operator that is down. */}
           <Mover path={`M${A_RIM.x} ${A_RIM.y}L${HUB.x - HUB.width / 2 - 8} ${HUB.y}`} motion="prop-relay" at={100} duration={3.2}>
             <Star id={id} tone="mist" r={10} />
           </Mover>
@@ -198,7 +187,6 @@ export function ClprArt({ visual }: { visual: Visual }) {
 
       {visual === "trust" && (
         <>
-          {/* The proof goes straight to Ledger B, whose own Verifier checks it. */}
           <Pulse x={verifier.x} y={verifier.y} motion="prop-ring" delay={2.02} rest={0}>
             <circle r={16} stroke={TONES.pink} strokeWidth={1.4} />
           </Pulse>

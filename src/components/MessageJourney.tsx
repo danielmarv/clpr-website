@@ -11,18 +11,7 @@ import { demo, type DemoNodeId, type DemoStep } from "@/content/site";
 import { cn, format } from "@/lib/utils";
 import { useStepper } from "@/lib/useStepper";
 
-/*
- * "How it works": one message on its way across a Channel, in seven steps.
- *
- * The two ledgers are membranes with the seven stops on one continuous route:
- * Application → CLPR Service (its ordered queue) → CLPR Endpoint on Ledger A,
- * the Channel, then Endpoint → Verifier Contract → Service → Application on
- * Ledger B. Three queued messages ride the route as the steps change: they
- * gather into a bundle with a state proof (magenta ring), cross, get verified,
- * are delivered in order, and a bundle of responses travels back. The motion
- * is CSS (offset-path + transitions on offset-distance); the steps play on
- * their own while in view unless the visitor prefers reduced motion.
- */
+// One message across a Channel in seven steps; the motion is CSS offset-path with transitions on offset-distance.
 
 const STEP_DURATION_MS = 6000;
 const ROUTE: DemoNodeId[] = ["a-app", "a-service", "a-endpoint", "b-endpoint", "b-verifier", "b-service", "b-app"];
@@ -135,7 +124,7 @@ function buildRoute(layout: Layout) {
   return { path, at, points };
 }
 
-/** Faint validators in each ledger's membrane, clear of the stops and their labels, each tied to its nearest neighbour. */
+/** Faint validators in each membrane, clear of the stops and their labels. */
 function buildValidators(layout: Layout, side: "a" | "b"): { points: Point[]; links: [Point, Point][] } {
   const random = seeded(side === "a" ? 71 : 73);
   const ledger = layout.ledgers[side];
@@ -168,7 +157,6 @@ function buildValidators(layout: Layout, side: "a" | "b"): { points: Point[]; li
 
 type Placement = { at: number; shown: boolean };
 
-/** Where the three messages, the proof ring and the three responses are at a step. */
 function placements(index: number, at: Record<DemoNodeId, number>) {
   const between = (from: DemoNodeId, to: DemoNodeId, t: number) => at[from] + (at[to] - at[from]) * t;
   // Queue slots between the Service and the Endpoint, the oldest message in front.
@@ -197,7 +185,6 @@ function placements(index: number, at: Record<DemoNodeId, number>) {
       messages = bundle("b-verifier");
       break;
     case 5:
-      // Delivered one after the other, in order.
       messages = [at["b-app"], between("b-service", "b-app", 0.5), between("b-service", "b-app", 0.08)].map((value) => ({
         at: value,
         shown: true,
@@ -239,7 +226,6 @@ export function MessageJourney() {
   }, [stepIndex, reducedMotion]);
 
   const step = steps[stepIndex];
-  // Light runs along the Channel while a bundle crosses it.
   const flowing = running && !reducedMotion ? (stepIndex === 3 ? "forward" : stepIndex === 6 ? "back" : null) : null;
   const position = format(demo.controls.position, { step: stepIndex + 1, total: steps.length });
 
@@ -367,7 +353,6 @@ export function MessageJourney() {
   );
 }
 
-/** The two ledgers, the route through their stops, and the messages on it. */
 function Stage({
   layout,
   step,
@@ -426,7 +411,6 @@ function Stage({
           );
         })}
 
-        {/* The route inside each ledger, and the Channel between the Endpoints. */}
         {ROUTE.slice(1).map((stopId, k) => {
           const from = stops[ROUTE[k]];
           const to = stops[stopId];
@@ -448,7 +432,6 @@ function Stage({
           />
         )}
 
-        {/* The stops. */}
         {ROUTE.map((stopId) => {
           const stop = stops[stopId];
           const active = step.active.includes(stopId);
@@ -478,7 +461,6 @@ function Stage({
           </g>
         )}
 
-        {/* The three messages, their state proof, and the responses. */}
         <g className="journey-move" style={ride(ring)}>
           <circle
             r={20}

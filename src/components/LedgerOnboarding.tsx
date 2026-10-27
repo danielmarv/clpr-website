@@ -9,15 +9,7 @@ import { extensibility } from "@/content/site";
 import { cn, format } from "@/lib/utils";
 import { useStepper } from "@/lib/useStepper";
 
-/*
- * "Connecting a new ledger to Hiero": the eight steps beside a drawing that
- * builds up as they go. Hiero already speaks CLPR natively; the new ledger
- * gains its Service and Endpoints, the two Verifier Contracts are built (each
- * in the color of the ledger whose proofs it checks) and then move into the
- * opposite network, the Channel opens, the Endpoints peer, a Connector is
- * bonded, and finally applications send messages. The drawing shows the state
- * after the selected step; what that step added rings once.
- */
+// The drawing shows the state after the selected step; what that step added rings once.
 
 const STEP_MS = 5000;
 const WIDTH = 600;
@@ -80,7 +72,6 @@ function Diamond({ tone }: { tone: "violet" | "pink" }) {
   return <path d="M0 -11L11 0L0 11L-11 0Z" fill="#0b0a13" stroke={TONES[tone]} strokeWidth={1.5} />;
 }
 
-/** A ring that plays once where something has just been added. */
 function Ping({ at, step }: { at: Point; step: number }) {
   return (
     <g transform={`translate(${at.x} ${at.y})`}>
@@ -110,7 +101,6 @@ function Diagram({ step }: { step: number }) {
       <Glows id={id} />
       <LaneGradient id={`${id}-lane`} x1={SERVICE.new.x} x2={SERVICE.hiero.x} />
 
-      {/* The two ledgers. */}
       {[
         { ledger: NEW, tone: "violet" as const, name: copy.newLedger },
         { ledger: HIERO, tone: "pink" as const, name: copy.hiero },
@@ -232,7 +222,6 @@ function Diagram({ step }: { step: number }) {
         )}
       </g>
 
-      {/* What this step added. */}
       {step === 0 && <Ping at={SERVICE.new} step={step} />}
       {step === 3 && <Ping at={VERIFIER.forNew.deployed} step={step} />}
       {step === 4 && <Ping at={{ x: 300, y: 160 }} step={step} />}
