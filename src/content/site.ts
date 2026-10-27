@@ -27,7 +27,6 @@ export const nav = [
   { label: "Why bridgeless", href: "#protocol" },
   { label: "Architecture", href: "#architecture" },
   { label: "Code", href: "#code" },
-  { label: "Roadmap", href: "#roadmap" },
 ] as const;
 
 export const headerCta = { label: "Get involved", href: "#get-involved" } as const;
@@ -369,6 +368,10 @@ export const layers = {
   lead:
     "Applications only see a small interface for sending and receiving payloads. How ledgers prove and verify each other’s state stays below it, which is what lets CLPR span very different networks.",
   apiNote: "CLPR Application API",
+  listLabel: "CLPR protocol layers, from top to bottom",
+  termsLabel: "Terms on this layer",
+  // The section the term links point to.
+  glossaryId: "terminology",
   items: [
     {
       name: "Application",
@@ -418,6 +421,25 @@ export const extensibility = {
     },
   ],
   stepsTitle: "Connecting a new ledger to Hiero",
+  stepsLead: "Hiero already speaks CLPR natively. Step through what the new ledger needs, and watch it come together.",
+  onboarding: {
+    newLedger: "New ledger",
+    hiero: "Hiero",
+    service: "CLPR Service",
+    endpoints: "Endpoints",
+    verifierForHiero: "Verifies Hiero",
+    verifierForNew: "Verifies the new ledger",
+    built: "Built, not yet deployed",
+    channel: "Channel",
+    connector: "Connector",
+    applications: "Applications",
+    stepsLabel: "Steps to connect a new ledger",
+    position: "Step {step} of {total}",
+    previous: "Previous step",
+    next: "Next step",
+    play: "Play the steps",
+    pause: "Pause the steps",
+  },
   steps: [
     "Implement a CLPR Service and CLPR Endpoints for the new ledger type.",
     "Implement a Hiero Verifier Contract deployable to the new ledger.",
@@ -454,49 +476,66 @@ export const repositories = {
     "The specification is normative and has no software dependencies, so it can be implemented in any language for any chain. The reference implementations show one way to do it.",
   openLabel: "Open repository",
   featuredLabel: "Start here",
+  implementedBy: "Implemented by",
+  implementsLabel: "Implements",
+  runsOnLabel: "Runs on",
+  rulesLabel: "How the project is run",
   facts: [
     { term: "Code license", detail: "Apache-2.0 with DCO sign-off" },
-    { term: "Specification", detail: "Community Specification License 1.0" },
-    { term: "First native adopter", detail: "Hiero consensus node" },
+    { term: "Specification license", detail: "Community Specification License 1.0" },
   ],
+  components: {
+    service: "CLPR Service",
+    endpoint: "CLPR Endpoint",
+    verifier: "Verifier Contracts",
+  },
   clone: {
     label: "Clone the specification",
     command: "git clone https://github.com/LFDT-CLPR/clpr-spec.git",
     copy: "Copy command",
     copied: "Copied",
   },
-  items: [
-    {
-      name: "clpr-spec",
-      kind: "Specification",
-      body: "The CLPR specification: component behavior, common data structures and formats, plus architecture decision records tracing how the design evolved.",
-      href: links.spec,
-    },
+  spec: {
+    name: "clpr-spec",
+    kind: "Specification",
+    body: "The CLPR specification: component behavior, common data structures and formats, plus architecture decision records tracing how the design evolved.",
+    href: links.spec,
+  },
+  implementations: [
     {
       name: "clpr-smart-contracts",
       kind: "Solidity",
       body: "CLPR Service and Verifier Contracts for EVM networks, deployable to Hyperledger Besu today.",
       href: links.smartContracts,
+      implements: ["service", "verifier"],
+      runsOn: "EVM networks, Hyperledger Besu",
+      status: "Deployable today",
     },
     {
       name: "clpr-endpoint",
       kind: "Java",
       body: "A CLPR Endpoint that reads EVM chain state, submits bundles to Besu networks and manages trust-anchor updates for Besu QBFT consensus.",
       href: links.endpoint,
-    },
-    {
-      name: "governance",
-      kind: "Governance",
-      body: "How the lab is run: maintainers, processes and decision-making, following LF Decentralized Trust practices.",
-      href: links.governance,
+      implements: ["endpoint"],
+      runsOn: "Hyperledger Besu (QBFT)",
+      status: null,
     },
     {
       name: "hiero-consensus-node #27029",
       kind: "Native integration",
       body: "The native CLPR service inside the Hiero consensus node, proposed in HIP-1535 and pending approval by the Hiero TSC.",
       href: links.hieroNative,
+      implements: ["service"],
+      runsOn: "Hiero",
+      status: "Pending Hiero TSC approval",
     },
   ],
+  governance: {
+    name: "governance",
+    kind: "Governance",
+    body: "How the lab is run: maintainers, processes and decision-making, following LF Decentralized Trust practices.",
+    href: links.governance,
+  },
 } as const;
 
 /* ------------------------------------------------------------------------ */
@@ -507,7 +546,7 @@ export const glossary = {
   id: "terminology",
   eyebrow: "Shared vocabulary",
   title: "Terminology",
-  lead: "The terms used throughout the CLPR specification.",
+  lead: "The terms used throughout the CLPR specification. Pick one on the map, or search for it below.",
   filterLabel: "Filter terms",
   filterPlaceholder: "Try “proof” or “Channel”",
   emptyState: "No term matches “{query}”. Clear the filter to see all {count} terms.",
@@ -518,6 +557,30 @@ export const glossary = {
   position: "Term {index} of {count}",
   previous: "Previous term",
   next: "Next term",
+  // Where on this page each term can be seen at work.
+  seeIn: {
+    label: "See it in {section}",
+    sections: {
+      "how-it-works": "How it works",
+      guarantees: "Protocol properties",
+      architecture: "Architecture",
+      extensibility: "Chain-agnostic",
+    },
+    terms: {
+      "Peer Ledger": "how-it-works",
+      "State Proof": "how-it-works",
+      "CLPR Endpoint": "extensibility",
+      "CLPR Service": "extensibility",
+      Channel: "how-it-works",
+      Connector: "architecture",
+      Message: "how-it-works",
+      Bundle: "how-it-works",
+      "Data Message": "guarantees",
+      "Response Message": "guarantees",
+      "Verifier Contract": "extensibility",
+      "Trust Anchor": "extensibility",
+    },
+  },
   terms: [
     { term: "Peer Ledger", category: "Network", definition: "The other ledger that a network communicates with over CLPR." },
     { term: "State Proof", category: "Trust", definition: "A cryptographic proof that a piece of data exists in a ledger’s committed state or history. State proofs are CLPR’s only mechanism of cross-ledger trust." },
@@ -533,59 +596,6 @@ export const glossary = {
     { term: "Configuration", category: "Network", definition: "A ledger’s ChainID, protocol version and throttle parameters, as published to peers." },
     { term: "Verifier Contract", category: "Trust", definition: "An immutable smart contract that verifies state proofs from a remote ledger and decodes bundle content into the local ledger’s data format." },
     { term: "Trust Anchor", category: "Trust", definition: "The verifier-defined representation of a peer ledger’s current signing authority, stored per Channel and updated only through verified proofs." },
-  ],
-} as const;
-
-/* ------------------------------------------------------------------------ */
-/* Roadmap                                                                    */
-/* ------------------------------------------------------------------------ */
-
-export const roadmap = {
-  id: "roadmap",
-  eyebrow: "Roadmap",
-  title: "The first year as an LFDT Lab.",
-  lead: "A rough plan from the lab proposal. It will change as the community grows.",
-  currentLabel: "Now",
-  phases: [
-    {
-      period: "Months 1–3",
-      name: "Bootstrapping",
-      current: true,
-      items: [
-        "Set up the specification governance process",
-        "Build, test and release pipelines for the reference implementations",
-        "Collaboration tooling and onboarding material",
-      ],
-    },
-    {
-      period: "Months 4–6",
-      name: "Maturing",
-      current: false,
-      items: [
-        "Best practices and a library for CLPR applications",
-        "More Service, Verifier and Endpoint reference implementations",
-        "Stabilize the specification as version 1.0",
-      ],
-    },
-    {
-      period: "Months 7–9",
-      name: "Evangelizing",
-      current: false,
-      items: [
-        "Support community-built CLPR applications",
-        "Expand reference implementations and deployments",
-        "Work with ledger maintainers on native integrations",
-      ],
-    },
-    {
-      period: "Months 10–12",
-      name: "Sustainment",
-      current: false,
-      items: [
-        "A community of experts across the full CLPR stack",
-        "A maturing ecosystem of applications built on CLPR",
-      ],
-    },
   ],
 } as const;
 
@@ -633,8 +643,6 @@ export const involvement = {
 
 export const footer = {
   tagline: "Bridgeless cross-ledger messaging, specified in the open.",
-  statusLabel: "Lab status",
-  githubCta: "Follow LFDT-CLPR on GitHub",
   backToTop: "Back to top",
   newTab: "opens in a new tab",
   wordmark: "CLPR",
@@ -646,37 +654,36 @@ export const footer = {
         { label: "Why bridgeless", href: "/#protocol" },
         { label: "Architecture", href: "/#architecture" },
         { label: "Code", href: "/#code" },
-        { label: "Roadmap", href: "/#roadmap" },
         { label: "Terminology", href: "/#terminology" },
+      ],
+    },
+    {
+      title: "Build",
+      links: [
+        { label: "Specification", href: links.spec },
+        { label: "Smart contracts", href: links.smartContracts },
+        { label: "Endpoint", href: links.endpoint },
+        { label: "Native Hiero integration", href: links.hieroNative },
+        { label: "All repositories", href: links.githubOrg },
       ],
     },
     {
       title: "Project",
       links: [
-        { label: "Specification", href: links.spec },
-        { label: "Smart contracts", href: links.smartContracts },
-        { label: "Endpoint", href: links.endpoint },
         { label: "Governance", href: links.governance },
-      ],
-    },
-    {
-      title: "Foundation",
-      links: [
-        { label: "LF Decentralized Trust", href: links.lfdt },
         { label: "Lab proposal", href: links.labProposal },
-        { label: "Apache License 2.0", href: links.apacheLicense },
         { label: "Developer Certificate of Origin", href: links.dco },
-      ],
-    },
-    {
-      title: "Ecosystem",
-      links: [
-        { label: "Hiero", href: links.hiero },
-        { label: "Hedera", href: links.hedera },
-        { label: "CLPR at Hashgraph", href: links.hashgraph },
+        { label: "Apache License 2.0", href: links.apacheLicense },
       ],
     },
   ],
+  // Who is behind CLPR, in the words of `origins.label`.
+  backing: {
+    label: "Who is behind CLPR",
+    stewardedBy: "Stewarded by",
+    contributedBy: "Contributed by",
+    builtInto: "Built natively into",
+  },
   // Placeholder legal line. Replace with the official LFDT lab footer text before launch.
   legal:
     "© {year} CLPR contributors. Code is licensed under Apache-2.0; the specification under the Community Specification License 1.0. LF Decentralized Trust is a project of The Linux Foundation.",

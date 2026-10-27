@@ -113,8 +113,6 @@ const SETTINGS: Record<FormName, { share: number; dust?: Parameters<typeof dust>
   mesh: { share: 0.42, dust: false },
   globe: { share: 0.62, dust: false },
   branches: { share: 0.28 },
-  growth: { share: 0.3 },
-  knowledge: { share: 0.3, dust: { spread: 4, nodeWeight: 1.6 } },
   community: { share: 0.3 },
 };
 

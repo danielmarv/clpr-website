@@ -16,13 +16,9 @@
  *   mesh       a triangulated network floor under the layer stack
  *   globe      validators in real cities, four ledgers, Channels between them
  *   branches   a git history with contributors pushing commits
- *   growth     the network growing through the four roadmap phases
- *   knowledge  the glossary terms, linked where one definition mentions another
  *   community  a scale-free contributor network that keeps gaining members
  */
 
-import { glossary, roadmap } from "@/content/site";
-import { RELATED } from "@/lib/glossary";
 import type { FormName } from "@/components/sceneMotion";
 
 export type V3 = [number, number, number];
@@ -810,74 +806,6 @@ function branches(): Graph {
   return graph;
 }
 
-/** Roadmap: the network grows through the four phases; the current one is live, later ones are planned. */
-function growth(): Graph {
-  const graph = new Graph(37);
-  const current = Math.max(0, roadmap.phases.findIndex((phase) => phase.current));
-  const stages: { at: V3; count: number; radius: number }[] = [
-    { at: [-1.9, -0.3, 0.45], count: 4, radius: 0.26 },
-    { at: [-0.68, -0.02, 0.15], count: 8, radius: 0.4 },
-    { at: [0.62, 0.06, -0.2], count: 13, radius: 0.52 },
-    { at: [1.95, 0.24, -0.6], count: 20, radius: 0.64 },
-  ];
-  const groups = stages.map(({ at, count, radius }, k) => {
-    const live = k <= current;
-    const tone = 0.08 + k * 0.27;
-    const ids = sphere(count, radius, at).map((p) =>
-      graph.node(p, { size: live ? 0.045 : 0.04, role: live ? "validator" : "commit", tone, alpha: live ? 1 : 0.5 }),
-    );
-    const links = graph.mesh(ids, k === 0 ? 2 : 3, live ? { width: 1, alpha: 0.7 } : { width: 0.8, alpha: 0.28, dash: 6 });
-    if (live) graph.gossip(links, { speed: 0.35, size: 0.022, tail: 0.4 });
-    if (k === current) {
-      graph.ripple(at, 0.22, 0, { size: radius * 0.75, tone: 0.95, alpha: 0.75 });
-      graph.ripple(at, 0.22, 0.5, { size: radius * 0.75, tone: 0.95, alpha: 0.75 });
-    }
-    return ids;
-  });
-
-  // The path through the year, and the links each phase adds to the next.
-  stages.forEach((stage, k) => {
-    if (k === stages.length - 1) return;
-    const next = stages[k + 1];
-    const spine = graph.link(stage.at, next.at, { lift: [0, 0.3, 0], tone: [0.08 + k * 0.27, 0.35 + k * 0.27], width: 1, alpha: 0.4, dash: 16 });
-    graph.packet(spine, { speed: 0.12, phase: k * 0.25, size: 0.03, tail: 0.35 });
-    const from = graph.nearest(groups[k], next.at, 2);
-    const to = graph.nearest(groups[k + 1], stage.at, 2);
-    from.forEach((id, i) => graph.link(id, to[i], { width: 0.7, alpha: 0.25, dash: 7 }));
-  });
-  return graph;
-}
-
-/** Terminology: the glossary as a knowledge graph. Tags are term indices, so the selected term can light up. */
-function knowledge(): Graph {
-  const graph = new Graph(41);
-  const terms = glossary.terms;
-  const index = new Map<string, number>(terms.map((term, i) => [term.term, i]));
-  const edges: [number, number][] = [];
-  terms.forEach((term, i) => {
-    for (const name of RELATED.get(term.term) ?? []) {
-      const j = index.get(name);
-      if (j !== undefined && i < j) edges.push([i, j]);
-    }
-  });
-  const degree = terms.map((_, i) => edges.filter(([a, b]) => a === i || b === i).length);
-  const categoryTone: Record<string, number> = { Components: 0.04, Network: 0.28, Messaging: 0.52, Trust: 0.86, Payment: 1 };
-  const positions = forceLayout(terms.length, edges, seeded(43), [2.0, 0.95, 1.0]);
-  const ids = terms.map((term, i) =>
-    graph.node(positions[i], {
-      size: 0.045 + degree[i] * 0.007,
-      role: degree[i] >= 5 ? "hub" : "validator",
-      tone: categoryTone[term.category] ?? 0.4,
-      tag: i,
-    }),
-  );
-  for (const [i, j] of edges) {
-    const link = graph.link(ids[i], ids[j], { width: 1, alpha: 0.5 });
-    graph.packet(link, { speed: 0.1 + graph.rand() * 0.12, phase: graph.rand(), size: 0.022, tail: 0.45, reverse: graph.rand() < 0.5, alpha: 0.7 });
-  }
-  return graph;
-}
-
 /** Get involved: a scale-free contributor network (preferential attachment) that keeps gaining members. */
 function community(): Graph {
   const graph = new Graph(47);
@@ -920,7 +848,7 @@ function community(): Graph {
   return graph;
 }
 
-const BUILDERS: Record<FormName, () => Graph> = { chain, route, bridge, mesh, globe, branches, growth, knowledge, community };
+const BUILDERS: Record<FormName, () => Graph> = { chain, route, bridge, mesh, globe, branches, community };
 
 export function formGraph(name: FormName): Graph {
   return BUILDERS[name]();

@@ -16,8 +16,6 @@ export const FORMS = [
   "mesh",
   "globe",
   "branches",
-  "growth",
-  "knowledge",
   "community",
 ] as const;
 export type FormName = (typeof FORMS)[number];
@@ -76,10 +74,6 @@ vec3 animateForm(int form, vec3 p, float t, float seed, float crumble, inout flo
     alpha *= 1.0 - 0.88 * behind;
   } else if (form == ${form("branches")}) {
     p = rotX(rotY(p, -0.35 + sin(t * 0.14) * 0.15), 0.22);
-  } else if (form == ${form("growth")}) {
-    p = rotX(rotY(p, -0.32 + sin(t * 0.1) * 0.12), 0.3);
-  } else if (form == ${form("knowledge")}) {
-    p = rotX(rotY(p, 0.3 + t * 0.05), 0.15);
   } else {
     p = rotX(rotY(p, -0.2 + t * 0.04), 0.2);
   }

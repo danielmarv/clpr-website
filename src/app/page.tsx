@@ -7,7 +7,6 @@ import { Hero } from "@/components/Hero";
 import { Layers } from "@/components/Layers";
 import { ProtocolField } from "@/components/ProtocolField";
 import { Repositories } from "@/components/Repositories";
-import { Roadmap } from "@/components/Roadmap";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteMotion } from "@/components/SiteMotion";
@@ -29,7 +28,6 @@ export default function HomePage() {
         <Layers />
         <Extensibility />
         <Repositories />
-        <Roadmap />
         <Glossary />
         <GetInvolved />
       </main>

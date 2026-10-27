@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 import { cn } from "@/lib/utils";
 
 /**
@@ -5,7 +7,8 @@ import { cn } from "@/lib/utils";
  * in fading white, and the lead either below it or beside it (`split`).
  *
  * `illustrated` keeps the right-hand side free (above the heading on phones):
- * the WebGL background draws the section's illustration into that slot.
+ * the WebGL background draws the section's illustration into that slot, or
+ * the section passes its own as `illustration`.
  */
 export function SectionHeading({
   id,
@@ -14,6 +17,8 @@ export function SectionHeading({
   lead,
   split = false,
   illustrated = false,
+  illustration,
+  wide = false,
   className,
 }: {
   id?: string;
@@ -22,6 +27,9 @@ export function SectionHeading({
   lead?: string;
   split?: boolean;
   illustrated?: boolean;
+  illustration?: ReactNode;
+  /** Gives the illustration the wider column, for short headings. */
+  wide?: boolean;
   className?: string;
 }) {
   const heading = (
@@ -44,8 +52,14 @@ export function SectionHeading({
   if (illustrated) {
     return (
       <div data-motion-reveal className={cn("grid lg:grid-cols-12 lg:items-center lg:gap-12", className)}>
-        <div data-form-slot aria-hidden="true" className="h-56 sm:h-72 lg:order-last lg:col-span-5 lg:h-[24rem]" />
-        <div className="lg:col-span-7">
+        <div
+          data-form-slot
+          aria-hidden="true"
+          className={cn("h-56 sm:h-72 lg:order-last", wide ? "sm:h-96 lg:col-span-7 lg:h-[28rem]" : "lg:col-span-5 lg:h-[24rem]")}
+        >
+          {illustration}
+        </div>
+        <div className={wide ? "lg:col-span-5" : "lg:col-span-7"}>
           {heading}
           {lead && <p className="mt-6 max-w-[56ch] text-[1.0625rem] leading-[1.7] text-muted-foreground">{lead}</p>}
         </div>
