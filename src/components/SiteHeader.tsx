@@ -89,7 +89,7 @@ export function SiteHeader() {
       className={cn(
         "fixed inset-x-0 top-0 z-40 border-b text-white transition-[background-color,border-color] duration-300",
         scrolled || open
-          ? "border-white/7 bg-[#07060d]/72 backdrop-blur-xl backdrop-saturate-150"
+          ? "border-white/7 bg-background/72 backdrop-blur-xl backdrop-saturate-150"
           : "border-transparent bg-transparent",
       )}
     >
@@ -169,7 +169,7 @@ export function SiteHeader() {
         <nav
           id="mobile-menu"
           aria-label="Main"
-          className="fade-up h-[calc(100dvh-4rem)] overflow-y-auto border-t border-white/7 bg-[#07060d]/90 lg:hidden"
+          className="fade-up h-[calc(100dvh-4rem)] overflow-y-auto border-t border-white/7 bg-background/92 lg:hidden"
         >
           <div className="shell flex min-h-full flex-col pb-8 pt-4">
             <ul className="flex flex-col">

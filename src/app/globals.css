@@ -3,21 +3,20 @@
 /*
  * CLPR design tokens
  * ------------------------------------------------------------------
- * Dark first, in the spirit of linear.app: a near-black ink with a hint of
- * indigo, hairline borders, and color used sparingly and with meaning.
+ * Dark first, in the spirit of linear.app: a deep indigo ink, hairline borders, and color used sparingly and with meaning.
  * The brand range follows the CLPR artwork on hashgraph.com/clpr:
  *   signal violet = messages in transit
  *   proof magenta = state proofs and verification
  *   peach         = the warm end of the spiral, for highlights only
  */
 :root {
-  --bg: #07060d;
-  --bg-raised: #0b0a13;
-  --surface: #0f0e18;
-  --surface-2: #151422;
+  --bg: #120f2c;
+  --bg-raised: #17143a;
+  --surface: #1a1740;
+  --surface-2: #211d4c;
   --ink: #f4f3f8;
   --ink-soft: #a3a1b8;
-  --ink-faint: #7a7792;
+  --ink-faint: #8f8cab;
   --line: rgb(255 255 255 / 0.08);
   --line-strong: rgb(255 255 255 / 0.16);
   --mist: rgb(255 255 255 / 0.035);
@@ -93,7 +92,7 @@
   --color-night-line: var(--night-line);
   --color-night-text: var(--night-text);
 
-  --font-sans: var(--font-albert), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-sans: var(--font-sora), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: var(--font-plex-mono), ui-monospace, "SFMono-Regular", Menlo, monospace;
 
   --radius-sm: 0.375rem;
@@ -147,12 +146,12 @@
   border-radius: var(--radius-panel);
   background:
     linear-gradient(180deg, rgb(255 255 255 / 0.035), rgb(255 255 255 / 0.012)),
-    rgb(11 10 19 / 0.8);
+    rgb(22 18 50 / 0.8);
   box-shadow: 0 1px 0 rgb(255 255 255 / 0.04) inset;
   @media (width >= 48rem) {
     background:
       linear-gradient(180deg, rgb(255 255 255 / 0.04), rgb(255 255 255 / 0.012)),
-      rgb(11 10 19 / 0.58);
+      rgb(22 18 50 / 0.55);
     -webkit-backdrop-filter: blur(18px) saturate(1.4);
     backdrop-filter: blur(18px) saturate(1.4);
   }
@@ -234,7 +233,7 @@
     radial-gradient(ellipse 60% 50% at 78% 22%, rgb(108 55 235 / 0.28), transparent 70%),
     radial-gradient(ellipse 50% 40% at 90% 45%, rgb(200 42 128 / 0.16), transparent 70%),
     radial-gradient(ellipse 90% 50% at 50% 0%, rgb(33 18 113 / 0.5), transparent 70%),
-    var(--bg);
+    linear-gradient(180deg, #1a1540, #0f0c26);
   background-attachment: fixed;
 }
 .no-webgl .protocol-field {

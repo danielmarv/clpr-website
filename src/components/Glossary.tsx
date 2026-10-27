@@ -281,7 +281,7 @@ function TermDetail({
       </div>
 
       {!compact && (
-        <h3 key={term.term} className="fade-up text-headline mt-6 text-[2.5rem] font-medium leading-tight tracking-[-0.035em]">
+        <h3 key={term.term} className="fade-up text-headline mt-6 text-[2.25rem] font-light leading-tight tracking-[-0.035em]">
           {term.term}
         </h3>
       )}

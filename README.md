@@ -55,7 +55,7 @@ src/
     not-found.tsx      404 page (shows the spiral from the WebGL background)
     globals.css        Design tokens (shadcn semantic tokens + CLPR brand tokens), utilities
     icon.svg           Favicon (CLPR spiral on the hero gradient)
-    fonts/             Albert Sans (variable wght) and IBM Plex Mono, OFL-licensed
+    fonts/             Sora (variable wght) and IBM Plex Mono, OFL-licensed
   components/
     ProtocolField.tsx  WebGL2 background: the aurora, the particles (3D spiral, ledger
                        state, dust) and the scroll logic, driven by data-scene sections
@@ -205,12 +205,15 @@ from the CLPR presentation on [hashgraph.com/clpr](https://hashgraph.com/clpr/).
   scrolls with it; one network takes itself apart as the next one builds itself, and the
   particles flow between them. Cards use frosted glass (`panel`), so the drawings glow through
   them.
-- **Color.** Near-black ink `#07060d`, hairline white borders, white text fading to lavender in
+- **Color.** A deep indigo ink (`--bg` `#120f2c`; the aurora runs from `#0f0c26` at the bottom
+  to `#1a1540` at the top), hairline white borders, white text fading to lavender in
   headlines (`text-headline`). Violet `#9d8bff` marks messages in transit; magenta `#f27fbd` is
   reserved for state proofs and verification. The hero illustration carries the warm end of the
   range; headlines stay in `text-headline`.
-- **Type.** Albert Sans as a free stand-in for Styrene A, medium weight with tight tracking for
-  headlines. IBM Plex Mono only for real code, indices and hashes. If a Styrene A web license is
+- **Type.** Sora (OFL) as a free stand-in for Styrene A, the licensed typeface on
+  hashgraph.com/clpr: the same wide, round geometric letterforms. Like Styrene there, large
+  headlines are set light (300) with tight tracking (−0.035 to −0.04em); text stays regular.
+  IBM Plex Mono only for real code, indices and hashes. If a Styrene A web license is
   available, swap the font in `src/app/layout.tsx`.
 - **Shape.** Pill buttons (solid white primary, translucent secondary), frosted `panel`
   surfaces with hairline borders, cards that light up under the pointer (`data-spotlight`).
@@ -233,7 +236,7 @@ from the CLPR presentation on [hashgraph.com/clpr](https://hashgraph.com/clpr/).
 
 - [ ] Confirm the CLPR spiral (`src/components/ClprMark.tsx`, `src/app/icon.svg`) against the
       official CLPR logo files from the LFDT / Hashgraph brand assets.
-- [ ] Decide on the typeface: keep Albert Sans or license Styrene A.
+- [ ] Decide on the typeface: keep Sora or license Styrene A.
 - [ ] Replace the footer legal line (`footer.legal` in `site.ts`) with the official LFDT lab text.
 - [ ] Re-check statuses that will change: HIP-1535 and hiero-consensus-node PR #27029.
 - [ ] Add community channels (Discord, mailing list, calls) once LFDT sets them up.

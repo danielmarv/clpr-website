@@ -5,11 +5,12 @@ import { site } from "@/content/site";
 import "./globals.css";
 
 // Self-hosted fonts: no request to a third-party font CDN at runtime.
-// Albert Sans stands in for Styrene A, the licensed typeface on hashgraph.com/clpr.
-const albertSans = localFont({
-  src: "./fonts/albert-sans-latin-wght-normal.woff2",
-  variable: "--font-albert",
-  weight: "100 900",
+// Sora (OFL) stands in for Styrene A, the licensed typeface on hashgraph.com/clpr:
+// the same wide, round geometric letterforms.
+const sora = localFont({
+  src: "./fonts/sora-latin-wght-normal.woff2",
+  variable: "--font-sora",
+  weight: "100 800",
   display: "swap",
 });
 
@@ -42,12 +43,12 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#07060d",
+  themeColor: "#120f2c",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${albertSans.variable} ${plexMono.variable} antialiased`}>
+    <html lang="en" className={`${sora.variable} ${plexMono.variable} antialiased`}>
       <body className="min-h-dvh">{children}</body>
     </html>
   );

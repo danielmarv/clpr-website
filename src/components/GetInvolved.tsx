@@ -63,7 +63,7 @@ export function GetInvolved() {
         <div data-motion-reveal className="max-w-xl">
           <h2
             id="closing-title"
-            className="text-headline text-[clamp(2.5rem,5.6vw,4.5rem)] font-medium leading-[1.04] tracking-[-0.045em] text-balance"
+            className="text-headline text-[clamp(2.4rem,5.2vw,4.25rem)] font-light leading-[1.06] tracking-[-0.04em] text-balance"
           >
             {involvement.closing.title}
           </h2>

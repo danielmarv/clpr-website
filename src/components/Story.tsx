@@ -84,7 +84,7 @@ export function Story() {
           className="story-chapter shell absolute inset-x-0 top-1/2 -translate-y-1/2"
           data-active={phase === 0}
         >
-          <p className="max-w-[20ch] text-[clamp(2.1rem,5.4vw,4.5rem)] font-medium leading-[1.06] tracking-[-0.04em] text-white">
+          <p className="max-w-[20ch] text-[clamp(2rem,5vw,4.25rem)] font-light leading-[1.1] tracking-[-0.035em] text-white">
             {words.map((word, index) => (
               <span key={index} className="story-word" style={{ "--i": index } as CSSProperties}>
                 {word}{" "}
@@ -129,7 +129,7 @@ export function Story() {
                 <p className="font-mono text-[0.75rem] text-signal-ink">
                   {chapter.index} <span className="text-faint">/ 03</span>
                 </p>
-                <h3 className="text-headline mt-3 text-[clamp(1.75rem,3.6vw,2.75rem)] font-medium leading-[1.1] tracking-[-0.035em]">
+                <h3 className="text-headline mt-3 text-[clamp(1.7rem,3.4vw,2.6rem)] font-light leading-[1.12] tracking-[-0.03em]">
                   {chapter.title}
                 </h3>
                 <p className="mx-auto mt-4 max-w-[52ch] text-[1rem] leading-[1.7] text-muted-foreground sm:text-[1.0625rem]">

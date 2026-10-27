@@ -15,7 +15,7 @@ export function Hero() {
           <h1
             id="hero-title"
             data-hero-reveal
-            className="text-headline text-[clamp(2.6rem,5.4vw,4.75rem)] font-medium leading-[1.02] tracking-[-0.045em] text-balance"
+            className="text-headline text-[clamp(2.5rem,5vw,4.5rem)] font-light leading-[1.06] tracking-[-0.04em] text-balance"
           >
             {hero.title}
           </h1>
