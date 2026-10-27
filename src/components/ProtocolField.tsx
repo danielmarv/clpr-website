@@ -335,12 +335,13 @@ void main() {
   p.x *= uResolution.x / uResolution.y;
   float t = uTime * 0.05;
 
-  vec3 color = vec3(0.027, 0.024, 0.051);
-  color += vec3(0.06, 0.035, 0.2) * smoothstep(1.6, 0.0, length(p - vec2(0.0, 1.35))) * 0.5;
-  color += glow(p + 0.05 * vec2(sin(t * 3.0), cos(t * 2.0)), uGlowViolet, vec3(0.3, 0.17, 0.85));
-  color += glow(p + 0.06 * vec2(cos(t * 2.4), sin(t * 3.1)), uGlowMagenta, vec3(0.75, 0.14, 0.48));
-  color += glow(p, uGlowIndigo, vec3(0.12, 0.06, 0.42));
-  color *= 1.0 - 0.25 * smoothstep(0.6, 1.6, length(uv * 2.0 - 1.0));
+  // A deep indigo base, lighter towards the top (#0f0c26 at the bottom, #1a1540 at the top).
+  vec3 color = mix(vec3(0.059, 0.047, 0.149), vec3(0.102, 0.082, 0.251), smoothstep(0.0, 1.0, uv.y));
+  color += vec3(0.08, 0.05, 0.26) * smoothstep(1.7, 0.0, length(p - vec2(0.0, 1.35))) * 0.75;
+  color += glow(p + 0.05 * vec2(sin(t * 3.0), cos(t * 2.0)), uGlowViolet, vec3(0.38, 0.22, 1.0));
+  color += glow(p + 0.06 * vec2(cos(t * 2.4), sin(t * 3.1)), uGlowMagenta, vec3(0.9, 0.18, 0.58));
+  color += glow(p, uGlowIndigo, vec3(0.16, 0.08, 0.5));
+  color *= 1.0 - 0.16 * smoothstep(0.7, 1.7, length(uv * 2.0 - 1.0));
   color += (hash(gl_FragCoord.xy + fract(uTime) * 61.0) - 0.5) * 0.014;
   outColor = vec4(color, 1.0);
 }

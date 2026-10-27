@@ -11,7 +11,7 @@ const [hashgraph, hedera, hiero] = origins.logos;
 function Hexagon({ tone }: { tone: string }) {
   return (
     <svg viewBox="-10 -10 20 20" className="size-[1.125rem] shrink-0" fill="none" aria-hidden="true">
-      <path d="M0 -8.5L7.4 -4.25V4.25L0 8.5L-7.4 4.25V-4.25Z" fill="#07060d" stroke={tone} strokeWidth={1.4} />
+      <path d="M0 -8.5L7.4 -4.25V4.25L0 8.5L-7.4 4.25V-4.25Z" fill="var(--bg)" stroke={tone} strokeWidth={1.4} />
     </svg>
   );
 }
@@ -93,7 +93,7 @@ export function SiteFooter() {
   const { backing } = footer;
 
   return (
-    <footer className="relative z-10 overflow-x-clip border-t border-white/7 bg-[#07060d]/85 text-white/70 backdrop-blur-xl">
+    <footer className="relative z-10 overflow-x-clip border-t border-white/7 bg-background/85 text-white/70 backdrop-blur-xl">
       <ChannelEdge />
       <div
         aria-hidden="true"
