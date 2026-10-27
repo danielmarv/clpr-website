@@ -66,6 +66,8 @@ uniform float uState;   // 0 spiral → 1 ledgers → 2 section illustrations
 uniform float uChannel; // 0 → 1 the Channel opens
 uniform float uProof;   // 0 → 1 proofs travel and verify
 uniform float uOutro;   // 0 → 1 back to the spiral
+uniform float uSpiral;  // how visible the spiral is (0 where a scene shows its own illustration)
+uniform float uLedgers; // how visible the two ledgers and their Channel are (0 when the story draws its own)
 uniform float uAspect;
 uniform float uPixelRatio;
 uniform float uScroll;
@@ -162,6 +164,7 @@ void main() {
     logoSize = 2.0 + aRand.y * 1.6;
   }
   logo = logo * uLogo.w + uLogo.xyz;
+  logoAlpha *= uSpiral;
 
   // ---- Two ledgers and the Channel ---------------------------------------
   vec3 ledger;
@@ -209,6 +212,8 @@ void main() {
       ledgerSize += uProof * 1.6;
     }
   }
+
+  ledgerAlpha *= uLedgers;
 
   // ---- The star field ----------------------------------------------------
   vec3 field = aField.xyz;
@@ -677,6 +682,8 @@ export function ProtocolField() {
       channel: uniform(particleProgram, "uChannel"),
       proof: uniform(particleProgram, "uProof"),
       outro: uniform(particleProgram, "uOutro"),
+      spiral: uniform(particleProgram, "uSpiral"),
+      ledgers: uniform(particleProgram, "uLedgers"),
       aspect: uniform(particleProgram, "uAspect"),
       pixelRatio: uniform(particleProgram, "uPixelRatio"),
       scroll: uniform(particleProgram, "uScroll"),
@@ -701,6 +708,12 @@ export function ProtocolField() {
       magenta: uniform(auroraProgram, "uGlowMagenta"),
       indigo: uniform(auroraProgram, "uGlowIndigo"),
     };
+
+    // Scenes that draw their own illustration (HeroMesh, StoryStage, SpiralRibbon) hide the
+    // particles' version of it; the aurora still glows behind them.
+    const heroArt = document.querySelector('[data-scene="hero"] [data-scene-art]') !== null;
+    const storyArt = document.querySelector('[data-scene="story"] [data-scene-art]') !== null;
+    const outroArt = document.querySelector('[data-scene="outro"] [data-scene-art]') !== null;
 
     let layout = computeLayout(window.innerWidth, window.innerHeight);
     let pixelRatio = 1;
@@ -766,6 +779,7 @@ export function ProtocolField() {
       logo[1] -= current.outroShift * toWorld * outro;
       const ledgerWeight = smoothstep(0.3, 1, Math.min(state, 2 - Math.min(state, 2))) * (1 - outro);
       const logoWeight = Math.max(1 - Math.min(1, state), outro);
+      const spiral = mix(heroArt ? 0 : 1, outroArt ? 0 : 1, outro);
       const fieldWeight = smoothstep(1, 2, state) * (1 - outro);
 
       // Aurora glows follow the particles: behind the spiral, then under each ledger.
@@ -786,7 +800,8 @@ export function ProtocolField() {
         mix(mix(logoAt[0] - 0.2, aAt[0], ledgerWeight), formAt[0] - 0.3, fieldWeight),
         mix(mix(logoAt[1] + 0.1, aAt[1], ledgerWeight), formAt[1] + 0.2, fieldWeight),
         mix(mix(0.95, 0.7, ledgerWeight), 1.1, fieldWeight),
-        0.34 * logoWeight + 0.3 * ledgerWeight + 0.16 * fieldWeight,
+        // Dimmer behind the hero illustration, so its warm colors read true.
+        0.34 * logoWeight * (heroArt ? mix(0.55, 1, outro) : 1) + 0.3 * ledgerWeight + 0.16 * fieldWeight,
       ];
       const magenta: Vec4 = [
         mix(mix(logoAt[0] + 0.45, bAt[0], ledgerWeight), formAt[0] + 0.5, fieldWeight),
@@ -816,6 +831,8 @@ export function ProtocolField() {
       gl.uniform1f(u.channel, channel);
       gl.uniform1f(u.proof, proof);
       gl.uniform1f(u.outro, outro);
+      gl.uniform1f(u.spiral, spiral);
+      gl.uniform1f(u.ledgers, storyArt ? 0 : 1);
       gl.uniform1f(u.aspect, layout.aspect);
       gl.uniform1f(u.pixelRatio, pixelRatio);
       gl.uniform1f(u.scroll, window.scrollY / window.innerHeight);
@@ -850,9 +867,9 @@ export function ProtocolField() {
         proof,
       });
       // The validators orbiting the spiral, once it has assembled.
-      network.draw(HERO_SCENE, [0, 0, 0, 1], logoWeight * smoothstep(0.45, 1, current.intro));
+      network.draw(HERO_SCENE, [0, 0, 0, 1], logoWeight * spiral * smoothstep(0.45, 1, current.intro));
       // The ledgers and their Channel, while the story is on screen.
-      network.draw(STORY_SCENE, [0, 0, 0, 1], ledgerWeight);
+      network.draw(STORY_SCENE, [0, 0, 0, 1], storyArt ? 0 : ledgerWeight);
       // The section networks: the one in view builds itself as the previous one takes itself apart.
       if (indexA === indexB) {
         network.draw(formA, placeA, fieldWeight, focusA);

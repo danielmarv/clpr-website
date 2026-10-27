@@ -247,7 +247,7 @@ function TermDetail({
       />
 
       <div className="flex items-center justify-between gap-4">
-        <p className="eyebrow text-white/60">{term.category}</p>
+        <p className="text-[0.8125rem] font-medium text-signal-ink">{term.category}</p>
         <p className="text-[0.78rem] tabular-nums text-white/50">
           {format(glossary.position, { index: index + 1, count })}
         </p>
@@ -267,7 +267,7 @@ function TermDetail({
 
       {related.length > 0 && (
         <div className={compact ? "mt-5" : "mt-10"}>
-          <p className="eyebrow text-white/50">{glossary.relatedLabel}</p>
+          <p className="text-[0.8125rem] font-medium text-white/55">{glossary.relatedLabel}</p>
           <ul className="mt-3 flex flex-wrap gap-2">
             {related.map((name) => (
               <li key={name}>

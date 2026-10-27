@@ -2,11 +2,13 @@
  * The network layer of the WebGL background: draws the graphs of
  * sceneGraphs.ts on top of the particles of ProtocolField.
  *
- *   strokes  every link as a continuous, anti-aliased line with a soft glow,
- *            split into segments where it curves; packets leave light trails
- *   glyphs   every node as a small shaded object whose shape says what it is
- *            (validator orb, Endpoint hexagon, Verifier diamond, custodian
- *            square, commit ring …), plus packets, proof rings and ripples
+ *   strokes  every link as a bundle of fine fibres that meet at both ends and
+ *            fan out in between, split into segments where it curves; packets
+ *            leave bright light trails
+ *   glyphs   every node as a glyph whose shape says what it is (validator
+ *            star, Endpoint hexagon, Verifier diamond, custodian square, commit
+ *            ring …), plus packets, proof rings and ripples. The fibres and the
+ *            soft four-ray stars match the canvas and SVG illustrations.
  *
  * Both are instanced quads; all motion happens in the vertex shaders, so the
  * buffers never change after start-up. A scene builds itself as it fades in:
@@ -158,6 +160,9 @@ out float vHalo;
 out float vU;
 out float vDash;
 out float vTrail;
+out float vSpread;
+out float vSeed;
+out float vPacket;
 
 ${SCENE_GLSL}
 ${COMMON_GLSL}
@@ -210,7 +215,9 @@ void main() {
   float perspective = clamp(CAMERA_Z / mix(s0.z, s1.z, end), 0.55, 1.6);
   float core = iC.w * uPixelRatio * perspective * (1.0 + 0.4 * hover + 0.45 * focused);
   float halo = core * 1.5 + 1.6 * uPixelRatio;
-  float extent = core * 0.5 + halo * 2.4;
+  // How far the outer fibres of a link fan out from its center line (px).
+  float spread = packet ? 0.0 : (2.0 * uPixelRatio + core * 1.4);
+  float extent = core * 0.5 + halo * 2.4 + spread;
 
   vec2 pixel = mix(s0.xy, s1.xy, end) + normal * aCorner.y * extent;
   gl_Position = vec4(pixel / uViewport * 2.0 - 1.0, 0.0, 1.0);
@@ -221,6 +228,9 @@ void main() {
   vCore = core * 0.5;
   vHalo = halo;
   vDash = iF.w;
+  vSpread = spread;
+  vSeed = iF.y;
+  vPacket = packet ? 1.0 : 0.0;
   vTrail = packet ? clamp(reverse > 0.5 ? 1.0 - (vU - head) / iU.x : 1.0 - (head - vU) / iU.x, 0.0, 1.0) : 1.0;
   vColor = palette(mix(iU.z, iU.w, vU));
   vAlpha = mix(alpha0, alpha1, end) * (1.0 + 1.3 * hover) * dimmed * (packet ? 1.6 : 1.0);
@@ -238,22 +248,44 @@ in float vHalo;
 in float vU;
 in float vDash;
 in float vTrail;
+in float vSpread;
+in float vSeed;
+in float vPacket;
+uniform float uPixelRatio;
 out vec4 outColor;
 
 void main() {
   if (vAlpha <= 0.001) discard;
-  float d = abs(vAcross) * vHalf;
-  float core = 1.0 - smoothstep(vCore - 0.5, vCore + 0.75, d);
-  float glow = exp(-(d * d) / (vHalo * vHalo)) * 0.42;
-  float light = core + glow;
+  float across = vAcross * vHalf;
+  float d = abs(across);
+  float light;
+  float white;
+  if (vPacket > 0.5) {
+    // Packets: a hot core with a glow.
+    float core = 1.0 - smoothstep(vCore - 0.5, vCore + 0.75, d);
+    light = core + exp(-(d * d) / (vHalo * vHalo)) * 0.42;
+    white = core * 0.35;
+  } else {
+    // Links: fine fibres that meet at both ends and fan out in between.
+    float belly = sin(3.14159265 * clamp(vU, 0.0, 1.0));
+    float width = 0.6 * uPixelRatio;
+    float fibres = 0.0;
+    for (int k = 0; k < 5; k++) {
+      float lane = float(k) * 0.5 - 1.0;
+      float jitter = fract(sin((vSeed * 13.0 + float(k)) * 78.233) * 43758.5453) - 0.5;
+      float offset = (lane * 0.85 + jitter * 0.4) * vSpread * belly;
+      fibres += 1.0 - smoothstep(width * 0.4, width * 1.7, abs(across - offset));
+    }
+    light = fibres * 0.4 + exp(-(d * d) / (vHalo * vHalo)) * 0.08;
+    white = 0.08;
+  }
   if (vDash > 0.0) {
     float f = fract(vU * vDash);
     float w = max(fwidth(vU * vDash), 0.0001);
     light *= smoothstep(0.0, w, f) * (1.0 - smoothstep(0.55 - w, 0.55 + w, f));
   }
   light *= vTrail * vTrail;
-  // Hot white core, colored glow.
-  vec3 color = mix(vColor, vec3(1.0), core * 0.35) * light * vAlpha;
+  vec3 color = mix(vColor, vec3(1.0), white) * light * vAlpha;
   outColor = vec4(color, 0.0);
 }
 `;
@@ -352,15 +384,13 @@ float fill(float d) {
   return 1.0 - smoothstep(-0.5, 0.8, d * vPx);
 }
 
-// A small sphere lit from the upper left, with a specular glint and a rim.
-vec3 orb(vec2 uv, vec3 base) {
+// A soft star with four thin rays, like the stars of the canvas and SVG illustrations.
+vec3 star(vec2 uv, vec3 base) {
   float r2 = dot(uv, uv);
-  vec3 n = vec3(uv, sqrt(max(0.0, 1.0 - r2)));
-  vec3 light = normalize(vec3(-0.5, 0.62, 0.6));
-  float diffuse = max(dot(n, light), 0.0);
-  float glint = pow(max(dot(reflect(-light, n), vec3(0.0, 0.0, 1.0)), 0.0), 16.0);
-  float rim = pow(1.0 - n.z, 2.2);
-  return base * (0.22 + 0.95 * diffuse) + vec3(1.0, 0.96, 1.0) * glint * 0.75 + mix(base, vec3(1.0), 0.4) * rim * 0.55;
+  float core = exp(-r2 * 6.0);
+  float halo = exp(-r2 * 0.9) * 0.5;
+  float rays = exp(-abs(uv.y) * 10.0) * exp(-abs(uv.x) * 0.85) + exp(-abs(uv.x) * 10.0) * exp(-abs(uv.y) * 0.85);
+  return base * halo + mix(base, vec3(1.0), 0.7) * (core * 1.2 + rays * 0.45);
 }
 
 float hexagon(vec2 p) {
@@ -379,28 +409,21 @@ void main() {
   float halo = exp(-r * r * 0.5);
 
   if (vRole == ${role("validator")} || vRole == ${role("city")} || vRole == ${role("leaf")}) {
-    cover = fill(r - 1.0);
-    color = orb(uv, base) * cover;
-    float ring = vRole == ${role("validator")} ? stroke(r - 1.85, 1.0) * 0.4 : 0.0;
-    glow = base * (halo * (vRole == ${role("leaf")} ? 0.75 : 0.42) + ring);
+    glow = star(uv, base) * (vRole == ${role("leaf")} ? 0.85 : 1.0);
   } else if (vRole == ${role("hub")}) {
-    cover = fill(r - 1.0);
-    color = orb(uv, base) * cover;
-    glow = base * (halo * 0.5 + stroke(r - 1.65, 1.2) * 0.75 + stroke(r - 2.35, 1.0) * 0.35);
+    glow = star(uv * 0.8, base) * 1.2 + base * stroke(r - 2.1, 1.0) * 0.35;
   } else if (vRole == ${role("endpoint")}) {
-    float core = r / 0.7;
-    cover = fill((core - 1.0) * 0.7);
-    color = orb(uv / 0.7, base) * cover;
+    // An outlined hexagon around a small star.
     float hex = hexagon(uv);
-    glow = base * (halo * 0.45 + stroke(hex - 1.55, 1.4) * 0.95) + vec3(1.0) * stroke(hex - 1.55, 0.6) * 0.25;
-    cover = max(cover, fill(hex - 1.55) * 0.55);
-    color += vec3(0.03, 0.025, 0.06) * (1.0 - fill(r / 0.7 - 1.0)) * fill(hex - 1.55) * 0.55;
+    cover = fill(hex - 1.55) * 0.6;
+    color = vec3(0.03, 0.025, 0.06) * cover;
+    glow = star(uv * 1.4, base) * 0.7 + base * stroke(hex - 1.55, 1.3) * 0.95;
   } else if (vRole == ${role("verifier")}) {
+    // An outlined diamond around a small star.
     float diamond = (abs(uv.x) + abs(uv.y)) / 1.2;
-    cover = fill((diamond - 1.0) * 1.2);
-    float shade = 0.55 + 0.45 * clamp(0.5 - uv.x * 0.35 + uv.y * 0.45, 0.0, 1.0);
-    color = mix(base, vec3(1.0), 0.25) * shade * cover;
-    glow = base * (halo * 0.55 + stroke((diamond - 1.75) * 1.2, 1.2) * 0.85);
+    cover = fill((diamond - 1.2) * 1.2) * 0.6;
+    color = vec3(0.03, 0.025, 0.06) * cover;
+    glow = star(uv * 1.4, base) * 0.6 + base * stroke((diamond - 1.2) * 1.2, 1.3) * 0.95;
   } else if (vRole == ${role("custodian")}) {
     float box = max(abs(uv.x), abs(uv.y));
     cover = fill(box - 1.0) * 0.8;

@@ -31,7 +31,7 @@
     "typescript": "^5"
   },
   "packageManager": "pnpm@12.9.1",
-  "description": "Project website prototype for CLPR, the Cross Ledger Protocol (an LF Decentralized Trust Lab).",
+  "description": "Website of CLPR, the Cross Ledger Protocol (an LF Decentralized Trust Lab).",
   "license": "Apache-2.0",
   "engines": {
     "node": ">=20"

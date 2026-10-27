@@ -2,14 +2,15 @@
 
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 
+import { StoryStage } from "@/components/StoryStage";
 import { story } from "@/content/site";
 import { cn } from "@/lib/utils";
 
 /*
  * Scroll story, Apple style: the section is four screens tall and its stage
- * stays pinned while the visitor scrolls. The WebGL background reads the same
- * progress (data-scene="story") and turns the spiral into two ledgers, opens a
- * Channel and sends proofs across, in step with the chapters here.
+ * stays pinned while the visitor scrolls. StoryStage reads the same progress
+ * and draws the two ledgers, opens the Channel between them and sends proofs
+ * across, in step with the chapters here.
  *
  * Progress → phase:  0–0.3 statement · 0.3–0.54 ledgers · 0.54–0.76 Channel · 0.76–1 proofs
  */
@@ -72,6 +73,8 @@ export function Story() {
       style={{ "--words": words.length } as CSSProperties}
     >
       <div className="sticky top-0 h-svh overflow-hidden">
+        <StoryStage />
+
         <h2 id="story-title" className="sr-only">
           {story.label}
         </h2>
@@ -90,7 +93,7 @@ export function Story() {
           </p>
         </div>
 
-        {/* Labels under the two ledgers drawn by the background. */}
+        {/* Labels under the two ledgers. */}
         {[
           { ledger: story.ledgerA, prefix: "ledger-a", tone: "bg-signal-glow" },
           { ledger: story.ledgerB, prefix: "ledger-b", tone: "bg-proof-glow" },

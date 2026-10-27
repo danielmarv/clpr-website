@@ -1,9 +1,7 @@
-# CLPR website prototype
+# CLPR website
 
-Project website prototype for **CLPR** (“Clipper”), the bridgeless Cross Ledger Protocol, an
+The website of **CLPR** (“Clipper”), the bridgeless Cross Ledger Protocol, an
 [LF Decentralized Trust](https://www.lfdecentralizedtrust.org/) Lab.
-
-> Prototype only. This is not yet an official CLPR property. See [Before launch](#before-launch).
 
 ## Stack
 
@@ -38,15 +36,23 @@ src/
   components/
     ProtocolField.tsx  WebGL2 background: the aurora, the particles (3D spiral, ledger
                        state, dust) and the scroll logic, driven by data-scene sections
-    networkLayer.ts    Draws the networks on top: glowing links, shaded nodes, traffic
+    networkLayer.ts    Draws the networks on top: fibre-bundle links, star nodes, traffic
     sceneGraphs.ts     The networks themselves: nodes, links and packets per scene
     sceneForms.ts      The particle side of each section illustration (data-form)
     sceneMotion.ts     Camera, palette and per-illustration motion shared by both layers
     worldLand.ts       Natural Earth land mask (1°, run-length encoded) for the globe
+    HeroMesh.tsx       Hero illustration: ledgers joined directly by Channels (2D canvas)
+    SpiralRibbon.tsx   Closing illustration: the CLPR spiral as a twisting ribbon of light (2D canvas)
     Story.tsx          Pinned scroll story: statement, two ledgers, one Channel, proofs
-    Guarantees.tsx     Protocol properties with small diagrams
-    ChannelDemo.tsx    Interactive 7-step walkthrough of a message crossing a Channel
+    StoryStage.tsx     The story's illustration: two ledgers, the Channel and the traffic (2D canvas)
+    fibres.ts          Shared canvas helpers: fibre bundles, partial polylines, the star sprite
+    Guarantees.tsx     Protocol properties as a bento grid of small diagrams
+    PropertyArt.tsx    Those diagrams: looping SVG in the fibre language, motion in CSS
+    ComponentArt.tsx   Chain-agnostic: the Service, Endpoints and Verifier Contracts as small diagrams
+    MessageJourney.tsx Interactive 7-step walkthrough of a message crossing a Channel
+    fibreSvg.tsx       Shared SVG pieces for the diagrams: fibre bundles, stars, membranes, hexagons
     Comparison.tsx     Bridge vs. CLPR, switchable by aspect
+    ComparisonArt.tsx  Its two diagrams per aspect: a bridge in the middle vs. a direct Channel
     Layers.tsx         Protocol layers as an interactive CSS 3D stack
     Glossary.tsx       Term explorer: search, categories, cross-linked definitions
     ClprMark.tsx       The CLPR spiral logo (also the source shape for the particles)
@@ -73,30 +79,76 @@ Version 2 is dark first. Layout, spacing and type follow linear.app; the scroll 
 Apple product pages; the interactive particle logo follows lusion.co. The brand colors still come
 from the CLPR presentation on [hashgraph.com/clpr](https://hashgraph.com/clpr/).
 
-- **Story of the page.** Hero (the spiral assembles) → pinned story (the spiral becomes two
-  ledgers, a Channel opens, proofs cross) → guarantees → walkthrough → why bridgeless →
+- **Story of the page.** Hero (a network of ledgers draws itself) → pinned story (two ledgers
+  form, a Channel opens, proofs cross) → guarantees → walkthrough → why bridgeless →
   architecture → chain-agnostic → code → roadmap → terminology → get involved → closing call to
-  action (the spiral gathers again).
+  action (the CLPR spiral as a ribbon of light).
 - **Background.** `ProtocolField` is one fixed WebGL2 canvas behind all content: an aurora
   shader, 9,000 (mobile) to 20,000 particles, and a network layer (`networkLayer.ts`) that
-  draws real network topology on top: links as continuous anti-aliased lines with a glow,
-  nodes as small shaded objects whose shape says what they are (validator orb, Endpoint
-  hexagon, Verifier diamond, custodian square, commit ring), and packets that travel the links
-  with light trails. Sections opt in with `data-scene="hero" | "story" | "outro"`. The pointer
+  draws real network topology on top: links as bundles of fine fibres that meet at both ends
+  and fan out in between, nodes as glyphs whose shape says what they are (validator star,
+  Endpoint hexagon, Verifier diamond, custodian square, commit ring), and packets that travel
+  the links with light trails. The fibres and the soft four-ray stars match the canvas and
+  SVG illustrations. Sections opt in with `data-scene="hero" | "story" | "outro"`. The pointer
   tilts the scene, pushes particles aside and lights up the links and nodes under it. The
   ledger positions are published as CSS variables (`--ledger-a-x` …) so the story can label
   them. No 3D library is used; all motion runs in the vertex shaders.
-- **The story as a network.** In the hero a ring of validators orbits the spiral. In the story
-  each ledger becomes a mesh of validators gossiping, with its Endpoint on the surface facing
-  the other ledger. The Channel opens as a two-lane link between the Endpoints; bundles of
-  three messages cross it, then (state proofs chapter) each bundle carries a proof ring,
-  Ledger B's Verifier ripples as it checks it and the verified state spreads through B.
-- **Section illustrations.** Below the story, each section gets its own network
+- **Hero illustration.** `HeroMesh` draws a network of 25 ledgers (stars) joined directly by
+  Channels (bundles of fine fibres) on a 2D canvas, in the warm end of the brand range: amber at
+  the core, coral, then pink at the rim. No ledger sits in the middle; the light at the core is
+  only where the five Channels between the inner ledgers cross. On load the ledgers appear and
+  the Channels open from the core outwards. Then a message (violet) crosses a Channel now and
+  then, the receiving ledger flares and rings in proof magenta, and the response travels back.
+  The drawing tilts slightly towards the pointer and pauses off screen.
+- **Closing illustration.** `SpiralRibbon` draws the CLPR mark as a twisting ribbon: 72 fibres
+  around a flattened tube that follows the mark's centerline at its stroke width and turns 2.6
+  times on the way, so the band pinches and fans. Fibres facing the viewer are warm, the ones
+  behind violet, with beads of light along them. The ribbon draws itself from the tail into the
+  coil when the closing section comes into view (only the newly revealed stretch is drawn each
+  frame); then messages travel along it one after the other, in order.
+- **Scenes with their own art.** An illustration marked `data-scene-art` inside the hero, the story
+  or the closing section tells `ProtocolField` to hide its particle version of that scene
+  (the spiral, or the two ledgers and their Channel). The 404 page
+  has none, so it still shows the particle spiral.
+- **Protocol properties.** A bento grid: the ordered chain gets a wide tile, the race against
+  a bridge a full-width timeline. Each property has its own small looping diagram
+  (`PropertyArt`, plain SVG rendered on the server) in the fibre language and the site's color
+  meanings: a running-hash chain that is computed link by link and then shows a changed
+  message in every hash after it; one message and exactly one response; a Channel running
+  straight through an empty zero; a proof delivered by whoever is around while the Endpoint is
+  offline; different payloads on one Channel; a bridge message waiting at every hop while the
+  CLPR message arrives first. Motion is CSS (`prop-*` in `globals.css`) along `offset-path`, and
+  only runs without `prefers-reduced-motion`; otherwise every part rests at a telling point. The
+  wide diagrams have a shorter variant on phones.
+- **How it works.** `MessageJourney` draws both ledgers as membranes with the seven stops on one
+  route (Application → CLPR Service with its queue → Endpoint, the Channel, then Endpoint →
+  Verifier Contract → Service → Application). Three queued messages ride the route as the steps
+  change (CSS `offset-path`, transitions on `offset-distance`): they gather into a bundle with a
+  dashed proof ring, cross, the ring turns solid at the Verifier, they are delivered in order and
+  three responses travel back. A seven-point timeline with play, pause and arrow keys drives
+  it; on phones the same route runs top to bottom.
+- **Why bridgeless.** Two panels, the same two ledgers in each: joined through a bridge in the
+  middle (muted grey) and directly by a CLPR Channel. Each aspect has its own pair of diagrams
+  (`ComparisonArt`) on the same clock: validators in the middle vs. a proof checked by B's
+  Verifier; assets pooling in the bridge (a red target ring) vs. nothing held; a dead operator
+  vs. anyone delivering the proof; a stop for the bridge's own confirmations vs. straight to B;
+  tokens only vs. any payload.
+- **Header.** The nav sits exactly in the middle of the bar and a marker slides to the section
+  being read (`aria-current`). From `xl` the brand reads "CLPR | Cross Ledger Protocol". The
+  mobile menu fills the screen, locks scrolling and closes on Escape.
+- **The story as a network.** `StoryStage` draws the story on a 2D canvas in the same fibre
+  language as the hero. Each ledger is a circle holding its own network of validators (stars
+  joined by fibre bundles) with its own heartbeat, and an Endpoint (hexagon) on the side facing
+  the other ledger; Ledger B also holds its Verifier Contract (diamond). As the visitor
+  scrolls, the ledgers appear, the Channel opens from Endpoint A to Endpoint B as a twisted
+  ribbon, and messages queue on Ledger A, linked by a running-hash line, and cross in bundles
+  of three; each message gets one response back. In the state proofs chapter every bundle
+  carries a magenta proof ring, B's Verifier lights up and the verified state spreads through
+  B's validators. Scroll decides what is shown; time only moves the traffic. The ledgers sit
+  where `ProtocolField` publishes them (`--ledger-a-x` …), so the aurora glows behind them.
+- **Section illustrations.** From Architecture on, each section gets its own network
   (`data-form`, defined in `sceneGraphs.ts`; the particles in `sceneForms.ts` add dust, block
-  state, the floor grid and the land): a running-hash chain of blocks attested by a validator
-  quorum (guarantees), the seven stops of one message and its response (how it works), a hub
-  of custodians that crumbles while the direct proof link stays (why bridgeless), a
-  triangulated mesh floor under the layer stack (architecture), validators in real cities on a
+  state, the floor grid and the land): a triangulated mesh floor under the layer stack (architecture), validators in real cities on a
   dot-matrix Earth with Channels between four ledgers (chain-agnostic), a git history with
   contributors pushing commits (code), the network growing through the roadmap phases, live
   up to the current one and planned after it (roadmap), the glossary as a knowledge graph that
@@ -107,8 +159,8 @@ from the CLPR presentation on [hashgraph.com/clpr](https://hashgraph.com/clpr/).
   them.
 - **Color.** Near-black ink `#07060d`, hairline white borders, white text fading to lavender in
   headlines (`text-headline`). Violet `#9d8bff` marks messages in transit; magenta `#f27fbd` is
-  reserved for state proofs and verification; the full spiral gradient (`text-brand`) is used
-  for one phrase in the hero only.
+  reserved for state proofs and verification. The hero illustration carries the warm end of the
+  range; headlines stay in `text-headline`.
 - **Type.** Albert Sans as a free stand-in for Styrene A, medium weight with tight tracking for
   headlines. IBM Plex Mono only for real code, indices and hashes. If a Styrene A web license is
   available, swap the font in `src/app/layout.tsx`.

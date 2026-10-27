@@ -19,7 +19,8 @@ export default function HomePage() {
     <SiteMotion>
       <ProtocolField />
       <SiteHeader />
-      <main id="main" className="relative z-10">
+      {/* Decorative glows may reach past the edge; clip (unlike hidden) keeps the pinned story working. */}
+      <main id="main" className="relative z-10 overflow-x-clip">
         <Hero />
         <Story />
         <Guarantees />

@@ -2,6 +2,7 @@ import { ArrowRight, ArrowUpRight, Code2, FileText, Network, type LucideIcon } f
 
 import { GitHubMark } from "@/components/GitHubMark";
 import { SectionHeading } from "@/components/SectionHeading";
+import { SpiralRibbon } from "@/components/SpiralRibbon";
 import { Button } from "@/components/ui/button";
 import { involvement, origins } from "@/content/site";
 
@@ -32,14 +33,9 @@ export function GetInvolved() {
                   data-spotlight
                   className="panel group flex h-full flex-col p-6 transition-transform duration-300 hover:-translate-y-0.5 sm:p-7"
                 >
-                  <div className="flex items-center justify-between">
-                    <span className="flex size-10 items-center justify-center rounded-xl border border-white/10 bg-linear-to-b from-white/8 to-white/2 text-white">
-                      <Icon className="size-[1.125rem]" strokeWidth={1.75} aria-hidden="true" />
-                    </span>
-                    <span className="font-mono text-[0.75rem] text-faint" aria-hidden="true">
-                      {String(index + 1).padStart(2, "0")}
-                    </span>
-                  </div>
+                  <span className="flex size-10 items-center justify-center rounded-xl border border-white/10 bg-linear-to-b from-white/8 to-white/2 text-white">
+                    <Icon className="size-[1.125rem]" strokeWidth={1.75} aria-hidden="true" />
+                  </span>
                   <h3 className="mt-8 text-[1.25rem] font-medium tracking-[-0.015em]">{path.name}</h3>
                   <p className="mt-2 flex-1 text-[0.9375rem] leading-relaxed text-muted-foreground">{path.body}</p>
                   <span className="mt-8 inline-flex items-center gap-2 text-[0.9375rem] font-medium text-white">
@@ -57,13 +53,14 @@ export function GetInvolved() {
         </p>
       </section>
 
-      {/* Closing call to action. The background gathers the CLPR spiral again beside it. */}
+      {/* Closing call to action, beside the CLPR spiral drawn as a ribbon of light. */}
       <section
         data-scene="outro"
         aria-labelledby="closing-title"
-        className="shell flex min-h-[92svh] items-end pb-20 pt-[46svh] lg:items-center lg:pb-24 lg:pt-24"
+        className="shell grid min-h-[92svh] content-center items-center gap-8 pb-20 pt-16 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:gap-6 lg:pb-24 lg:pt-24"
       >
-        <div data-motion-reveal className="max-w-xl lg:max-w-[46%]">
+        <SpiralRibbon className="mx-auto aspect-3/2 w-full max-w-[34rem] lg:order-2 lg:mx-0 lg:max-w-none lg:justify-self-end" />
+        <div data-motion-reveal className="max-w-xl">
           <h2
             id="closing-title"
             className="text-headline text-[clamp(2.5rem,5.6vw,4.5rem)] font-medium leading-[1.04] tracking-[-0.045em] text-balance"

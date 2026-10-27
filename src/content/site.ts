@@ -33,12 +33,8 @@ export const nav = [
 export const headerCta = { label: "Get involved", href: "#get-involved" } as const;
 
 export const hero = {
-  labBadge: "An LF Decentralized Trust Lab",
-  labPrefix: "A Lab of",
-  pill: { badge: "Lab", label: "Hosted by LF Decentralized Trust", cta: "Read the proposal", href: links.labProposal },
   eyebrow: "Bridgeless cross-ledger messaging",
   title: "Cross-ledger messaging with nothing in between.",
-  titleHighlight: "nothing in between.",
   lead:
     "CLPR (“Clipper”) is an open Cross Ledger PRotocol for reliable, asynchronous, in-order message passing between independent ledger networks. Trust comes from each ledger’s own state proofs, not from bridges, pooled liquidity or intermediary validator networks.",
   primaryCta: { label: "Read the specification", href: links.spec },
@@ -120,6 +116,13 @@ export const guarantees = {
       visual: "speed",
     },
   ],
+  // Labels inside the small diagrams.
+  art: {
+    offline: "Endpoint offline",
+    anyone: "Anyone can deliver",
+    bridge: "Bridge",
+    clpr: "CLPR",
+  },
 } as const;
 
 /* ------------------------------------------------------------------------ */
@@ -190,8 +193,8 @@ export const demo = {
     next: "Next step",
     play: "Play walkthrough",
     pause: "Pause walkthrough",
-    stepPrefix: "Step",
-    of: "of",
+    steps: "Walkthrough steps",
+    position: "Step {step} of {total}",
     keyboardHint: "Use ← and → to step through",
   },
   legend: {
@@ -273,7 +276,7 @@ export const demo = {
 };
 
 export const origins = {
-  label: "Contributed by Hashgraph · Built natively into Hiero · Stewarded by LF Decentralized Trust",
+  label: "Contributed by Hashgraph, built natively into Hiero and stewarded by LF Decentralized Trust.",
   text: "Contributed by Hashgraph on behalf of the Hedera Governing Council, building on Dr. Leemon Baird’s approach to cross-ledger communication. Hiero is building the first native implementation.",
   logos: [
     // Heights are tuned per logo so the marks read at a similar optical size.
@@ -300,7 +303,7 @@ export const comparison = {
     bridge: {
       caption: "A third party sits between the chains and holds the keys and the assets.",
       middle: "Bridge",
-      middleNote: "Validators · pooled assets",
+      middleNote: "Validators and pooled assets",
     },
     clpr: {
       caption: "Each ledger checks the other’s state proofs itself. Nothing sits in between.",
@@ -308,30 +311,47 @@ export const comparison = {
     },
     ledgerA: "Ledger A",
     ledgerB: "Ledger B",
+    // Labels inside the diagrams that change with the aspect.
+    labels: {
+      pooled: "Pooled assets",
+      nothingHeld: "Nothing held",
+      operatorOffline: "Operator offline",
+      endpointOffline: "Endpoint offline",
+      anyone: "Anyone can deliver",
+      waiting: "Own confirmation rounds",
+      direct: "Straight to Ledger B",
+      tokens: "Tokens only",
+      anyPayload: "Data, feeds, calls, assets",
+    },
   },
   rows: [
     {
       aspect: "Where trust lives",
+      visual: "trust",
       bridge: "In a separate validator set, multisig or relayer network",
       clpr: "In the two ledgers, through state proofs checked by Verifier Contracts",
     },
     {
       aspect: "Custody",
+      visual: "custody",
       bridge: "Assets pooled in contracts that become a target",
       clpr: "Endpoints hold zero custody at any point",
     },
     {
       aspect: "When something goes offline",
+      visual: "offline",
       bridge: "Transfers depend on the operator coming back",
       clpr: "Anyone, including the sender, can resume by submitting the proof",
     },
     {
       aspect: "Speed",
+      visual: "speed",
       bridge: "Adds the bridge’s own confirmation rounds",
       clpr: "Bounded by how fast the two networks reach consensus",
     },
     {
       aspect: "What moves",
+      visual: "payload",
       bridge: "Mostly tokens",
       clpr: "Any payload: data, oracle feeds, contract calls and asset transfers built by applications",
     },
@@ -410,6 +430,16 @@ export const extensibility = {
   ],
   footnote:
     "Once both ledgers implement CLPR natively, their validators become the Endpoints and no separate infrastructure is needed.",
+  // Labels inside the small diagrams.
+  art: {
+    queue: "Ordered queue",
+    applications: "Applications",
+    bundles: "Bundle sync",
+    anchor: "Trust-anchor updates",
+    proof: "State proof",
+    trustAnchor: "Trust anchor",
+    local: "Local format",
+  },
 } as const;
 
 /* ------------------------------------------------------------------------ */
@@ -650,11 +680,11 @@ export const footer = {
   // Placeholder legal line. Replace with the official LFDT lab footer text before launch.
   legal:
     "© {year} CLPR contributors. Code is licensed under Apache-2.0; the specification under the Community Specification License 1.0. LF Decentralized Trust is a project of The Linux Foundation.",
-  prototypeNote: "Website prototype, not yet an official CLPR property.",
 } as const;
 
 export const site = {
   name: "CLPR",
+  expansion: "Cross Ledger Protocol",
   fullName: "CLPR — Cross Ledger Protocol",
   description:
     "CLPR (“Clipper”) is an open, bridgeless Cross Ledger Protocol for reliable, in-order message passing between independent ledger networks. An LF Decentralized Trust Lab.",
