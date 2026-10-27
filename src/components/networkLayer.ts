@@ -1,18 +1,6 @@
 /*
- * The network layer of the WebGL background: draws the graphs of
- * sceneGraphs.ts on top of the particles of ProtocolField.
- *
- *   strokes  every link as a bundle of fine fibres that meet at both ends and
- *            fan out in between, split into segments where it curves; packets
- *            leave bright light trails
- *   glyphs   every node as a glyph whose shape says what it is (validator
- *            star, Endpoint hexagon, Verifier diamond, custodian square, commit
- *            ring …), plus packets, proof rings and ripples. The fibres and the
- *            soft four-ray stars match the canvas and SVG illustrations.
- *
- * Both are instanced quads; all motion happens in the vertex shaders, so the
- * buffers never change after start-up. A scene builds itself as it fades in:
- * links grow from one end, nodes pop up, traffic starts once a link is whole.
+ * Draws the sceneGraphs.ts graphs over ProtocolField's particles as instanced quads.
+ * All motion happens in the vertex shaders, so the buffers never change after start-up.
  */
 
 import { SCENE_GLSL } from "@/components/sceneMotion";
@@ -205,7 +193,6 @@ void main() {
   vec2 normal = vec2(-dir.y, dir.x);
   float end = aCorner.x;
 
-  // Links light up under the pointer, and around the focused node.
   vec2 middle = mix(s0.xy, s1.xy, 0.5);
   float reach = 150.0 * uPixelRatio;
   float hover = uHover * exp(-pow(distance(middle, pointerPixels()) / reach, 2.0));
@@ -261,12 +248,10 @@ void main() {
   float light;
   float white;
   if (vPacket > 0.5) {
-    // Packets: a hot core with a glow.
     float core = 1.0 - smoothstep(vCore - 0.5, vCore + 0.75, d);
     light = core + exp(-(d * d) / (vHalo * vHalo)) * 0.42;
     white = core * 0.35;
   } else {
-    // Links: fine fibres that meet at both ends and fan out in between.
     float belly = sin(3.14159265 * clamp(vU, 0.0, 1.0));
     float width = 0.6 * uPixelRatio;
     float fibres = 0.0;
@@ -384,7 +369,7 @@ float fill(float d) {
   return 1.0 - smoothstep(-0.5, 0.8, d * vPx);
 }
 
-// A soft star with four thin rays, like the stars of the canvas and SVG illustrations.
+// A soft star with four thin rays.
 vec3 star(vec2 uv, vec3 base) {
   float r2 = dot(uv, uv);
   float core = exp(-r2 * 6.0);
@@ -413,13 +398,11 @@ void main() {
   } else if (vRole == ${role("hub")}) {
     glow = star(uv * 0.8, base) * 1.2 + base * stroke(r - 2.1, 1.0) * 0.35;
   } else if (vRole == ${role("endpoint")}) {
-    // An outlined hexagon around a small star.
     float hex = hexagon(uv);
     cover = fill(hex - 1.55) * 0.6;
     color = vec3(0.03, 0.025, 0.06) * cover;
     glow = star(uv * 1.4, base) * 0.7 + base * stroke(hex - 1.55, 1.3) * 0.95;
   } else if (vRole == ${role("verifier")}) {
-    // An outlined diamond around a small star.
     float diamond = (abs(uv.x) + abs(uv.y)) / 1.2;
     cover = fill((diamond - 1.2) * 1.2) * 0.6;
     color = vec3(0.03, 0.025, 0.06) * cover;
@@ -438,18 +421,15 @@ void main() {
     glow = mix(base, vec3(1.0), 0.6 * core) * (core * 1.4 + halo * 0.9);
   } else if (vRole == ${role("proof")}) {
     float ring = stroke(r - 1.0, 1.5);
-    // Four ticks, like the corners of a seal.
     float ticks = stroke(r - 1.32, 1.2) * step(0.82, abs(cos(atan(uv.y, uv.x) * 2.0)));
     glow = base * (ring * 1.2 + ticks * 0.8 + exp(-pow((r - 1.0) * 3.0, 2.0)) * 0.35);
   } else if (vRole == ${role("atmosphere")}) {
-    // Rim light of the globe and a thin haze around it.
     float rim = exp(-pow((r - 1.0) * vPx / (6.0 * uPixelRatio), 2.0));
     float inner = smoothstep(0.55, 1.0, r) * step(r, 1.0) * pow(r, 6.0);
     float outer = step(1.0, r) * exp(-(r - 1.0) * 9.0);
     glow = base * (rim * 0.32 + inner * 0.14 + outer * 0.22);
   }
 
-  // Ripples: arrivals, verification, pings, new members.
   if (vPulse >= 0.0) {
     float start = vRole == ${role("ripple")} ? 0.6 : 1.2;
     float radius = start + vPulse * 2.6;
@@ -603,7 +583,6 @@ export function createNetworkLayer(gl: WebGL2RenderingContext, scenes: Map<numbe
   };
 
   return {
-    /** Values shared by every scene drawn this frame. */
     frame(frame: NetworkFrame) {
       each((at) => {
         gl.uniform1f(at("uTime"), frame.time);

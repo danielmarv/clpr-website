@@ -2,14 +2,7 @@ import type { ReactNode } from "react";
 
 import { Bundle, Endpoint, fibre, Glows, LaneGradient, Mover, Pulse, Star, TONES } from "@/components/fibreSvg";
 
-/*
- * What lives on each plate of the architecture stack, drawn flat on the plate
- * so it tilts with it: two applications exchanging a message and its response
- * (Application), a Connector and the Service routing to applications (Payment &
- * routing), the running-hash queue with one bundle's proof ring (Messaging), and
- * two Endpoints joined by a Channel with the Verifier and its trust anchor
- * (Network). Same fibre language and `prop-*` motion as the other diagrams.
- */
+// What lives on each plate of the architecture stack, drawn flat so it tilts with the plate.
 
 const WIDTH = 280;
 const HEIGHT = 200;
@@ -60,7 +53,6 @@ function RoutingPlate() {
       {apps.map((app, k) => (
         <Bundle key={k} from={{ x: service.x + 12, y: service.y }} to={app} bow={(k - 1) * -0.06} strands={4} spread={0.05} opacity={0.4} seed={4 + k} />
       ))}
-      {/* The Connector pays for the message's execution. */}
       <g transform={`translate(${connector.x} ${connector.y})`}>
         <circle r={10} fill="#0b0a13" stroke={TONES.warm} strokeWidth={1.6} />
         <circle r={3.5} fill={TONES.warm} />
@@ -81,7 +73,6 @@ function MessagingPlate() {
   const beads = Array.from({ length: 5 }, (_, k) => ({ x: 44 + k * 48, y: 100 }));
   return (
     <Plate id={id}>
-      {/* The running-hash chain: each message linked to the one before. */}
       {beads.slice(1).map((bead, k) => (
         <Bundle key={k} from={{ x: beads[k].x + 9, y: bead.y }} to={{ x: bead.x - 9, y: bead.y }} strands={5} spread={0.12} bow={k % 2 ? 0.06 : -0.06} seed={10 + k} />
       ))}
@@ -90,7 +81,6 @@ function MessagingPlate() {
           <Star id={id} tone="violet" r={13} />
         </Pulse>
       ))}
-      {/* One bundle, one state proof. */}
       <rect x={beads[1].x - 20} y={72} width={beads[3].x - beads[1].x + 40} height={56} rx={28} stroke={TONES.pink} strokeWidth={1.4} strokeDasharray="4 4" />
     </Plate>
   );

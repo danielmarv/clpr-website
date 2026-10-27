@@ -16,10 +16,6 @@ function Hexagon({ tone }: { tone: string }) {
   );
 }
 
-/**
- * The footer's top edge as a Channel: two Endpoints joined by a twisted bundle
- * of fibres, a message crossing one way and its response the other.
- */
 function ChannelEdge() {
   return (
     <div aria-hidden="true" className="shell pointer-events-none absolute inset-x-0 top-0 -translate-y-1/2">
@@ -127,7 +123,6 @@ export function SiteFooter() {
           </nav>
         </div>
 
-        {/* Who is behind CLPR: the same three roles as in the hero, with their marks. */}
         <section
           aria-label={backing.label}
           className="mt-14 grid gap-6 border-t border-white/7 pt-8 sm:grid-cols-3 lg:mt-16"
@@ -159,7 +154,6 @@ export function SiteFooter() {
         </section>
       </div>
 
-      {/* The wordmark lights up in the spiral's colors where the pointer is. */}
       <div className="shell relative mt-14 lg:mt-16" aria-hidden="true">
         <p data-pointer-glow className="footer-wordmark">
           {footer.wordmark}

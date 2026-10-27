@@ -5,8 +5,6 @@ import { HeroMesh } from "@/components/HeroMesh";
 import { Button } from "@/components/ui/button";
 import { hero, links, origins } from "@/content/site";
 
-// The illustration is HeroMesh: ledgers joined directly by Channels. The WebGL
-// background (ProtocolField) reads `data-scene="hero"` to know where the hero is.
 export function Hero() {
   return (
     <section data-scene="hero" aria-labelledby="hero-title" className="relative flex min-h-svh flex-col overflow-x-clip">

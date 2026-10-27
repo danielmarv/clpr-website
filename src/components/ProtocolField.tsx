@@ -9,31 +9,15 @@ import { formGraph, heroGraph, storyGraph, type Graph } from "@/components/scene
 import { CAMERA_Z, FOCAL, SCENE_GLSL } from "@/components/sceneMotion";
 
 /*
- * The page background: one WebGL2 canvas behind all content.
- *
- * A field of particles and a network layer tell the CLPR story as the visitor scrolls:
- *   hero   → the particles fly in and assemble the CLPR spiral in 3D
- *   story  → the spiral dissolves into two ledgers, each a mesh of validators;
- *            a Channel opens between their Endpoints, bundles cross it and
- *            Ledger B's Verifier checks their state proofs
- *   rest   → each section gets its own network (`data-form`, see sceneGraphs.ts):
- *            a hash chain over a validator quorum, the route of one message,
- *            a bridge hub that crumbles, a mesh floor, validators in real
- *            cities on a globe, a git history, a contributor network
- *   outro  → the particles gather into the spiral again behind the closing call to action
- *
- * Sections opt in with `data-scene="hero" | "story" | "outro"`. A full-screen
- * shader paints the aurora behind the particles; networkLayer.ts draws the
- * nodes, links and traffic on top. The scene pauses while the tab is hidden,
- * holds still for visitors who prefer reduced motion, and falls back to a CSS
- * gradient (html.no-webgl) when WebGL2 is unavailable.
+ * The page background: aurora, particles and networkLayer.ts on one WebGL2 canvas.
+ * Sections opt in with `data-scene` and `data-form`; without WebGL2, html.no-webgl
+ * falls back to a CSS gradient.
  */
 
 // Bounding box of CLPR_SPIRAL_PATH and the approximate center of its coil.
 const LOGO_BOX = { x: 405, y: 356, width: 117.4, height: 77.7 };
 const LOGO_COIL = { x: 489, y: 382 };
 
-/** Brightness of each illustration's particles. */
 const FORM_GAIN: Record<FormName, number> = {
   chain: 1,
   route: 1,
@@ -100,11 +84,8 @@ float stagger(float value, float seed) {
   return s * s * (3.0 - 2.0 * s);
 }
 
-// Brightness per illustration, in the order of FORMS.
 const float FORM_GAIN[${FORMS.length}] = float[${FORMS.length}](${FORMS.map((name) => FORM_GAIN[name].toFixed(2)).join(", ")});
 
-// Where this particle sits in a section illustration. Particles that are not
-// part of the drawing stay in the star field.
 void sectionPoint(int form, vec4 place, vec3 field, vec3 fieldColor, float fieldAlpha, float fieldSize,
                   float t, float twinkle, out vec3 pos, out vec3 color, out float alpha, out float size) {
   ivec2 texel = ivec2(gl_VertexID % ${FORM_TEXTURE_WIDTH}, gl_VertexID / ${FORM_TEXTURE_WIDTH} + form * uRowsPerForm);
@@ -137,13 +118,11 @@ void main() {
   float t = uTime;
   float twinkle = 0.7 + 0.3 * sin(t * (0.8 + aRand.z * 2.2) + aRand.w * 6.28);
 
-  // ---- The spiral --------------------------------------------------------
   vec3 logo;
   vec3 logoColor;
   float logoAlpha;
   float logoSize;
   if (aLogo.w < 0.0) {
-    // A tilted orbit around the spiral gives the scene depth.
     float angle = aLogo.x + t * 0.12;
     float radius = aLogo.y;
     logo = vec3(cos(angle) * radius, aLogo.z, sin(angle) * radius);
@@ -163,7 +142,6 @@ void main() {
   logo = logo * uLogo.w + uLogo.xyz;
   logoAlpha *= uSpiral;
 
-  // ---- Two ledgers and the Channel ---------------------------------------
   vec3 ledger;
   vec3 ledgerColor;
   float ledgerAlpha;
@@ -173,16 +151,13 @@ void main() {
     float spin = t * (kind < 0.5 ? 0.16 : -0.13) + aRand.w * 0.02;
     ledger = rotY(aLedger.xyz, spin) * center.w + center.xyz;
     ledgerColor = kind < 0.5 ? palette(0.08 + aRand.x * 0.2) : palette(0.62 + aRand.x * 0.3);
-    // The shell and ring are the ledger's state; they step back behind its validators.
     ledgerAlpha = (length(aLedger.xyz) > 1.2 ? 0.3 : 0.5) * twinkle;
     if (kind > 0.5) {
-      // Ledger B lights up as proofs arrive and verify.
       float wave = pow(0.5 + 0.5 * sin(t * 2.4 - length(aLedger.xyz) * 5.0), 6.0);
       ledgerAlpha *= 1.0 + uProof * (0.35 + 1.2 * wave);
       ledgerColor = mix(ledgerColor, vec3(1.0, 0.42, 0.72), uProof * 0.5);
     }
   } else {
-    // Channel particles stream from Ledger A to B; a few responses travel back.
     vec3 a = uLedgerA.xyz;
     vec3 b = uLedgerB.xyz;
     vec3 dir = normalize(b - a);
@@ -201,7 +176,6 @@ void main() {
     ledgerColor = response ? palette(0.2) : mix(palette(0.1), palette(0.45), u);
     ledgerAlpha = mix(0.5, 0.6 * ends, open) * twinkle;
     ledgerSize = 2.2 + aRand.y * 1.2;
-    // Proof carriers: brighter magenta packets.
     if (aRand.y > 0.78) {
       float packet = pow(0.5 + 0.5 * sin(u * 18.0 - t * 1.5), 8.0);
       ledgerColor = mix(ledgerColor, vec3(1.0, 0.4, 0.7), uProof);
@@ -212,7 +186,6 @@ void main() {
 
   ledgerAlpha *= uLedgers;
 
-  // ---- The star field ----------------------------------------------------
   vec3 field = aField.xyz;
   float depth = clamp((field.z + 7.0) / 8.6, 0.0, 1.0);
   field.y = mod(field.y + uScroll * (0.18 + 0.5 * depth) + 5.0, 10.0) - 5.0;
@@ -222,7 +195,6 @@ void main() {
   float fieldAlpha = (0.12 + 0.3 * depth) * fieldVisible * twinkle;
   float fieldSize = aField.w;
 
-  // ---- Section illustrations ---------------------------------------------
   vec3 sectionA, sectionB, colorA, colorB;
   float alphaA, alphaB, sizeA, sizeB;
   sectionPoint(uFormA, uPlaceA, field, fieldColor, fieldAlpha, fieldSize, t, twinkle, sectionA, colorA, alphaA, sizeA);
@@ -233,7 +205,6 @@ void main() {
   float sectionAlpha = mix(alphaA, alphaB, sm);
   float sectionSize = mix(sizeA, sizeB, sm);
 
-  // ---- Blend the states ----------------------------------------------------
   vec3 pos;
   vec3 color;
   float alpha;
@@ -263,14 +234,12 @@ void main() {
     alpha = mix(alpha, logoAlpha, so);
     size = mix(size, logoSize, so);
 
-    // Intro: the particles gather out of the star field.
     float si = clamp(uIntro * 1.7 - aRand.x * 0.7, 0.0, 1.0);
     si = 1.0 - pow(1.0 - si, 3.0);
     pos = mix(aField.xyz, pos, si);
     alpha *= mix(0.35, 1.0, si);
   }
 
-  // Gentle parallax with the pointer.
   pos = rotX(rotY(pos, uRot.x * 0.12), -uRot.y * 0.08);
 
   float z = CAMERA_Z - pos.z;
@@ -282,7 +251,6 @@ void main() {
   vec2 ndc = pos.xy * FOCAL / z;
   ndc.x /= uAspect;
 
-  // The pointer pushes nearby particles aside.
   vec2 away = (ndc - uMouse) * vec2(uAspect, 1.0);
   float reach = length(away);
   float push = uMouseForce * exp(-reach * reach * 22.0) * 0.07;
@@ -335,7 +303,7 @@ void main() {
   p.x *= uResolution.x / uResolution.y;
   float t = uTime * 0.05;
 
-  // A deep indigo base, lighter towards the top (#0f0c26 at the bottom, #1a1540 at the top).
+  // #0f0c26 at the bottom to #1a1540 at the top, as in the html.no-webgl fallback.
   vec3 color = mix(vec3(0.059, 0.047, 0.149), vec3(0.102, 0.082, 0.251), smoothstep(0.0, 1.0, uv.y));
   color += vec3(0.08, 0.05, 0.26) * smoothstep(1.7, 0.0, length(p - vec2(0.0, 1.35))) * 0.75;
   color += glow(p + 0.05 * vec2(sin(t * 3.0), cos(t * 2.0)), uGlowViolet, vec3(0.38, 0.22, 1.0));
@@ -360,11 +328,7 @@ type Layout = {
 /** One illustrated section: which drawing, where (world center and scale), and the tag it lights up. */
 type FormTarget = { form: number; place: Vec4; focus: number };
 
-
-/*
- * How large each drawing is, given the size of its slot in world units. The
- * drawings may overflow their slot a little; they are background.
- */
+/** Drawing scale for a slot of the given size in world units; drawings may overflow it a little. */
 const FORM_FIT: Record<FormName, (width: number, height: number, halfWidth: number) => number> = {
   chain: (w, h) => Math.min(w / 4.8, h / 2.3) * 1.35,
   route: (w, h) => Math.min(w / 4.6, h / 1.9) * 1.35,
@@ -461,7 +425,6 @@ function buildParticles(count: number) {
         let x = Math.cos(angle) * radius;
         let y = (random() - 0.5) * 0.04;
         let z = Math.sin(angle) * radius;
-        // Tilt the ring toward the camera.
         const tiltX = 0.42;
         [y, z] = [y * Math.cos(tiltX) - z * Math.sin(tiltX), y * Math.sin(tiltX) + z * Math.cos(tiltX)];
         const tiltZ = kind === KIND_A ? 0.35 : -0.35;
@@ -548,7 +511,6 @@ function formIndex(section: HTMLElement | undefined): number {
   return Math.max(0, FORMS.indexOf((section?.dataset.form ?? "") as FormName));
 }
 
-/** Scene targets from where the scene sections sit in the viewport. */
 function readScene(viewport: number) {
   // heroShift: how far (px) the hero has scrolled up.
   // outroShift: how far (px) the closing section's center sits below the viewport's center.
@@ -565,8 +527,7 @@ function readScene(viewport: number) {
     target.channel = smoothstep(0.46, 0.6, progress);
     target.proof = smoothstep(0.68, 0.82, progress);
   }
-  // Each illustration is drawn over its section's slot (data-form-slot) and
-  // takes over as that slot rises into the lower half of the screen.
+  // Each illustration takes over as its section's data-form-slot rises into the lower half of the screen.
   const width = window.innerWidth;
   const halfHeight = CAMERA_Z / FOCAL;
   const halfWidth = (width / viewport) * halfHeight;
@@ -615,7 +576,6 @@ export function ProtocolField() {
     const count = small ? 9000 : 20000;
     const particles = buildParticles(count);
 
-    // Particle buffers.
     const particleVao = gl.createVertexArray();
     gl.bindVertexArray(particleVao);
     const attributes = [
@@ -633,7 +593,6 @@ export function ProtocolField() {
       gl.vertexAttribPointer(location, 4, gl.FLOAT, false, 0, 0);
     }
 
-    // A single full-screen triangle for the aurora.
     const auroraVao = gl.createVertexArray();
     gl.bindVertexArray(auroraVao);
     const auroraBuffer = gl.createBuffer();
@@ -644,7 +603,7 @@ export function ProtocolField() {
     gl.vertexAttribPointer(auroraPosition, 2, gl.FLOAT, false, 0, 0);
     gl.bindVertexArray(null);
 
-    // Section illustrations, one block of rows per illustration.
+    // One block of texture rows per illustration.
     const forms = buildForms(count);
     const formTexture = gl.createTexture();
     gl.activeTexture(gl.TEXTURE0);
@@ -665,7 +624,6 @@ export function ProtocolField() {
       forms.data,
     );
 
-    // The networks: one graph per section illustration, plus the story.
     const graphs = new Map<number, Graph>(FORMS.map((name, index) => [index, formGraph(name)]));
     graphs.set(HERO_SCENE, heroGraph());
     graphs.set(STORY_SCENE, storyGraph());
@@ -706,8 +664,7 @@ export function ProtocolField() {
       indigo: uniform(auroraProgram, "uGlowIndigo"),
     };
 
-    // Scenes that draw their own illustration (HeroMesh, StoryStage, SpiralRibbon) hide the
-    // particles' version of it; the aurora still glows behind them.
+    // Scenes with their own art (HeroMesh, StoryStage, SpiralRibbon) hide the particle version.
     const heroArt = document.querySelector('[data-scene="hero"] [data-scene-art]') !== null;
     const storyArt = document.querySelector('[data-scene="story"] [data-scene-art]') !== null;
     const outroArt = document.querySelector('[data-scene="outro"] [data-scene-art]') !== null;
@@ -738,7 +695,6 @@ export function ProtocolField() {
       root.style.setProperty("--ledger-r", `${(top - center) * 0.5 * height}px`);
     };
 
-    // Smoothed scene values.
     const current = { state: 0, channel: 0, proof: 0, outro: 0, heroShift: 0, outroShift: 0, form: 0, intro: 1 };
     const pointer = { x: 0, y: 0, tx: 0, ty: 0, force: 0, lastMove: -10, inside: 0, present: 0 };
     const startedAtTop = window.scrollY < window.innerHeight * 0.5;
@@ -779,8 +735,6 @@ export function ProtocolField() {
       const spiral = mix(heroArt ? 0 : 1, outroArt ? 0 : 1, outro);
       const fieldWeight = smoothstep(1, 2, state) * (1 - outro);
 
-      // Aurora glows follow the particles: behind the spiral, then under each ledger.
-      // The two illustrations being blended.
       const last = Math.max(0, sceneForms.length - 1);
       const indexA = Math.min(Math.floor(current.form), last);
       const indexB = Math.min(indexA + 1, last);
@@ -863,11 +817,8 @@ export function ProtocolField() {
         channel,
         proof,
       });
-      // The validators orbiting the spiral, once it has assembled.
       network.draw(HERO_SCENE, [0, 0, 0, 1], logoWeight * spiral * smoothstep(0.45, 1, current.intro));
-      // The ledgers and their Channel, while the story is on screen.
       network.draw(STORY_SCENE, [0, 0, 0, 1], storyArt ? 0 : ledgerWeight);
-      // The section networks: the one in view builds itself as the previous one takes itself apart.
       if (indexA === indexB) {
         network.draw(formA, placeA, fieldWeight, focusA);
       } else {

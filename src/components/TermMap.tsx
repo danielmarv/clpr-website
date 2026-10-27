@@ -8,13 +8,7 @@ import { TermShape } from "@/components/TermArt";
 import { RELATED, type Term } from "@/lib/glossary";
 import { cn } from "@/lib/utils";
 
-/*
- * The glossary as a map: every term with its icon and name, joined by fibres
- * where one definition mentions another (RELATED in lib/glossary.ts). The
- * selected term and its relations light up in step with the explorer below;
- * hovering a term shows its neighbours, and clicking one selects it. The map
- * repeats what the list offers, so it is decorative for assistive technology.
- */
+// The map repeats what the list offers, so it is hidden from assistive technology.
 
 type Name = Term["term"];
 
@@ -41,7 +35,6 @@ const PLACES: Record<Name, Point> = {
 
 const NAMES = Object.keys(PLACES) as Name[];
 
-// Each relation once.
 const EDGES: [Name, Name][] = NAMES.flatMap((name) =>
   (RELATED.get(name) ?? []).filter((other) => name < other && other in PLACES).map((other) => [name, other as Name] as [Name, Name]),
 );

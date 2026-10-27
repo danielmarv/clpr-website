@@ -54,7 +54,6 @@ export function Glossary() {
     if (focus) itemRefs.current.get(name)?.focus();
   };
 
-  // Terms linked from other sections (showTerm) open here, with the filters cleared.
   useEffect(() => {
     const onShow = (event: Event) => {
       const name = (event as CustomEvent<string>).detail;
@@ -104,7 +103,6 @@ export function Glossary() {
         lead={glossary.lead}
         illustrated
         wide
-        // The terms as a map, lit in step with the explorer below.
         illustration={<TermMap selected={selected?.term} onChoose={(name) => choose(name)} />}
       />
 
@@ -230,7 +228,6 @@ function TermDetail({
   const related = RELATED.get(term.term) ?? [];
   const section = (glossary.seeIn.terms as Partial<Record<string, keyof typeof glossary.seeIn.sections>>)[term.term];
 
-  // Render the definition with every other glossary term as a link to its entry.
   const parts: ReactNode[] = [];
   let cursor = 0;
   for (const match of term.definition.matchAll(TERM_PATTERN)) {
@@ -275,7 +272,6 @@ function TermDetail({
         </p>
       </div>
 
-      {/* The term as the rest of the site draws it. */}
       <div key={`${term.term}-art`} aria-hidden="true" className={cn("fade-up", compact ? "mt-4 h-24" : "mt-6 h-44")}>
         <TermArt term={term.term} variant={compact ? "compact" : "full"} />
       </div>

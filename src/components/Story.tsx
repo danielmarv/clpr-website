@@ -6,14 +6,7 @@ import { StoryStage } from "@/components/StoryStage";
 import { story } from "@/content/site";
 import { cn } from "@/lib/utils";
 
-/*
- * Scroll story, Apple style: the section is four screens tall and its stage
- * stays pinned while the visitor scrolls. StoryStage reads the same progress
- * and draws the two ledgers, opens the Channel between them and sends proofs
- * across, in step with the chapters here.
- *
- * Progress → phase:  0–0.3 statement · 0.3–0.54 ledgers · 0.54–0.76 Channel · 0.76–1 proofs
- */
+// Scroll progress at which each phase starts: statement, ledgers, Channel, proofs. StoryStage reads the same progress.
 const PHASE_STARTS = [0, 0.3, 0.54, 0.76];
 const REVEAL_END = 0.22;
 
@@ -79,7 +72,6 @@ export function Story() {
           {story.label}
         </h2>
 
-        {/* Statement: each word lights up with the scroll. */}
         <div
           className="story-chapter shell absolute inset-x-0 top-1/2 -translate-y-1/2"
           data-active={phase === 0}
@@ -93,7 +85,6 @@ export function Story() {
           </p>
         </div>
 
-        {/* Labels under the two ledgers. */}
         {[
           { ledger: story.ledgerA, prefix: "ledger-a", tone: "bg-signal-glow" },
           { ledger: story.ledgerB, prefix: "ledger-b", tone: "bg-proof-glow" },
@@ -117,7 +108,6 @@ export function Story() {
           </div>
         ))}
 
-        {/* Chapters, pinned to the bottom of the stage. */}
         <div className="shell absolute inset-x-0 bottom-[5svh]">
           <div className="mx-auto grid max-w-2xl text-center">
             {story.chapters.map((chapter, index) => (

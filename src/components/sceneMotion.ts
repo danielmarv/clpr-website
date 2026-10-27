@@ -1,9 +1,4 @@
-/*
- * What the particles (ProtocolField) and the network layer (networkLayer.ts)
- * share: the camera, the order of the section illustrations, the palette and
- * the motion of each illustration. Both draw the same drawing, so both must
- * turn, roll and crumble it the same way.
- */
+// Shared by ProtocolField and networkLayer.ts, which must move the same drawing the same way.
 
 export const CAMERA_Z = 4.2;
 export const FOCAL = 1 / Math.tan((40 / 2) * (Math.PI / 180));
@@ -53,7 +48,6 @@ vec3 animateForm(int form, vec3 p, float t, float seed, float crumble, inout flo
     p = rotX(rotY(p, -0.42 + sin(t * 0.13) * 0.14), 0.24);
   } else if (form == ${form("bridge")}) {
     if (crumble > 0.5) {
-      // Each piece holds for a while, then drops away; a new one takes its place.
       float cycle = fract(t * 0.05 + seed);
       float fall = clamp((cycle - 0.62) / 0.38, 0.0, 1.0);
       p.y -= fall * fall * 2.0;
@@ -63,12 +57,11 @@ vec3 animateForm(int form, vec3 p, float t, float seed, float crumble, inout flo
     }
     p = rotX(rotY(p, -0.26 + sin(t * 0.12) * 0.12), 0.2);
   } else if (form == ${form("mesh")}) {
-    // A rolling floor, brighter on the crests.
     float wave = sin(p.x * 1.3 + t * 0.5) * cos(p.z * 0.9 + t * 0.35);
     p.y = -1.25 + 0.18 * wave + 0.06 * sin(p.x * 2.7 - p.z * 1.9 + t * 0.8);
     alpha *= 0.5 + 0.75 * max(0.0, wave);
   } else if (form == ${form("globe")}) {
-    // Turns eastward like the Earth; the far side shows only faintly through.
+    // The far side shows only faintly through.
     p = rotX(rotY(p, t * 0.06 - 0.45), 0.36);
     float behind = smoothstep(0.02, -0.22, p.z) * smoothstep(1.08, 0.92, length(p.xy));
     alpha *= 1.0 - 0.88 * behind;

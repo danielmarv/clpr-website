@@ -3,15 +3,7 @@ import type { ReactNode } from "react";
 import { Bundle, Endpoint, fibre, Glows, LaneGradient, MiniLedger, Mover, Pulse, round, Star, timing, TONES } from "@/components/fibreSvg";
 import { guarantees } from "@/content/site";
 
-/*
- * Small looping diagrams for the protocol properties, in the fibre language of
- * the rest of the site: violet for messages in transit, magenta for proofs and
- * verification, warm for responses. Plain SVG rendered on the server; the
- * motion is CSS (globals.css, "Protocol properties") and only runs when the
- * visitor has not asked for reduced motion. Without it, every moving part rests
- * at a telling point of its path. Decorative: the text next to each diagram
- * carries the meaning.
- */
+// Decorative diagrams for the protocol properties; the motion is the prop-* CSS and only runs without reduced motion.
 
 type Visual = (typeof guarantees.items)[number]["visual"];
 const HEIGHT = 176;
@@ -31,9 +23,6 @@ function Art({ id, width, children }: { id: string; width: number; children: Rea
   );
 }
 
-/* ------------------------------------------------------------------------ */
-
-/** A running-hash chain: each message is linked to the one before. A change shows in every hash after it. */
 function OrderArt({ count }: { count: number }) {
   const id = `prop-order-${count}`;
   const beads = Array.from({ length: count }, (_, k) => ({ x: 70 + k * 104, y: 92 }));
@@ -106,7 +95,6 @@ function OrderArt({ count }: { count: number }) {
   );
 }
 
-/** A message crosses to Ledger B; exactly one response comes back. */
 function ResponseArt() {
   const id = "prop-response";
   const out = { from: { x: 84, y: 80 }, to: { x: 236, y: 80 }, bow: -0.36 };
@@ -136,7 +124,6 @@ function ResponseArt() {
   );
 }
 
-/** Where a bridge would pool the assets there is nothing: the Channel runs straight through a zero. */
 function CustodyArt() {
   const id = "prop-custody";
   const from = { x: 34, y: 86 };
@@ -176,7 +163,6 @@ function CustodyArt() {
   );
 }
 
-/** The Endpoint is offline, so whoever is around delivers the proof. */
 function DeliveryArt() {
   const id = "prop-delivery";
   const ledger = { x: 266, y: 92 };
@@ -224,7 +210,6 @@ function DeliveryArt() {
   );
 }
 
-/** Data, oracle feeds, contract calls or any bytes: all ride the same Channel. */
 function PayloadArt() {
   const id = "prop-payload";
   const from = { x: 34, y: 88 };
@@ -252,7 +237,6 @@ function PayloadArt() {
   );
 }
 
-/** A bridge waits for its own confirmations at every hop; CLPR is as fast as the two ledgers. */
 function SpeedArt({ compact }: { compact: boolean }) {
   const id = compact ? "prop-speed-compact" : "prop-speed";
   const width = compact ? 380 : 760;

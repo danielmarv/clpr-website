@@ -9,14 +9,7 @@ import { layers } from "@/content/site";
 import { showTerm, TERM_BY_NAME } from "@/lib/glossary";
 import { cn } from "@/lib/utils";
 
-/*
- * The four protocol layers as a stack of plates in CSS 3D, each plate showing
- * what lives on that layer. The stack stays in view while the visitor reads
- * the layers beside it; the layer being read lights up its plate (the plates
- * above it step back), and a plate can be clicked to jump to its layer. The plates fan out when the section
- * scrolls into view. The plates are decorative; the list carries the content,
- * and its terms link to their definitions in the glossary.
- */
+// The plates are decorative; the list beside them carries the content.
 export function Layers() {
   const [active, setActive] = useState(0);
   const [collapsed, setCollapsed] = useState(true);
@@ -83,7 +76,6 @@ export function Layers() {
                       key={layer.name}
                       className={cn(
                         "layer-plate cursor-pointer rounded-[1.25rem] border backdrop-blur-[2px]",
-                        // The plates above the layer being read step back, so it shows through.
                         index < active && "opacity-25",
                         isApplication
                           ? "border-white/30 bg-[linear-gradient(135deg,rgb(99_70_255/0.55),rgb(117_34_112/0.5)_60%,rgb(200_42_128/0.55))]"
@@ -131,7 +123,6 @@ export function Layers() {
                   </span>
                 </div>
 
-                {/* A message drops through the stack. */}
                 <div className="layer-plate pointer-events-none" style={{ "--z": 0, transform: "none" } as CSSProperties}>
                   <span className="layer-message absolute left-1/2 top-1/2 size-2.5 rounded-full bg-white shadow-[0_0_14px_4px_rgb(157_139_255/0.9)]" />
                 </div>

@@ -53,7 +53,6 @@ export function GetInvolved() {
         </p>
       </section>
 
-      {/* Closing call to action, beside the CLPR spiral drawn as a ribbon of light. */}
       <section
         data-scene="outro"
         aria-labelledby="closing-title"

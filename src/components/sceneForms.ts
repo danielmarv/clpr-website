@@ -1,17 +1,6 @@
 /*
- * The particle side of the section illustrations.
- *
- * The networks themselves (nodes, links, traffic) are drawn by networkLayer.ts
- * from sceneGraphs.ts. The particles add what a network sits in: a soft dust
- * around nodes and links, the state inside each block, the fine grid of the
- * network floor and the land on the globe. They also carry the flow from one
- * illustration to the next as the visitor scrolls.
- *
- * Each illustration is a point cloud in the same local units as its graph.
- * Every point carries a weight:
- *   0     the particle is not part of the drawing and stays a star
- *   0 – 1 brightness
- *   > 1   highlight (drawn larger and pinker)
+ * The particle side of the section illustrations, in the same local units as each graph.
+ * Point weight: 0 stays a star, 0 – 1 is brightness, > 1 is a highlight (larger and pinker).
  */
 
 import { FORMS, type FormName } from "@/components/sceneMotion";
@@ -34,7 +23,6 @@ function direction(random: Random): V3 {
   }
 }
 
-/** A soft cloud, densest at its center. */
 function cloud(center: V3, radius: number, w: number, weight: number, squash: V3 = [1, 1, 1]): Part {
   return {
     weight,
@@ -51,7 +39,6 @@ function fixed(points: V3[], w: number, weight: number): Part {
   return { weight, point: (_, k) => [...points[k % points.length], w] };
 }
 
-/** Dust around the nodes and along the links of a network. */
 function dust(graph: Graph, { spread = 3.2, nodeWeight = 1, linkWeight = 0.35, w = 0.45 } = {}): Part[] {
   const parts: Part[] = [];
   for (const node of graph.nodes) {
@@ -88,12 +75,9 @@ function landDots(): V3[] {
   return points;
 }
 
-/** The particles of each illustration, given its network. */
 const EXTRAS: Partial<Record<FormName, (graph: Graph) => Part[]>> = {
-  // The state inside every block of the chain.
   chain: (graph) =>
     graph.nodes.filter((node) => node.role === "leaf").map((node) => cloud(node.at, 0.17, node.alpha > 1 ? 1.4 : 0.8, 0.5)),
-  // The fine grid of the network floor.
   mesh: () => [
     {
       weight: 6,

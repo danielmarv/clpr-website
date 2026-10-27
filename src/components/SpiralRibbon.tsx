@@ -6,17 +6,7 @@ import { clamp01, easeInOut, TAU, type Point } from "@/components/fibres";
 import { seeded, type Random } from "@/components/sceneGraphs";
 import { cn } from "@/lib/utils";
 
-/*
- * The closing illustration: the CLPR spiral as a twisting ribbon of light.
- *
- * The ribbon follows the centerline of the CLPR mark (ClprMark) at the mark's
- * own stroke width. Its fibres run around a flattened tube that turns as it
- * goes, so the band pinches and fans like a twisted ribbon: fibres facing the
- * viewer are warm, the ones behind are violet. When the section comes into
- * view the ribbon draws itself from the tail into the coil. After that,
- * messages travel along it in order, from the tail into the coil. With reduced
- * motion the finished ribbon holds still.
- */
+// The closing illustration: the CLPR spiral as a twisted ribbon of fibres along the mark's centerline.
 
 const SAMPLES = 720;
 const STRANDS = 72;
@@ -45,8 +35,7 @@ type Message = { strand: number; s: number };
 // The mark's bounding box (the viewBox of ClprMark).
 const BOX = { x: 405, y: 356, width: 117.4, height: 77.7 };
 
-// Centerline of CLPR_SPIRAL_PATH with the half-width of its stroke: down the tail,
-// around the bowl, up the right side, over the top, into the coil and its curl.
+// Centerline of CLPR_SPIRAL_PATH with the half-width of its stroke.
 const SPINE: [number, number, number][] = [
   [411.75, 357.5, 6.75],
   [411.75, 362.75, 6.75],
@@ -78,7 +67,6 @@ const SPINE: [number, number, number][] = [
   [491.1, 378.5, 0.7],
 ];
 
-// Colors along the ribbon (tail → coil): violet for fibres behind, peach and gold in front.
 const BACK: [number, number, number, number][] = [
   [0, 108, 90, 255],
   [0.5, 148, 84, 240],
@@ -98,7 +86,6 @@ function lerpStops(stops: [number, number, number, number][], s: number): [numbe
   return [r1 + (r2 - r1) * t, g1 + (g2 - g1) * t, b1 + (b2 - b1) * t];
 }
 
-/** Color and opacity of a fibre at a point along the ribbon, by how far it faces the viewer. */
 function fibre(s: number, depth: number): { color: string; alpha: number } {
   const front = Math.pow((depth + 1) / 2, 2.2);
   const back = lerpStops(BACK, s);
@@ -192,7 +179,6 @@ function buildBeads(random: Random): Bead[] {
   })).sort((a, b) => a.index - b.index);
 }
 
-/** Draws every fibre between two samples. */
 function paintFibres(ctx: CanvasRenderingContext2D, ribbon: Ribbon, from: number, to: number, scale: number) {
   ctx.globalCompositeOperation = "lighter";
   ctx.lineWidth = 0.8 / scale;
@@ -233,7 +219,6 @@ function paintBeads(
   }
 }
 
-/** Messages queue along the ribbon: a short bright trail on one fibre. */
 function paintMessages(ctx: CanvasRenderingContext2D, ribbon: Ribbon, messages: Message[], scale: number) {
   ctx.globalCompositeOperation = "lighter";
   ctx.lineWidth = 1.3 / scale;
@@ -273,7 +258,6 @@ export function SpiralRibbon({ className }: { className?: string }) {
     const messages: Message[] = [];
 
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    // The ribbon draws itself the first time it comes into view.
     let build = reducedMotion.matches ? 1 : 0;
     let started = false;
     /** Samples of the ribbon already drawn into `cache`. */
@@ -333,7 +317,6 @@ export function SpiralRibbon({ className }: { className?: string }) {
       if (build < 1) {
         build = Math.min(1, build + delta / BUILD_SECONDS);
       } else {
-        // One message after the other, all at the same pace: they arrive in the order they left.
         nextMessage -= delta;
         if (nextMessage <= 0) {
           messages.push({ strand: Math.floor(random() * STRANDS), s: 0 });

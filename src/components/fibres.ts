@@ -1,10 +1,6 @@
 import type { Random } from "@/components/sceneGraphs";
 
-/*
- * Shared drawing helpers for the canvas illustrations (HeroMesh, StoryStage):
- * bundles of fine fibres between two points, partial polylines and the soft
- * four-ray star used for ledgers and validators.
- */
+// Drawing helpers shared by the canvas illustrations (HeroMesh, StoryStage).
 
 export const TAU = Math.PI * 2;
 

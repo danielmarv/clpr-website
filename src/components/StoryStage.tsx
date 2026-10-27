@@ -17,21 +17,8 @@ import { seeded, type Random } from "@/components/sceneGraphs";
 import { cn } from "@/lib/utils";
 
 /*
- * The story's illustration: two ledgers, one Channel, state proofs.
- *
- * Each ledger is its own network of validators (stars joined by bundles of
- * fibres) with its own heartbeat, and an Endpoint (hexagon) on the side facing
- * the other ledger; Ledger B also holds its Verifier Contract (diamond). As the
- * visitor scrolls, the ledgers appear, the Channel opens between the two
- * Endpoints as a twisted ribbon, and messages queue on Ledger A, linked one to
- * the next, and cross in bundles of three. Every message gets exactly one
- * response back. In the last chapter each bundle carries a state proof (a
- * magenta ring): B's Verifier checks it and the verified state spreads through
- * B's validators.
- *
- * Scroll decides what is shown, in step with the chapters in Story.tsx; time
- * only moves the traffic. The ledgers sit where ProtocolField publishes them
- * (--ledger-a-x …), so the aurora glows behind them and the labels line up.
+ * Scroll decides what is shown, in step with the chapters in Story.tsx; time only moves
+ * the traffic. The ledgers sit where ProtocolField publishes them (--ledger-a-x …).
  */
 
 /** Seconds between two bundles leaving Ledger A, and for one to cross. */
@@ -99,7 +86,6 @@ function buildLedger(side: 1 | -1, withVerifier: boolean, heartbeat: number, ran
   const bundles = links.map(([p, q]) =>
     buildStrands(p, q, { strands: 10, bow: (random() - 0.5) * 0.24, spread: 0.2, twist: 0.04 }, random),
   );
-  // The heartbeat runs around the ring, so the ledger's own consensus reads as a rhythm.
   const validators = [...ring, ...inner].map((point, index) => ({
     ...point,
     size: index < ring.length ? 0.13 : 0.16,
@@ -182,10 +168,7 @@ function channelPath(from: Point, to: Point): { points: Float32Array; normals: F
   return { points, normals };
 }
 
-/**
- * The Channel as a twisted ribbon of fibres, violet at Ledger A and pink at
- * Ledger B, pinched into both Endpoints. Returned with its position on the page.
- */
+/** The Channel as a twisted ribbon of fibres, with its position on the page. */
 function paintChannel(
   path: { points: Float32Array; normals: Float32Array },
   halfWidth: number,
@@ -216,7 +199,6 @@ function paintChannel(
 
   const [ar, ag, ab] = tones.a.rgb;
   const [br, bg, bb] = tones.b.rgb;
-  // A soft glow under the ribbon, violet at A and pink at B.
   const first = { x: path.points[0], y: path.points[1] };
   const lastPoint = { x: path.points[(CHANNEL_SAMPLES - 1) * 2], y: path.points[(CHANNEL_SAMPLES - 1) * 2 + 1] };
   const glow = ctx.createLinearGradient(first.x, first.y, lastPoint.x, lastPoint.y);
@@ -409,7 +391,6 @@ export function StoryStage({ className }: { className?: string }) {
       for (const validator of ledger.validators) {
         const beat = (time - validator.beat) % ledger.heartbeat;
         const heartbeat = beat > 0 && beat < 0.6 ? Math.pow(Math.sin((Math.PI * beat) / 0.6), 2) : 0;
-        // Verified state spreads through Ledger B from its Verifier.
         let verified = 0;
         if (key === "b" && ledger.verifier) {
           const distance = Math.hypot(validator.x - ledger.verifier.x, validator.y - ledger.verifier.y);
@@ -422,7 +403,6 @@ export function StoryStage({ className }: { className?: string }) {
         ctx.drawImage(tone.star, point.x - s / 2, point.y - s / 2, s, s);
       }
 
-      // The Endpoint, facing the other ledger.
       const endpoint = world(center, ledger.endpoint);
       const flare = flares[key];
       ctx.globalAlpha = show;
@@ -434,7 +414,6 @@ export function StoryStage({ className }: { className?: string }) {
       ctx.globalAlpha = show * (0.6 + 0.4 * flare);
       ctx.drawImage(tone.star, endpoint.x - glow / 2, endpoint.y - glow / 2, glow, glow);
 
-      // Ledger B's Verifier Contract.
       if (ledger.verifier) {
         const verifier = world(center, ledger.verifier);
         ctx.globalAlpha = show;
@@ -450,7 +429,6 @@ export function StoryStage({ className }: { className?: string }) {
       }
     };
 
-    /** Messages waiting on Ledger A, in order, each linked to the next by the running hash. */
     const drawQueue = (show: number, head: number) => {
       if (show <= 0) return;
       const start = world(layout.a, { x: 0.16, y: 0 });
@@ -486,7 +464,6 @@ export function StoryStage({ className }: { className?: string }) {
       const u = easeInOut(clamp01(bundle.age / CROSSING));
       const along = bundle.response ? 1 - u : u;
       const fade = Math.min(1, u * 10, (1 - u) * 10);
-      // Three messages travel together; responses come back warm, a little below.
       const spacing = 0.028;
       const middle = onChannel(along, bundle.response ? -0.5 : 0.3);
       for (let k = -1; k <= 1; k++) {
@@ -521,7 +498,6 @@ export function StoryStage({ className }: { className?: string }) {
       if (!art || show.ledgers <= 0) return;
       ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
 
-      // The Channel opens from Endpoint A towards Endpoint B.
       if (show.channel > 0) {
         const front = onChannel(show.channel, 0);
         ctx.save();
@@ -588,7 +564,6 @@ export function StoryStage({ className }: { className?: string }) {
           flares.verifier = 1;
           waves.push({ age: 0 });
         }
-        // Every message gets exactly one response, once B has handled it.
         bundles.push({ age: -CHECK, response: true, proof: false });
       }
       for (let i = waves.length - 1; i >= 0; i--) {

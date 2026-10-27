@@ -1,9 +1,6 @@
 import { cn } from "@/lib/utils";
 
-/**
- * The CLPR spiral, as used at the center of the CLPR diagrams on
- * hashgraph.com/clpr. Inherits the text color.
- */
+/** The CLPR spiral from hashgraph.com/clpr; inherits the text color. */
 export function ClprMark({ className }: { className?: string }) {
   return (
     <svg

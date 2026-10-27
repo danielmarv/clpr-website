@@ -18,17 +18,8 @@ import { seeded, type Random } from "@/components/sceneGraphs";
 import { cn } from "@/lib/utils";
 
 /*
- * The hero illustration: ledgers joined directly by Channels.
- *
- * Every star is a ledger and every bundle of fibres is a Channel between two
- * of them. No ledger sits in the middle: the light at the core is only where
- * the direct Channels between the inner ledgers cross.
- *
- * On load the network draws itself, ledgers first, then the Channels between
- * them, from the core outwards. After that a message now and then crosses a
- * Channel, the receiving ledger flares and rings as it verifies the proof, and
- * the response travels back. The drawing tilts a little towards the pointer.
- * With reduced motion the finished network holds still.
+ * Every star is a ledger and every bundle of fibres a Channel. No ledger sits in the
+ * middle: the light at the core is only where the inner Channels cross.
  */
 
 const INTRO_SECONDS = 3.4;
@@ -85,7 +76,6 @@ const RADIUS = { inner: 0.52, ring: 0.875, rim: 1 };
 const INNER_CHANNELS = 25;
 
 const SHAPES = {
-  // Across the core, between inner ledgers two apart. They all pass the center.
   core: { strands: 32, bow: 0.16, spread: 0.15, twist: 0.03, width: 1.3, alpha: 0.12, open: [0.06, 0.42] },
   inner: { strands: 34, bow: -0.08, spread: 0.18, twist: 0.03, width: 0.85, alpha: 0.22, open: [0.14, 0.46] },
   spoke: { strands: 30, bow: 0.1, spread: 0.2, twist: 0.06, width: 0.8, alpha: 0.24, open: [0.26, 0.58] },
@@ -94,7 +84,6 @@ const SHAPES = {
   rim: { strands: 16, bow: 0, spread: 0.03, twist: 0, width: 0.7, alpha: 0.3, open: [0.78, 1] },
 } satisfies Record<string, Shape>;
 
-// From the amber core through coral to the pink rim.
 const STOPS: [number, number, number, number][] = [
   [0, 255, 182, 86],
   [0.35, 255, 150, 88],
@@ -178,7 +167,6 @@ function buildChannels(ledgers: Ledger[], random: Random): Channel[] {
   return channels;
 }
 
-/** The outline of the network: the ten ledgers on the rim, optionally grown a little. */
 function traceRim(ctx: CanvasRenderingContext2D, ledgers: Ledger[], grow = 1) {
   ctx.beginPath();
   ledgers
@@ -189,7 +177,6 @@ function traceRim(ctx: CanvasRenderingContext2D, ledgers: Ledger[], grow = 1) {
   ctx.closePath();
 }
 
-/** The membrane inside the rim: warm at the core, pink towards the edge. */
 function paintHaze(ctx: CanvasRenderingContext2D, ledgers: Ledger[], alpha: number) {
   if (alpha <= 0) return;
   ctx.globalCompositeOperation = "source-over";
@@ -204,7 +191,6 @@ function paintHaze(ctx: CanvasRenderingContext2D, ledgers: Ledger[], alpha: numb
   ctx.fill();
 }
 
-/** Where the five Channels across the core cross, their light adds up. */
 function paintCore(ctx: CanvasRenderingContext2D, alpha: number) {
   if (alpha <= 0) return;
   ctx.globalCompositeOperation = "lighter";
@@ -217,7 +203,6 @@ function paintCore(ctx: CanvasRenderingContext2D, alpha: number) {
   ctx.fillRect(-0.4, -0.4, 0.8, 0.8);
 }
 
-/** How far a Channel has opened at a given intro time, 0 → 1. */
 function openness(channel: Channel, intro: number): number {
   const [start, end] = channel.open;
   return easeOut(clamp01((intro - start) / (end - start)));
@@ -273,7 +258,6 @@ function paintLedgers(
     const shown = clamp01((intro - ledger.appear) / 0.12);
     if (shown <= 0) continue;
     const twinkle = 0.88 + 0.12 * Math.sin(time * 1.3 + ledger.phase);
-    // A ledger brightens as it appears, then settles.
     const arrival = 1 + 0.5 * Math.sin(Math.PI * shown);
     const size = ledger.size * 2 * arrival * (1 + ledger.flare * 0.7);
     ctx.globalAlpha = Math.min(1, easeOut(shown) * twinkle * (1 + ledger.flare * 0.6));
@@ -300,7 +284,6 @@ function paintTraffic(
     const progress = easeInOut(clamp01(message.age / message.duration));
     const head = message.forward ? progress : 1 - progress;
     const fade = Math.min(1, progress * 8, (1 - progress) * 8);
-    // Messages in transit are violet; responses come back warm.
     ctx.strokeStyle = message.response ? "rgb(255 220 180)" : "rgb(214 206 255)";
     ctx.lineWidth = 1.6 / scale;
     // Three overlapping trails of different length: bright at the head, fading behind it.
@@ -318,7 +301,6 @@ function paintTraffic(
     ctx.globalAlpha = fade;
     ctx.drawImage(star, x - size / 2, y - size / 2, size, size);
   }
-  // The receiving ledger rings as it checks the proof.
   ctx.strokeStyle = "rgb(255 140 192)";
   ctx.lineWidth = 1.4 / scale;
   for (const ripple of ripples) {
@@ -412,7 +394,6 @@ export function HeroMesh({ className }: { className?: string }) {
       if (intro < 1) {
         paintIntro();
       } else {
-        // The finished network is drawn once; each frame only adds the traffic and the stars.
         if (!cached) {
           paintFinished();
           cached = true;
@@ -463,7 +444,6 @@ export function HeroMesh({ className }: { className?: string }) {
         const target = ledgers[message.forward ? channel.to : channel.from];
         target.flare = 1;
         ripples.push({ x: target.x, y: target.y, size: target.size * 2.2, age: 0 });
-        // Every message gets exactly one response, once the proof is checked.
         if (!message.response) {
           messages.push({
             ...message,

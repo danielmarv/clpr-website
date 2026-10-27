@@ -2,14 +2,7 @@ import type { ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 
-/**
- * Section heading in the linear.app manner: a quiet eyebrow, a large headline
- * in fading white, and the lead either below it or beside it (`split`).
- *
- * `illustrated` keeps the right-hand side free (above the heading on phones):
- * the WebGL background draws the section's illustration into that slot, or
- * the section passes its own as `illustration`.
- */
+/** `illustrated` keeps a slot free for the WebGL illustration, or for the section's own `illustration`. */
 export function SectionHeading({
   id,
   eyebrow,
