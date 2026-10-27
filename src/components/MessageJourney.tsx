@@ -1,16 +1,7 @@
 "use client";
 
 import { animate, createScope } from "animejs";
-import {
-  useEffect,
-  useId,
-  useMemo,
-  useRef,
-  useState,
-  useSyncExternalStore,
-  type CSSProperties,
-  type KeyboardEvent,
-} from "react";
+import { useEffect, useId, useMemo, useRef, type CSSProperties } from "react";
 import { ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
 
 import type { Point } from "@/components/fibres";
@@ -18,6 +9,7 @@ import { Bundle, Glows, hexagon, LaneGradient, round, Star, TONES } from "@/comp
 import { seeded } from "@/components/sceneGraphs";
 import { demo, type DemoNodeId, type DemoStep } from "@/content/site";
 import { cn, format } from "@/lib/utils";
+import { useStepper } from "@/lib/useStepper";
 
 /*
  * "How it works": one message on its way across a Channel, in seven steps.
@@ -33,7 +25,6 @@ import { cn, format } from "@/lib/utils";
  */
 
 const STEP_DURATION_MS = 6000;
-const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
 const ROUTE: DemoNodeId[] = ["a-app", "a-service", "a-endpoint", "b-endpoint", "b-verifier", "b-service", "b-app"];
 /** Spacing of the messages in a bundle, in percent of the route. */
 const BUNDLE_GAP = 1.4;
@@ -223,58 +214,21 @@ function placements(index: number, at: Record<DemoNodeId, number>) {
   return { messages, responses, ring };
 }
 
-function subscribeToReducedMotion(onChange: () => void) {
-  const query = window.matchMedia(REDUCED_MOTION_QUERY);
-  query.addEventListener("change", onChange);
-  return () => query.removeEventListener("change", onChange);
-}
-
-function subscribeToVisibility(onChange: () => void) {
-  document.addEventListener("visibilitychange", onChange);
-  return () => document.removeEventListener("visibilitychange", onChange);
-}
-
 export function MessageJourney() {
   const steps: readonly DemoStep[] = demo.steps;
-  const root = useRef<HTMLElement>(null);
   const copy = useRef<HTMLDivElement>(null);
   const detailId = useId();
-  const [stepIndex, setStepIndex] = useState(0);
-  // A long jump (wrapping around, or picking a step far away) moves the messages without travelling.
-  const [jump, setJump] = useState(false);
-  const [inView, setInView] = useState(false);
-  // null follows the visitor's motion preference; manual selection pauses playback.
-  const [playPreference, setPlayPreference] = useState<boolean | null>(null);
-  const reducedMotion = useSyncExternalStore(
-    subscribeToReducedMotion,
-    () => window.matchMedia(REDUCED_MOTION_QUERY).matches,
-    () => false,
-  );
-  const pageVisible = useSyncExternalStore(
-    subscribeToVisibility,
-    () => !document.hidden,
-    () => true,
-  );
-  const isPlaying = playPreference ?? !reducedMotion;
-  const running = isPlaying && inView && pageVisible;
-
-  useEffect(() => {
-    const element = root.current;
-    if (!element) return;
-    const observer = new IntersectionObserver(([entry]) => setInView(entry.isIntersecting), { threshold: 0.1 });
-    observer.observe(element);
-    return () => observer.disconnect();
-  }, []);
-
-  useEffect(() => {
-    if (!running) return;
-    const timer = window.setTimeout(() => {
-      const next = (stepIndex + 1) % steps.length;
-      setJump(next === 0);
-      setStepIndex(next);
-    }, STEP_DURATION_MS);
-    return () => window.clearTimeout(timer);
-  }, [running, stepIndex, steps.length]);
+  const {
+    root,
+    index: stepIndex,
+    jump,
+    isPlaying,
+    running,
+    reducedMotion,
+    goTo,
+    togglePlay,
+    onStepKeyDown,
+  } = useStepper(steps.length, STEP_DURATION_MS);
 
   useEffect(() => {
     if (reducedMotion) return;
@@ -285,31 +239,6 @@ export function MessageJourney() {
   }, [stepIndex, reducedMotion]);
 
   const step = steps[stepIndex];
-  const goTo = (index: number) => {
-    const next = (index + steps.length) % steps.length;
-    setPlayPreference(false);
-    setJump(Math.abs(next - stepIndex) > 1);
-    setStepIndex(next);
-  };
-  const onStepKeyDown = (event: KeyboardEvent<HTMLOListElement>) => {
-    const button = (event.target as HTMLElement).closest<HTMLButtonElement>("[data-step-index]");
-    if (!button) return;
-    const index = Number(button.dataset.stepIndex);
-    const next =
-      event.key === "ArrowRight"
-        ? (index + 1) % steps.length
-        : event.key === "ArrowLeft"
-          ? (index - 1 + steps.length) % steps.length
-          : event.key === "Home"
-            ? 0
-            : event.key === "End"
-              ? steps.length - 1
-              : null;
-    if (next === null) return;
-    event.preventDefault();
-    goTo(next);
-    event.currentTarget.querySelector<HTMLButtonElement>(`[data-step-index="${next}"]`)?.focus();
-  };
   // Light runs along the Channel while a bundle crosses it.
   const flowing = running && !reducedMotion ? (stepIndex === 3 ? "forward" : stepIndex === 6 ? "back" : null) : null;
   const position = format(demo.controls.position, { step: stepIndex + 1, total: steps.length });
@@ -386,7 +315,7 @@ export function MessageJourney() {
           </button>
           <button
             type="button"
-            onClick={() => setPlayPreference(!isPlaying)}
+            onClick={togglePlay}
             aria-label={isPlaying ? demo.controls.pause : demo.controls.play}
             aria-pressed={isPlaying}
             className="flex size-11 items-center justify-center rounded-full bg-white text-night transition-colors hover:bg-white/85"

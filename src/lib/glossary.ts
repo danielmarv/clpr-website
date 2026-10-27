@@ -24,7 +24,7 @@ function mentionsIn(definition: string): string[] {
 
 /**
  * Terms a definition mentions, plus terms whose definitions mention it. The
- * glossary links these, and the background draws them as a knowledge graph.
+ * glossary links these, and the term map (TermMap) draws them as fibres.
  */
 export const RELATED = new Map<string, string[]>(
   glossary.terms.map((item) => {
@@ -33,3 +33,13 @@ export const RELATED = new Map<string, string[]>(
     return [item.term, [...new Set([...outgoing, ...incoming])].filter((name) => name !== item.term)];
   }),
 );
+
+/** Other sections link to a term: the glossary selects it when this event fires. */
+export const SHOW_TERM_EVENT = "clpr:show-term";
+
+/** Selects a term in the glossary and scrolls to it. */
+export function showTerm(name: string) {
+  window.dispatchEvent(new CustomEvent<string>(SHOW_TERM_EVENT, { detail: name }));
+  const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  document.getElementById(glossary.id)?.scrollIntoView({ behavior: still ? "auto" : "smooth", block: "start" });
+}

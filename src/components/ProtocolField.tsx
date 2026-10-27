@@ -19,8 +19,7 @@ import { CAMERA_Z, FOCAL, SCENE_GLSL } from "@/components/sceneMotion";
  *   rest   → each section gets its own network (`data-form`, see sceneGraphs.ts):
  *            a hash chain over a validator quorum, the route of one message,
  *            a bridge hub that crumbles, a mesh floor, validators in real
- *            cities on a globe, a git history, a growing network, the glossary
- *            as a knowledge graph, a contributor network
+ *            cities on a globe, a git history, a contributor network
  *   outro  → the particles gather into the spiral again behind the closing call to action
  *
  * Sections opt in with `data-scene="hero" | "story" | "outro"`. A full-screen
@@ -42,8 +41,6 @@ const FORM_GAIN: Record<FormName, number> = {
   mesh: 1,
   globe: 1.7,
   branches: 1,
-  growth: 1,
-  knowledge: 1,
   community: 1,
 };
 
@@ -371,11 +368,10 @@ const FORM_FIT: Record<FormName, (width: number, height: number, halfWidth: numb
   chain: (w, h) => Math.min(w / 4.8, h / 2.3) * 1.35,
   route: (w, h) => Math.min(w / 4.6, h / 1.9) * 1.35,
   bridge: (w, h) => Math.min(w / 5.0, h / 2.1) * 1.35,
-  mesh: (_, __, halfWidth) => (halfWidth * 2.4) / 9,
+  // The floor stays under the layer stack, clear of the text beside it.
+  mesh: (w) => w / 9,
   globe: (w, h) => (Math.min(w, h) / 2.4) * 1.15,
   branches: (w, h) => Math.min(w / 4.8, h / 2.4) * 1.35,
-  growth: (w, h) => Math.min(w / 5.4, h / 2.1) * 1.35,
-  knowledge: (w, h) => Math.min(w / 4.4, h / 2.2) * 1.35,
   community: (w, h) => Math.min(w / 4.4, h / 2.2) * 1.35,
 };
 

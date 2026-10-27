@@ -351,6 +351,40 @@
 }
 
 /* ------------------------------------------------------------------ */
+/* Footer: a message and its response cross the Channel along the edge */
+/* ------------------------------------------------------------------ */
+
+.footer-packet {
+  left: 0;
+  opacity: 0;
+  transform: translate(-50%, -50%);
+}
+@keyframes footer-packet {
+  0% {
+    left: 0%;
+    opacity: 0;
+  }
+  4%,
+  40% {
+    opacity: 1;
+  }
+  44%,
+  100% {
+    left: 100%;
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .footer-packet {
+    animation: footer-packet 9s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  }
+  /* Played backwards, it crosses in the second half of the cycle: the response, once the message has arrived. */
+  .footer-packet-back {
+    animation-direction: reverse;
+  }
+}
+
+/* ------------------------------------------------------------------ */
 /* Story: words light up as the visitor scrolls                        */
 /* ------------------------------------------------------------------ */
 
@@ -391,6 +425,7 @@
   transform: translateZ(calc(var(--z) * var(--spread, 64px)));
   transition:
     transform 900ms var(--ease-out-expo),
+    opacity 500ms ease,
     border-color 400ms ease,
     box-shadow 400ms ease,
     background-color 400ms ease;
@@ -787,16 +822,6 @@
   }
 }
 
-/* A soft pulse for live indicators. */
-@keyframes soft-pulse {
-  0%,
-  100% {
-    opacity: 0.45;
-  }
-  50% {
-    opacity: 1;
-  }
-}
 
 /* Scroll cue in the hero. */
 @keyframes scroll-cue {
@@ -814,9 +839,6 @@
   }
   .dash-flow {
     animation: dash-flow 1.2s linear infinite;
-  }
-  .soft-pulse {
-    animation: soft-pulse 2.4s ease-in-out infinite;
   }
   .scroll-cue {
     animation: scroll-cue 2.2s cubic-bezier(0.65, 0, 0.35, 1) infinite;

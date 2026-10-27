@@ -1,13 +1,15 @@
 "use client";
 
-import { useId, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
-import { ChevronLeft, ChevronRight, Search, X } from "lucide-react";
+import { useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import { ArrowDown, ChevronLeft, ChevronRight, Search, X } from "lucide-react";
 
 import { SectionHeading } from "@/components/SectionHeading";
+import { TermArt, TermIcon } from "@/components/TermArt";
+import { TermMap } from "@/components/TermMap";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { glossary } from "@/content/site";
-import { escapeRegExp, RELATED, TERM_BY_NAME, TERM_PATTERN, type Term } from "@/lib/glossary";
+import { escapeRegExp, RELATED, SHOW_TERM_EVENT, TERM_BY_NAME, TERM_PATTERN, type Term } from "@/lib/glossary";
 import { cn, format } from "@/lib/utils";
 
 type Category = "all" | (typeof glossary.categories)[number];
@@ -52,6 +54,19 @@ export function Glossary() {
     if (focus) itemRefs.current.get(name)?.focus();
   };
 
+  // Terms linked from other sections (showTerm) open here, with the filters cleared.
+  useEffect(() => {
+    const onShow = (event: Event) => {
+      const name = (event as CustomEvent<string>).detail;
+      if (!TERM_BY_NAME.has(name.toLowerCase())) return;
+      setCategory("all");
+      setQuery("");
+      setSelectedName(name);
+    };
+    window.addEventListener(SHOW_TERM_EVENT, onShow);
+    return () => window.removeEventListener(SHOW_TERM_EVENT, onShow);
+  }, []);
+
   const step = (offset: number) => {
     if (terms.length === 0) return;
     const next = terms[(selectedIndex + offset + terms.length) % terms.length];
@@ -81,14 +96,17 @@ export function Glossary() {
     );
 
   return (
-    <section
-      aria-labelledby={glossary.id}
-      data-form="knowledge"
-      // The background draws the terms as a knowledge graph and lights up the selected one.
-      data-form-focus={selected ? glossary.terms.indexOf(selected) : -1}
-      className="shell py-20 lg:py-28"
-    >
-      <SectionHeading id={glossary.id} eyebrow={glossary.eyebrow} title={glossary.title} lead={glossary.lead} illustrated />
+    <section aria-labelledby={glossary.id} className="shell py-20 lg:py-28">
+      <SectionHeading
+        id={glossary.id}
+        eyebrow={glossary.eyebrow}
+        title={glossary.title}
+        lead={glossary.lead}
+        illustrated
+        wide
+        // The terms as a map, lit in step with the explorer below.
+        illustration={<TermMap selected={selected?.term} onChoose={(name) => choose(name)} />}
+      />
 
       <div className="panel mt-10 p-5 sm:p-8 lg:mt-14 lg:p-10">
         <div className="grid gap-8 lg:grid-cols-12 lg:gap-10">
@@ -151,7 +169,10 @@ export function Glossary() {
                             isSelected ? "bg-white/7 text-white" : "text-white/75 hover:bg-white/3 hover:text-white",
                           )}
                         >
-                          <span className="text-[1.02rem]">{highlight(item.term, needle)}</span>
+                          <span className="flex items-center gap-3">
+                            <TermIcon term={item.term} className={cn("size-4 shrink-0 transition-opacity", isSelected ? "opacity-100" : "opacity-60")} />
+                            <span className="text-[1.02rem]">{highlight(item.term, needle)}</span>
+                          </span>
                           <span className={cn("text-[0.75rem]", isSelected ? "text-white/60" : "text-muted-foreground")}>
                             {item.category}
                           </span>
@@ -207,6 +228,7 @@ function TermDetail({
   onStep: (offset: number) => void;
 }) {
   const related = RELATED.get(term.term) ?? [];
+  const section = (glossary.seeIn.terms as Partial<Record<string, keyof typeof glossary.seeIn.sections>>)[term.term];
 
   // Render the definition with every other glossary term as a link to its entry.
   const parts: ReactNode[] = [];
@@ -234,7 +256,7 @@ function TermDetail({
     <article
       className={cn(
         "relative isolate overflow-hidden rounded-panel border border-signal-glow/20 bg-[linear-gradient(160deg,rgb(40_26_102/0.7),rgb(13_11_26/0.95)_60%,rgb(54_16_50/0.6))] text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.07)]",
-        compact ? "p-5" : "min-h-[26rem] p-10",
+        compact ? "p-5" : "min-h-[30rem] p-10",
       )}
     >
       <div
@@ -253,8 +275,13 @@ function TermDetail({
         </p>
       </div>
 
+      {/* The term as the rest of the site draws it. */}
+      <div key={`${term.term}-art`} aria-hidden="true" className={cn("fade-up", compact ? "mt-4 h-24" : "mt-6 h-44")}>
+        <TermArt term={term.term} variant={compact ? "compact" : "full"} />
+      </div>
+
       {!compact && (
-        <h3 key={term.term} className="fade-up text-headline mt-8 text-[2.5rem] font-medium leading-tight tracking-[-0.035em]">
+        <h3 key={term.term} className="fade-up text-headline mt-6 text-[2.5rem] font-medium leading-tight tracking-[-0.035em]">
           {term.term}
         </h3>
       )}
@@ -265,8 +292,21 @@ function TermDetail({
         {parts}
       </p>
 
+      {section && (
+        <a
+          href={`#${section}`}
+          className={cn(
+            "group inline-flex items-center gap-2 text-[0.875rem] text-white/80 transition-colors hover:text-white",
+            compact ? "mt-4" : "mt-6",
+          )}
+        >
+          {format(glossary.seeIn.label, { section: glossary.seeIn.sections[section] })}
+          <ArrowDown className="size-3.5 -rotate-90 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+        </a>
+      )}
+
       {related.length > 0 && (
-        <div className={compact ? "mt-5" : "mt-10"}>
+        <div className={compact ? "mt-5" : "mt-8"}>
           <p className="text-[0.8125rem] font-medium text-white/55">{glossary.relatedLabel}</p>
           <ul className="mt-3 flex flex-wrap gap-2">
             {related.map((name) => (
@@ -274,8 +314,9 @@ function TermDetail({
                 <button
                   type="button"
                   onClick={() => onChoose(name)}
-                  className="rounded-full border border-white/15 px-3 py-1 text-[0.85rem] text-white/85 transition-colors hover:border-white hover:bg-white hover:text-night"
+                  className="inline-flex items-center gap-2 rounded-full border border-white/15 py-1 pl-2.5 pr-3 text-[0.85rem] text-white/85 transition-colors hover:border-white/50 hover:bg-white/10 hover:text-white"
                 >
+                  <TermIcon term={name as Term["term"]} className="size-3.5 shrink-0" />
                   {name}
                 </button>
               </li>

@@ -49,6 +49,10 @@ src/
     Guarantees.tsx     Protocol properties as a bento grid of small diagrams
     PropertyArt.tsx    Those diagrams: looping SVG in the fibre language, motion in CSS
     ComponentArt.tsx   Chain-agnostic: the Service, Endpoints and Verifier Contracts as small diagrams
+    LayerArt.tsx       What lives on each plate of the architecture stack
+    TermArt.tsx        An icon and a small diagram for every glossary term
+    TermMap.tsx        The glossary as a map beside the Terminology heading
+    LedgerOnboarding.tsx Chain-agnostic: the eight steps to connect a ledger, beside a drawing that builds up
     MessageJourney.tsx Interactive 7-step walkthrough of a message crossing a Channel
     fibreSvg.tsx       Shared SVG pieces for the diagrams: fibre bundles, stars, membranes, hexagons
     Comparison.tsx     Bridge vs. CLPR, switchable by aspect
@@ -56,13 +60,13 @@ src/
     Layers.tsx         Protocol layers as an interactive CSS 3D stack
     Glossary.tsx       Term explorer: search, categories, cross-linked definitions
     ClprMark.tsx       The CLPR spiral logo (also the source shape for the particles)
-    Hero.tsx  Walkthrough.tsx  Extensibility.tsx  Repositories.tsx  Roadmap.tsx
+    Hero.tsx  Walkthrough.tsx  Extensibility.tsx  Repositories.tsx
     GetInvolved.tsx  SiteHeader.tsx  SiteFooter.tsx  SectionHeading.tsx  CopyCommand.tsx
     ui/                shadcn/ui-style primitives (button, input)
   content/
     site.ts            ALL copy and links. Edit content here, not in components.
   lib/utils.ts         cn(), format() for {placeholder} messages
-  lib/glossary.ts      Term relations, shared by the glossary and its knowledge graph
+  lib/glossary.ts      Term relations, shared by the glossary and its term map
 public/logos/          Official LFDT, Hashgraph, Hedera and Hiero logos
 ```
 
@@ -81,7 +85,7 @@ from the CLPR presentation on [hashgraph.com/clpr](https://hashgraph.com/clpr/).
 
 - **Story of the page.** Hero (a network of ledgers draws itself) → pinned story (two ledgers
   form, a Channel opens, proofs cross) → guarantees → walkthrough → why bridgeless →
-  architecture → chain-agnostic → code → roadmap → terminology → get involved → closing call to
+  architecture → chain-agnostic → code → terminology → get involved → closing call to
   action (the CLPR spiral as a ribbon of light).
 - **Background.** `ProtocolField` is one fixed WebGL2 canvas behind all content: an aurora
   shader, 9,000 (mobile) to 20,000 particles, and a network layer (`networkLayer.ts`) that
@@ -133,6 +137,29 @@ from the CLPR presentation on [hashgraph.com/clpr](https://hashgraph.com/clpr/).
   Verifier; assets pooling in the bridge (a red target ring) vs. nothing held; a dead operator
   vs. anyone delivering the proof; a stop for the bridge's own confirmations vs. straight to B;
   tokens only vs. any payload.
+- **Architecture.** The CSS 3D layer stack stays in view while the visitor reads the four
+  layers beside it; the layer being read lights up its plate and the plates above it step
+  back, so its drawing (`LayerArt`) shows through. A plate can be clicked to jump to its
+  layer. The terms of each layer link to their definitions in the glossary (`showTerm` in
+  `lib/glossary.ts`). The mesh floor fits under the stack, clear of the text.
+- **Chain-agnostic.** Under the three component diagrams, "Connecting a new ledger to Hiero" is
+  a stepper (`LedgerOnboarding`, sharing `useStepper` with the walkthrough) beside a drawing that
+  builds up: Hiero is native from the start; the new ledger gains its Service and Endpoints,
+  the two Verifier Contracts are built (each in the color of the ledger whose proofs it
+  checks) and move into the opposite network, the Channel opens, the Endpoints peer, a
+  Connector is bonded and applications start sending messages.
+- **Open source.** The specification spans the row above its three implementations, joined
+  by "Implemented by" fibres. Each implementation card lists the CLPR components it implements
+  (with the site's symbols: star, hexagon, diamond), what it runs on and, where the sources say
+  so, its status. Governance and the two licenses share the last row.
+- **Terminology.** The glossary speaks the site's visual language: every term has an icon (the
+  star, hexagon, diamond, proof ring and coin of the illustrations) in the list, in the related
+  terms and on the Open source cards, and a small looping diagram above its definition
+  (`TermArt`). Beside the heading, `TermMap` draws all terms as a map: each with its icon and
+  name, joined by fibres where one definition mentions another. The selected term and its
+  relations light up in step with the explorer; hovering shows a term's neighbours and a click
+  selects it. Terms that appear in an illustrated section link to it ("See it in …",
+  `glossary.seeIn`), the reverse of the term links in Architecture.
 - **Header.** The nav sits exactly in the middle of the bar and a marker slides to the section
   being read (`aria-current`). From `xl` the brand reads "CLPR | Cross Ledger Protocol". The
   mobile menu fills the screen, locks scrolling and closes on Escape.
@@ -150,9 +177,7 @@ from the CLPR presentation on [hashgraph.com/clpr](https://hashgraph.com/clpr/).
   (`data-form`, defined in `sceneGraphs.ts`; the particles in `sceneForms.ts` add dust, block
   state, the floor grid and the land): a triangulated mesh floor under the layer stack (architecture), validators in real cities on a
   dot-matrix Earth with Channels between four ledgers (chain-agnostic), a git history with
-  contributors pushing commits (code), the network growing through the roadmap phases, live
-  up to the current one and planned after it (roadmap), the glossary as a knowledge graph that
-  lights up the selected term (`data-form-focus`, terminology) and a scale-free contributor
+  contributors pushing commits (code) and a scale-free contributor
   network (get involved). Each drawing sits in its section heading's `data-form-slot` and
   scrolls with it; one network takes itself apart as the next one builds itself, and the
   particles flow between them. Cards use frosted glass (`panel`), so the drawings glow through
@@ -166,9 +191,13 @@ from the CLPR presentation on [hashgraph.com/clpr](https://hashgraph.com/clpr/).
   available, swap the font in `src/app/layout.tsx`.
 - **Shape.** Pill buttons (solid white primary, translucent secondary), frosted `panel`
   surfaces with hairline borders, cards that light up under the pointer (`data-spotlight`).
-- **Footer.** The "Lab status" pill reads the current phase from `roadmap.phases`, so it updates
-  with the roadmap. The large CLPR wordmark lights up in the spiral's colors under the pointer
-  (`data-pointer-glow`); on touch screens the light sweeps across it on its own.
+- **Footer.** Its top edge is a Channel: two Endpoints joined by a twisted fibre bundle, with
+  a message crossing one way and its response the other (CSS, still with reduced motion).
+  Links are grouped by intent (Explore the page, Build with the repositories, how the Project
+  is run), and a row shows who is behind CLPR with their marks: stewarded by LF Decentralized
+  Trust, contributed by Hashgraph and Hedera, built natively into Hiero. Below it the large CLPR
+  wordmark lights up in the spiral's colors under the pointer (`data-pointer-glow`); on touch
+  screens the light sweeps across it on its own.
 - **Motion and accessibility.** With `prefers-reduced-motion` the background holds still and
   only changes when the visitor scrolls, the walkthrough waits for the visitor, and CSS
   animations stop. The canvas pauses while the tab is hidden. Without WebGL2 the page falls back
@@ -183,7 +212,6 @@ from the CLPR presentation on [hashgraph.com/clpr](https://hashgraph.com/clpr/).
       official CLPR logo files from the LFDT / Hashgraph brand assets.
 - [ ] Decide on the typeface: keep Albert Sans or license Styrene A.
 - [ ] Replace the footer legal line (`footer.legal` in `site.ts`) with the official LFDT lab text.
-- [ ] Confirm the roadmap phase marked “Now” (`roadmap.phases[].current`).
 - [ ] Re-check statuses that will change: HIP-1535 and hiero-consensus-node PR #27029.
 - [ ] Add community channels (Discord, mailing list, calls) once LFDT sets them up.
 - [ ] Get logo usage confirmed with LFDT, Hashgraph, Hedera and Hiero brand guidelines.

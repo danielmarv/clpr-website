@@ -1,6 +1,7 @@
 import { RadioTower } from "lucide-react";
 
 import { COMPONENT_ART } from "@/components/ComponentArt";
+import { LedgerOnboarding } from "@/components/LedgerOnboarding";
 import { SectionHeading } from "@/components/SectionHeading";
 import { extensibility } from "@/content/site";
 
@@ -43,16 +44,10 @@ export function Extensibility() {
             </span>
             {extensibility.stepsTitle}
           </h3>
+          <p className="max-w-[48ch] text-[0.9375rem] leading-relaxed text-muted-foreground sm:text-right">{extensibility.stepsLead}</p>
         </div>
-        <ol className="mt-8 grid gap-px overflow-hidden rounded-2xl border border-white/7 bg-white/7 sm:grid-cols-2 lg:grid-cols-4">
-          {extensibility.steps.map((step, index) => (
-            <li key={step} className="flex flex-col gap-3 bg-[#0c0b15] p-5">
-              <span className="font-mono text-[0.75rem] text-signal-ink">{String(index + 1).padStart(2, "0")}</span>
-              <span className="text-[0.9375rem] leading-snug text-white/85">{step}</span>
-            </li>
-          ))}
-        </ol>
-        <p className="mt-6 max-w-[70ch] border-l border-proof-glow/60 pl-4 text-[0.9375rem] text-muted-foreground">
+        <LedgerOnboarding />
+        <p className="mt-10 max-w-[70ch] border-l border-proof-glow/60 pl-4 text-[0.9375rem] text-muted-foreground">
           {extensibility.footnote}
         </p>
       </div>
