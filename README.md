@@ -22,6 +22,29 @@ pnpm dev           # http://localhost:3000
 | `pnpm lint`      | ESLint                             |
 | `pnpm typecheck` | TypeScript, no emit                |
 
+## Deploy (Coolify + Railpack)
+
+The site runs as a Node server (`next start`). It is built with
+[Railpack](https://railpack.com); `railpack.json` pins Node 24, and pnpm comes from
+`packageManager` in `package.json`. Without the pin Railpack would take the lowest Node that
+matches `engines.node` (`>=20`).
+
+In Coolify, create an application from this repository and set:
+
+| Setting                  | Value                                  |
+| ------------------------ | -------------------------------------- |
+| Build pack               | Railpack                               |
+| Base directory           | `/`                                    |
+| Ports exposes            | `3000`                                 |
+| Site type                | Dynamic                                |
+| Install / build / start  | Leave empty; Railpack detects them     |
+
+Railpack then runs `pnpm install --frozen-lockfile`, `pnpm run build` and `pnpm run start`.
+`next start` listens on port 3000 unless `PORT` is set. No environment variables are needed.
+Coolify's Railpack support is in beta and needs the Docker Buildx plugin on the build server.
+
+To see the plan Railpack will use: `railpack info .` in a clean checkout.
+
 ## Project structure
 
 ```
