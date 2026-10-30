@@ -50,13 +50,13 @@ export function Repositories() {
   const { spec, implementations, governance } = repositories;
 
   return (
-    <section aria-labelledby={repositories.id} data-form="branches" className="shell py-20 lg:py-28">
+    <section aria-labelledby={repositories.id} className="shell py-20 lg:py-28">
       <SectionHeading
         id={repositories.id}
         eyebrow={repositories.eyebrow}
         title={repositories.title}
         lead={repositories.lead}
-        illustrated
+        split
       />
 
       {/* The specification is the entry point, so it spans the row above its implementations. */}

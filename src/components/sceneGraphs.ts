@@ -240,44 +240,6 @@ function sphere(count: number, radius: number, center: V3 = [0, 0, 0], squash: V
   });
 }
 
-function forceLayout(count: number, edges: [number, number][], random: Random, box: V3, spacing = 1.4): V3[] {
-  const points: V3[] = sphere(count, 1).map((p) => add(p, [(random() - 0.5) * 0.3, (random() - 0.5) * 0.3, (random() - 0.5) * 0.3]));
-  const k = spacing / Math.cbrt(count);
-  for (let step = 0; step < 360; step++) {
-    const cooling = 0.08 * (1 - step / 360) + 0.004;
-    const forces: V3[] = points.map(() => [0, 0, 0]);
-    for (let i = 0; i < count; i++) {
-      for (let j = i + 1; j < count; j++) {
-        const d = sub(points[i], points[j]);
-        const l = Math.max(0.02, length(d));
-        const push = scale(d, (k * k) / (l * l));
-        forces[i] = add(forces[i], push);
-        forces[j] = sub(forces[j], push);
-      }
-      forces[i] = sub(forces[i], scale(points[i], 0.06));
-    }
-    for (const [i, j] of edges) {
-      const d = sub(points[j], points[i]);
-      const pull = scale(d, length(d) / k);
-      forces[i] = add(forces[i], pull);
-      forces[j] = sub(forces[j], pull);
-    }
-    points.forEach((p, i) => {
-      const f = forces[i];
-      const l = length(f);
-      points[i] = add(p, scale(f, Math.min(l, cooling) / (l || 1)));
-    });
-  }
-  // Fit the bulk of the nodes to the box; outliers are pulled in softly.
-  const extent = [0, 1, 2].map((axis) => {
-    const values = points.map((p) => Math.abs(p[axis])).sort((a, b) => a - b);
-    return values[Math.floor(values.length * 0.9)] || 1;
-  });
-  const soft = (value: number, limit: number) =>
-    Math.abs(value) <= limit ? value : Math.sign(value) * (limit + (Math.abs(value) - limit) * 0.25);
-  return points.map((p) => [0, 1, 2].map((axis) => soft((p[axis] / extent[axis]) * box[axis], box[axis] * 1.05)) as V3);
-}
-
 function cube(center: V3, size: number, rx: number, ry: number): { corners: V3[]; edges: [number, number][] } {
   const corners: V3[] = [];
   for (let i = 0; i < 8; i++) {
@@ -704,89 +666,7 @@ function globe(): Graph {
   return graph;
 }
 
-function branches(): Graph {
-  const graph = new Graph(31);
-  const main = graph.link([-2.3, 0, 0], [2.3, 0, 0], { tone: [0.05, 0.95], width: 1.5, alpha: 0.85 });
-  const feature = [
-    graph.link([-1.5, 0, 0], [-0.9, 0.62, 0.35], { lift: [0.0, 0.31, 0.17], tone: 0.35, width: 1.2 }),
-    graph.link([-0.9, 0.62, 0.35], [0.4, 0.62, 0.35], { tone: 0.35, width: 1.2 }),
-    graph.link([0.4, 0.62, 0.35], [0.95, 0, 0], { lift: [0.25, 0.31, 0.17], tone: 0.35, width: 1.2 }),
-  ];
-  const fix = [
-    graph.link([-0.7, 0, 0], [-0.1, -0.58, -0.35], { lift: [0.0, -0.29, -0.17], tone: 0.75, width: 1.2 }),
-    graph.link([-0.1, -0.58, -0.35], [1.25, -0.58, -0.35], { tone: 0.75, width: 1.2 }),
-    graph.link([1.25, -0.58, -0.35], [1.8, 0, 0], { lift: [0.25, -0.29, -0.17], tone: 0.75, width: 1.2 }),
-  ];
-  for (const phase of [0, 0.33, 0.66]) graph.packet(main, { speed: 0.07, phase, size: 0.03, tail: 0.18 });
-  [feature, fix].forEach((branch, b) =>
-    branch.forEach((link, i) => graph.packet(link, { speed: 0.12, start: i / 3, duration: 1 / 3, phase: b * 0.5, size: 0.026, tail: 0.6 })),
-  );
-
-  const commits: number[] = [];
-  for (const x of [-2.05, -1.5, -0.7, 0.1, 0.95, 1.8]) commits.push(graph.node([x, 0, 0], { size: 0.06, role: "commit", tone: clamp01((x + 2.3) / 4.6) }));
-  const head = graph.node([2.2, 0, 0], { size: 0.07, role: "hub", tone: 0.95 });
-  graph.ripple([2.2, 0, 0], 0.2, 0, { size: 0.07, tone: 0.95 });
-  for (const x of [-0.75, -0.15, 0.35]) commits.push(graph.node([x, 0.62, 0.35], { size: 0.05, role: "commit", tone: 0.35 }));
-  for (const x of [0.05, 0.65, 1.2]) commits.push(graph.node([x, -0.58, -0.35], { size: 0.05, role: "commit", tone: 0.75 }));
-  commits.push(head);
-
-  for (let i = 0; i < 10; i++) {
-    const x = -2 + i * 0.44 + (graph.rand() - 0.5) * 0.2;
-    const above = i % 2 === 0;
-    const at: V3 = [x, (above ? 1 : -1) * (0.88 + graph.rand() * 0.22) + (above ? 0.1 : -0.1), (graph.rand() - 0.5) * 1.1];
-    const person = graph.node(at, { size: 0.032, role: "leaf", tone: 0.88 + graph.rand() * 0.12, alpha: 0.9 });
-    const speed = 0.08 + graph.rand() * 0.06;
-    const phase = graph.rand();
-    const [commit] = graph.nearest(commits, at, 1);
-    const push = graph.link(person, commit, { width: 0.7, alpha: 0.24, dash: 8 });
-    graph.packet(push, { speed, phase, start: 0, duration: 0.25, size: 0.022, tail: 0.5, tone: 0.92 });
-    graph.ripple(graph.nodes[commit].at, speed, (0.25 - phase + 1) % 1, { size: 0.05, tone: 0.92, alpha: 0.7 });
-  }
-  return graph;
-}
-
-/** Scale-free network by preferential attachment. */
-function community(): Graph {
-  const graph = new Graph(47);
-  const random = seeded(53);
-  const count = 58;
-  const edges: [number, number][] = [[0, 1], [1, 2], [2, 0]];
-  const degree = [2, 2, 2];
-  for (let node = 3; node < count; node++) {
-    degree.push(0);
-    const targets = new Set<number>();
-    const wanted = random() < 0.3 ? 2 : 1;
-    while (targets.size < wanted) {
-      const total = degree.slice(0, node).reduce((sum, d) => sum + d, 0);
-      let pick = random() * total;
-      let target = 0;
-      while (pick > degree[target]) pick -= degree[target++];
-      targets.add(target);
-    }
-    for (const target of targets) {
-      edges.push([target, node]);
-      degree[target]++;
-      degree[node]++;
-    }
-  }
-  const positions = forceLayout(count, edges, seeded(59), [2.05, 1.0, 0.9], 2.8);
-  const ids = positions.map((at, i) =>
-    graph.node(at, {
-      size: 0.022 + Math.sqrt(degree[i]) * 0.014,
-      role: degree[i] >= 6 ? "hub" : degree[i] >= 3 ? "validator" : "leaf",
-      tone: 0.05 + (i / count) * 0.9,
-      order: i / count,
-    }),
-  );
-  edges.forEach(([a, b], k) => {
-    const link = graph.link(ids[a], ids[b], { width: 0.9, alpha: 0.42, order: b / count });
-    if (k % 2 === 0) graph.packet(link, { speed: 0.12 + random() * 0.18, phase: random(), size: 0.02, tail: 0.5, reverse: random() < 0.5 });
-  });
-  for (let i = count - 8; i < count; i++) graph.ripple(positions[i], 0.1 + random() * 0.08, random(), { size: 0.05, tone: 0.92, alpha: 0.8 });
-  return graph;
-}
-
-const BUILDERS: Record<FormName, () => Graph> = { chain, route, bridge, mesh, globe, branches, community };
+const BUILDERS: Record<FormName, () => Graph> = { chain, route, bridge, mesh, globe };
 
 export function formGraph(name: FormName): Graph {
   return BUILDERS[name]();

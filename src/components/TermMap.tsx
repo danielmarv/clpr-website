@@ -3,12 +3,13 @@
 import { useState } from "react";
 
 import type { Point } from "@/components/fibres";
-import { fibre, Glows, Mover, Star, TONES } from "@/components/fibreSvg";
+import { fibre, Mover } from "@/components/fibreSvg";
 import { TermShape } from "@/components/TermArt";
 import { RELATED, type Term } from "@/lib/glossary";
 import { cn } from "@/lib/utils";
 
 // The map repeats what the list offers, so it is hidden from assistive technology.
+// It sits on the light band: ink links, with the dark term badges of the list beside it.
 
 type Name = Term["term"];
 
@@ -35,6 +36,10 @@ const PLACES: Record<Name, Point> = {
 
 const NAMES = Object.keys(PLACES) as Name[];
 
+const INK = "#120f2c";
+const VIOLET = "#8b7bff";
+const MAGENTA = "#f0559f";
+
 const EDGES: [Name, Name][] = NAMES.flatMap((name) =>
   (RELATED.get(name) ?? []).filter((other) => name < other && other in PLACES).map((other) => [name, other as Name] as [Name, Name]),
 );
@@ -47,12 +52,15 @@ export function TermMap({ selected, onChoose }: { selected: string | undefined; 
 
   return (
     <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} fill="none" className="size-full overflow-visible" onPointerLeave={() => setHovered(null)}>
-      <Glows id={id} />
       <defs>
         <linearGradient id={`${id}-lit`} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor={TONES.violet} />
-          <stop offset="1" stopColor={TONES.pink} />
+          <stop offset="0" stopColor={VIOLET} />
+          <stop offset="1" stopColor={MAGENTA} />
         </linearGradient>
+        <radialGradient id={`${id}-halo`}>
+          <stop offset="0.5" stopColor={VIOLET} stopOpacity="0.32" />
+          <stop offset="1" stopColor={VIOLET} stopOpacity="0" />
+        </radialGradient>
       </defs>
 
       {EDGES.map(([a, b]) => {
@@ -65,14 +73,14 @@ export function TermMap({ selected, onChoose }: { selected: string | undefined; 
               <path
                 key={lane}
                 d={fibre(from, to, 0.04, lane * 0.025)}
-                stroke={lit ? `url(#${id}-lit)` : TONES.mist}
-                strokeOpacity={lit ? 0.75 : 0.3}
-                strokeWidth={lit ? 1.1 : 0.8}
+                stroke={lit ? `url(#${id}-lit)` : INK}
+                strokeOpacity={lit ? 0.85 : 0.14}
+                strokeWidth={lit ? 1.2 : 0.8}
               />
             ))}
             {lit && (
               <Mover key={`${focus}-${a}-${b}`} path={fibre(focus === a ? from : to, focus === a ? to : from, 0.04)} motion="prop-pass" at={50} duration={3.2}>
-                <circle r={2.6} fill="#fff" />
+                <circle r={3} fill={VIOLET} stroke="#fff" strokeWidth={1} />
               </Mover>
             )}
           </g>
@@ -89,26 +97,29 @@ export function TermMap({ selected, onChoose }: { selected: string | undefined; 
             key={name}
             transform={`translate(${place.x} ${place.y})`}
             className="cursor-pointer transition-opacity duration-500"
-            opacity={quiet ? 0.6 : 1}
+            opacity={quiet ? 0.8 : 1}
             onPointerEnter={() => setHovered(name)}
             onClick={() => onChoose(name)}
           >
-            {isFocus && <Star id={id} tone="violet" r={30} />}
-            <circle
-              r={15}
-              fill="#0b0a13"
-              stroke={isFocus ? "#fff" : isNeighbour ? TONES.violet : "rgb(255 255 255 / 0.18)"}
-              strokeWidth={isFocus ? 1.5 : 1}
-            />
+            {isFocus && (
+              <>
+                <circle r={32} fill={`url(#${id}-halo)`} />
+                <circle r={19.5} stroke={VIOLET} strokeWidth={1.4} />
+              </>
+            )}
+            <circle r={15} fill={INK} stroke={isNeighbour ? VIOLET : "none"} strokeWidth={1.2} />
             <g transform="scale(1.15)">
               <TermShape term={name} />
             </g>
+            {/* A paper outline keeps labels legible where links pass behind them. */}
             <text
               y={33}
               textAnchor="middle"
+              strokeWidth={4}
+              strokeLinejoin="round"
               className={cn(
-                "text-[13.5px] transition-[fill] duration-500 max-sm:hidden",
-                isFocus ? "fill-white font-medium" : isNeighbour ? "fill-white/90" : "fill-white/65",
+                "stroke-(--paper) text-[13.5px] transition-[fill] duration-500 [paint-order:stroke] max-sm:hidden",
+                isFocus ? "fill-foreground font-medium" : isNeighbour ? "fill-foreground/85" : "fill-muted-foreground",
               )}
             >
               {name}

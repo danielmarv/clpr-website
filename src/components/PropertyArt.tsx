@@ -1,11 +1,11 @@
 import type { ReactNode } from "react";
 
-import { Bundle, Endpoint, fibre, Glows, LaneGradient, MiniLedger, Mover, Pulse, round, Star, timing, TONES } from "@/components/fibreSvg";
+import { Bundle, fibre, Glows, LaneGradient, MiniLedger, Mover, Pulse, round, Star, timing, TONES } from "@/components/fibreSvg";
 import { guarantees } from "@/content/site";
 
 // Decorative diagrams for the protocol properties; the motion is the prop-* CSS and only runs without reduced motion.
 
-type Visual = (typeof guarantees.items)[number]["visual"];
+type Visual = Extract<(typeof guarantees.items)[number], { visual: string }>["visual"];
 const HEIGHT = 176;
 
 function Art({ id, width, children }: { id: string; width: number; children: ReactNode }) {
@@ -124,119 +124,6 @@ function ResponseArt() {
   );
 }
 
-function CustodyArt() {
-  const id = "prop-custody";
-  const from = { x: 34, y: 86 };
-  const to = { x: 286, y: 86 };
-  const lane = fibre(from, to, 0);
-  return (
-    <Art id={id} width={320}>
-      <LaneGradient id={`${id}-lane`} x1={from.x} x2={to.x} />
-      <defs>
-        <linearGradient id={`${id}-zero`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#fff" stopOpacity="0.2" />
-          <stop offset="1" stopColor="#fff" stopOpacity="0.02" />
-        </linearGradient>
-      </defs>
-      <text
-        x={160}
-        y={133}
-        textAnchor="middle"
-        fill={`url(#${id}-zero)`}
-        stroke="#fff"
-        strokeOpacity={0.16}
-        strokeWidth={0.8}
-        className="text-[138px] font-extralight"
-      >
-        0
-      </text>
-      <Bundle from={from} to={to} stroke={`url(#${id}-lane)`} strands={8} spread={0.035} opacity={0.5} seed={4} />
-      <Endpoint x={from.x} y={from.y} tone="violet" />
-      <Endpoint x={to.x} y={to.y} tone="pink" />
-      <Mover path={lane} motion="prop-pass" at={30}>
-        <Star id={id} tone="violet" r={12} />
-      </Mover>
-      <Mover path={lane} motion="prop-pass" at={78} delay={2.4}>
-        <Star id={id} tone="violet" r={12} />
-      </Mover>
-    </Art>
-  );
-}
-
-function DeliveryArt() {
-  const id = "prop-delivery";
-  const ledger = { x: 266, y: 92 };
-  const endpoint = { x: 70, y: 56 };
-  const entry = { x: 238, y: 98 };
-  const anyone = [
-    { x: 42, y: 126, bow: -0.12 },
-    { x: 92, y: 142, bow: -0.08 },
-    { x: 142, y: 124, bow: -0.12 },
-  ];
-  return (
-    <Art id={id} width={320}>
-      <path
-        d={`M${endpoint.x + 10} ${endpoint.y + 4}L${entry.x} ${entry.y - 10}`}
-        stroke="#fff"
-        strokeOpacity={0.14}
-        strokeDasharray="3 4"
-      />
-      <Endpoint x={endpoint.x} y={endpoint.y} tone="violet" offline />
-      <text x={endpoint.x} y={32} textAnchor="middle" className="fill-white/40 text-[12px]">
-        {guarantees.art.offline}
-      </text>
-      {anyone.map((node, k) => (
-        <Bundle key={k} from={node} to={entry} bow={node.bow} strands={4} spread={0.06} opacity={0.35} seed={21 + k} />
-      ))}
-      <MiniLedger id={id} tone="pink" x={ledger.x} y={ledger.y} r={30} seed={13} />
-      <Pulse x={ledger.x} y={ledger.y} motion="prop-ring" duration={1.6} delay={1.44} rest={0}>
-        <circle r={34} stroke={TONES.pink} strokeWidth={1.2} />
-      </Pulse>
-      {anyone.map((node, k) => (
-        <Pulse key={k} x={node.x} y={node.y} motion="prop-bead" delay={k * 1.6}>
-          <Star id={id} tone="mist" r={9} />
-        </Pulse>
-      ))}
-      <text x={92} y={168} textAnchor="middle" className="fill-white/40 text-[12px]">
-        {guarantees.art.anyone}
-      </text>
-      {anyone.map((node, k) => (
-        <Mover key={k} path={fibre(node, entry, node.bow)} motion="prop-relay" at={60} delay={k * 1.6} hidden={k !== 1}>
-          <Star id={id} tone="violet" r={11} />
-          <circle r={9} stroke={TONES.pink} strokeWidth={1.2} />
-        </Mover>
-      ))}
-    </Art>
-  );
-}
-
-function PayloadArt() {
-  const id = "prop-payload";
-  const from = { x: 34, y: 88 };
-  const to = { x: 286, y: 88 };
-  const lane = fibre(from, to, 0);
-  const payloads = [
-    <rect key="data" x={-5} y={-5} width={10} height={10} rx={2} fill={TONES.violet} />,
-    <circle key="feed" r={5.5} stroke={TONES.mist} strokeWidth={1.6} />,
-    <path key="call" d="M0 -7L7 0L0 7L-7 0Z" fill={TONES.pink} />,
-    <path key="bytes" d="M-6 -4h12M-6 0h12M-6 4h8" stroke={TONES.warm} strokeWidth={1.6} strokeLinecap="round" />,
-  ];
-  return (
-    <Art id={id} width={320}>
-      <LaneGradient id={`${id}-lane`} x1={from.x} x2={to.x} />
-      <Bundle from={from} to={to} stroke={`url(#${id}-lane)`} strands={8} spread={0.05} opacity={0.5} seed={6} />
-      <Endpoint x={from.x} y={from.y} tone="violet" />
-      <Endpoint x={to.x} y={to.y} tone="pink" />
-      {payloads.map((payload, k) => (
-        <Mover key={k} path={lane} motion="prop-pass" at={18 + k * 22} duration={6.4} delay={k * 1.6}>
-          <circle r={12} fill={`url(#${id}-mist)`} opacity={0.45} />
-          {payload}
-        </Mover>
-      ))}
-    </Art>
-  );
-}
-
 function SpeedArt({ compact }: { compact: boolean }) {
   const id = compact ? "prop-speed-compact" : "prop-speed";
   const width = compact ? 380 : 760;
@@ -318,12 +205,6 @@ export function PropertyArt({ visual }: { visual: Visual }) {
       return <Responsive phone={<OrderArt count={3} />} wider={<OrderArt count={6} />} />;
     case "response":
       return <ResponseArt />;
-    case "custody":
-      return <CustodyArt />;
-    case "delivery":
-      return <DeliveryArt />;
-    case "payload":
-      return <PayloadArt />;
     case "speed":
       return <Responsive phone={<SpeedArt compact />} wider={<SpeedArt compact={false} />} />;
   }

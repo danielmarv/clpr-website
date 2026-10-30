@@ -24,8 +24,6 @@ const FORM_GAIN: Record<FormName, number> = {
   bridge: 1,
   mesh: 1,
   globe: 1.7,
-  branches: 1,
-  community: 1,
 };
 
 const KIND_A = 0;
@@ -336,8 +334,6 @@ const FORM_FIT: Record<FormName, (width: number, height: number, halfWidth: numb
   // The floor stays under the layer stack, clear of the text beside it.
   mesh: (w) => w / 9,
   globe: (w, h) => (Math.min(w, h) / 2.4) * 1.15,
-  branches: (w, h) => Math.min(w / 4.8, h / 2.4) * 1.35,
-  community: (w, h) => Math.min(w / 4.4, h / 2.2) * 1.35,
 };
 
 function smoothstep(edge0: number, edge1: number, value: number): number {

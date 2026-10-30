@@ -83,17 +83,14 @@ export const guarantees = {
     {
       name: "Zero custody",
       body: "Endpoints never hold assets. There is no pooled liquidity sitting in the middle, waiting to become a target.",
-      visual: "custody",
     },
     {
       name: "Permissionless delivery",
       body: "If an Endpoint goes offline, anyone, including the sender, can submit the proof and the Channel moves on.",
-      visual: "delivery",
     },
     {
       name: "Any payload",
       body: "Arbitrary bytes: data, oracle feeds and contract calls. Asset transfers are application logic built on top.",
-      visual: "payload",
     },
     {
       name: "Speed of consensus",
@@ -102,8 +99,6 @@ export const guarantees = {
     },
   ],
   art: {
-    offline: "Endpoint offline",
-    anyone: "Anyone can deliver",
     bridge: "Bridge",
     clpr: "CLPR",
   },
