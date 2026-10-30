@@ -19,7 +19,7 @@ function highlight(text: string, needle: string): ReactNode {
   const parts = text.split(new RegExp(`(${escapeRegExp(needle)})`, "gi"));
   return parts.map((part, index) =>
     part.toLowerCase() === needle ? (
-      <mark key={index} className="rounded-sm bg-signal-glow/25 px-0.5 text-white">
+      <mark key={index} className="rounded-sm bg-signal-glow/25 px-0.5 text-foreground">
         {part}
       </mark>
     ) : (
@@ -95,7 +95,7 @@ export function Glossary() {
     );
 
   return (
-    <section aria-labelledby={glossary.id} className="shell py-20 lg:py-28">
+    <section aria-labelledby={glossary.id} className="band-light shell py-20 lg:py-28">
       <SectionHeading
         id={glossary.id}
         eyebrow={glossary.eyebrow}
@@ -106,7 +106,7 @@ export function Glossary() {
         illustration={<TermMap selected={selected?.term} onChoose={(name) => choose(name)} />}
       />
 
-      <div className="panel mt-10 p-5 sm:p-8 lg:mt-14 lg:p-10">
+      <div className="panel-light mt-10 p-5 sm:p-8 lg:mt-14 lg:p-10">
         <div className="grid gap-8 lg:grid-cols-12 lg:gap-10">
           <div className="lg:col-span-5">
             <label htmlFor={inputId} className="sr-only">
@@ -138,8 +138,8 @@ export function Glossary() {
                   className={cn(
                     "rounded-full border px-3.5 py-1.5 text-[0.85rem] transition-colors",
                     category === item
-                      ? "border-white bg-white text-night"
-                      : "border-white/10 text-white/70 hover:border-white/25 hover:text-white",
+                      ? "border-night bg-night text-white"
+                      : "border-border text-muted-foreground hover:border-line-strong hover:text-foreground",
                   )}
                 >
                   {item === "all" ? glossary.allLabel : item}
@@ -164,14 +164,17 @@ export function Glossary() {
                           onClick={() => choose(item.term)}
                           className={cn(
                             "flex w-full items-center justify-between gap-4 rounded-lg px-4 py-3 text-left transition-colors",
-                            isSelected ? "bg-white/7 text-white" : "text-white/75 hover:bg-white/3 hover:text-white",
+                            isSelected ? "bg-signal-wash text-foreground" : "text-foreground/75 hover:bg-mist hover:text-foreground",
                           )}
                         >
                           <span className="flex items-center gap-3">
-                            <TermIcon term={item.term} className={cn("size-4 shrink-0 transition-opacity", isSelected ? "opacity-100" : "opacity-60")} />
+                            {/* The icons' pale strokes are drawn for a dark ground, like the map's nodes. */}
+                            <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-night">
+                              <TermIcon term={item.term} className={cn("size-4 transition-opacity", isSelected ? "opacity-100" : "opacity-70")} />
+                            </span>
                             <span className="text-[1.02rem]">{highlight(item.term, needle)}</span>
                           </span>
-                          <span className={cn("text-[0.75rem]", isSelected ? "text-white/60" : "text-muted-foreground")}>
+                          <span className={cn("text-[0.75rem]", isSelected ? "text-muted-foreground" : "text-faint")}>
                             {item.category}
                           </span>
                         </button>
@@ -188,6 +191,7 @@ export function Glossary() {
                   <Button
                     variant="outline"
                     size="sm"
+                    className="border-line-strong text-foreground hover:border-foreground/40 hover:bg-mist"
                     onClick={() => {
                       setQuery("");
                       setCategory("all");
@@ -252,7 +256,7 @@ function TermDetail({
   return (
     <article
       className={cn(
-        "relative isolate overflow-hidden rounded-panel border border-signal-glow/20 bg-[linear-gradient(160deg,rgb(40_26_102/0.7),rgb(13_11_26/0.95)_60%,rgb(54_16_50/0.6))] text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.07)]",
+        "theme-dark relative isolate overflow-hidden rounded-panel border border-signal-glow/20 bg-background bg-[linear-gradient(160deg,rgb(40_26_102/0.7),rgb(13_11_26/0.95)_60%,rgb(54_16_50/0.6))] text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.07)]",
         compact ? "p-5" : "min-h-[30rem] p-10",
       )}
     >

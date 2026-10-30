@@ -12,13 +12,13 @@ const pathIcons: LucideIcon[] = [FileText, Code2, Network];
 export function GetInvolved() {
   return (
     <>
-      <section aria-labelledby={involvement.id} data-form="community" className="shell py-20 lg:py-28">
+      <section aria-labelledby={involvement.id} className="shell py-20 lg:py-28">
         <SectionHeading
           id={involvement.id}
           eyebrow={involvement.eyebrow}
           title={involvement.title}
           lead={involvement.lead}
-          illustrated
+          split
         />
 
         <ul className="mt-14 grid gap-3 md:grid-cols-3 lg:mt-20">
