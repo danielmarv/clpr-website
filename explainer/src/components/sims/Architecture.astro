@@ -75,14 +75,16 @@ const parts = catalog.components.map((c) => ({ ...c, links: c.refs.map((r) => ({
 
       <!-- wire -->
       <g data-part="wire" data-tone="c" class="part" tabindex="0" role="button" aria-label="The sync protocol">
-        <rect x="376" y="312" width="188" height="60" rx="8" class="d-surface" />
-        <line x1="344" y1="342" x2="376" y2="342" class="line c" /><line x1="564" y1="342" x2="596" y2="342" class="line c" />
-        <text x="470" y="334" class="t center b">gRPC sync</text>
-        <text x="470" y="350" class="t small center">gRPC sync · one stream per cycle</text>
-        <text x="470" y="364" class="t small center">unproven requests, proven bundles</text>
+        <rect x="368" y="300" width="204" height="80" rx="8" class="d-surface" />
+        <line x1="344" y1="342" x2="368" y2="342" class="line c" /><line x1="572" y1="342" x2="596" y2="342" class="line c" />
+        <text x="470" y="321" class="t center b">gRPC sync</text>
+        <text x="470" y="339" class="t small center">gRPC sync · one stream per cycle</text>
+        <text x="470" y="354" class="t small center">unproven requests,</text>
+        <text x="470" y="369" class="t small center">proven bundles</text>
       </g>
-      <text x="470" y="206" class="t small center muted">a Channel on each side: same id,</text>
-      <text x="470" y="222" class="t small center muted">own verifier, own queue, own running hash</text>
+      <text x="470" y="190" class="t small center muted">a Channel on each side: same id,</text>
+      <text x="470" y="206" class="t small center muted">own verifier, own queue,</text>
+      <text x="470" y="222" class="t small center muted">own running hash</text>
       <line x1="344" y1="236" x2="596" y2="236" class="line dash" data-role="channel" />
 
       <!-- lab -->

@@ -10,80 +10,83 @@ import { design } from '../../../lib/sources';
   kind="plain"
   minWidth={760}
 >
-  <svg viewBox="0 0 760 336" role="img" aria-label="Four panels. Remote call: an application on Ledger A calls a proxy, the call travels to a proxy on Ledger B which invokes the target contract, and the result travels back. Escrow, mint, burn: assets locked on A, minted on B, then burned on A, or released on A if the mint fails. Atomic swap: three ledgers each answer ready, then all commit, or one fails and all roll back. Native Hiero assets: a token moves from one Hiero network to another through the messaging layer with no proxies.">
+  <svg viewBox="0 0 760 358" role="img" aria-label="Four panels. Remote call: an application on Ledger A calls a proxy, the call travels to a proxy on Ledger B which invokes the target contract, and the result travels back. Escrow, mint, burn: assets locked on A, minted on B, then burned on A, or released on A if the mint fails. Atomic swap: three ledgers each answer ready, then all commit, or one fails and all roll back. Native Hiero assets: a token moves from one Hiero network to another through the messaging layer with no proxies.">
     <!-- panel 1: remote call -->
-    <rect x="12" y="12" width="178" height="296" rx="10" class="d-surface" />
-    <text x="101" y="36" class="t b center">Remote call</text>
-    <rect x="26" y="52" width="150" height="40" rx="8" class="d-a" />
-    <text x="101" y="70" class="t center">application on A</text>
-    <text x="101" y="85" class="t small center">calls a proxy</text>
-    <line x1="101" y1="92" x2="101" y2="134" class="line c" />
-    <text x="112" y="116" class="t small">a message</text>
-    <rect x="26" y="134" width="150" height="40" rx="8" class="d-b" />
-    <text x="101" y="152" class="t center">proxy on B</text>
-    <text x="101" y="167" class="t small center">invokes the target</text>
-    <rect x="26" y="192" width="150" height="40" rx="8" class="d-b" />
-    <text x="101" y="210" class="t center">target contract</text>
-    <text x="101" y="225" class="t small center">does the work</text>
-    <line x1="60" y1="232" x2="60" y2="270" class="line b dash" />
-    <text x="68" y="256" class="t small">the result, later</text>
-    <text x="101" y="292" class="t small center muted">written for asynchronous answers</text>
+    <rect x="10" y="12" width="158" height="318" rx="10" class="d-surface" />
+    <text x="89" y="36" class="t b center">Remote call</text>
+    <rect x="22" y="52" width="134" height="40" rx="8" class="d-a" />
+    <text x="89" y="70" class="t center">application on A</text>
+    <text x="89" y="85" class="t small center">calls a proxy</text>
+    <line x1="89" y1="92" x2="89" y2="134" class="line c" />
+    <text x="100" y="116" class="t small">a message</text>
+    <rect x="22" y="134" width="134" height="40" rx="8" class="d-b" />
+    <text x="89" y="152" class="t center">proxy on B</text>
+    <text x="89" y="167" class="t small center">invokes the target</text>
+    <rect x="22" y="192" width="134" height="40" rx="8" class="d-b" />
+    <text x="89" y="210" class="t center">target contract</text>
+    <text x="89" y="225" class="t small center">does the work</text>
+    <line x1="56" y1="232" x2="56" y2="270" class="line b dash" />
+    <text x="64" y="256" class="t small">the result, later</text>
+    <text x="89" y="304" class="t small center muted">written for</text>
+    <text x="89" y="319" class="t small center muted">asynchronous answers</text>
 
     <!-- panel 2: escrow, mint, burn -->
-    <rect x="202" y="12" width="178" height="296" rx="10" class="d-surface" />
-    <text x="291" y="36" class="t b center">Escrow, mint, burn</text>
-    <rect x="216" y="52" width="150" height="40" rx="8" class="d-a" />
-    <text x="291" y="70" class="t center">1 lock on A</text>
-    <text x="291" y="85" class="t small center">assets held in escrow</text>
-    <line x1="291" y1="92" x2="291" y2="134" class="line c" />
-    <rect x="216" y="134" width="150" height="40" rx="8" class="d-b" />
-    <text x="291" y="152" class="t center">2 mint on B</text>
-    <text x="291" y="167" class="t small center">matching assets issued</text>
-    <line x1="252" y1="174" x2="252" y2="212" class="line ok" />
-    <line x1="330" y1="174" x2="330" y2="212" class="line bad dash" />
-    <rect x="216" y="212" width="70" height="40" rx="8" class="d-ok" />
-    <text x="251" y="230" class="t small center">3 burn on A</text>
-    <text x="251" y="244" class="t small center">if it worked</text>
-    <rect x="296" y="212" width="70" height="40" rx="8" class="d-bad" />
-    <text x="331" y="230" class="t small center">release</text>
-    <text x="331" y="244" class="t small center">if it failed</text>
-    <text x="291" y="292" class="t small center muted">needs a common asset standard</text>
+    <rect x="178" y="12" width="190" height="318" rx="10" class="d-surface" />
+    <text x="273" y="36" class="t b center">Escrow, mint, burn</text>
+    <rect x="190" y="52" width="166" height="40" rx="8" class="d-a" />
+    <text x="273" y="70" class="t center">1 lock on A</text>
+    <text x="273" y="85" class="t small center">assets held in escrow</text>
+    <line x1="273" y1="92" x2="273" y2="134" class="line c" />
+    <rect x="190" y="134" width="166" height="40" rx="8" class="d-b" />
+    <text x="273" y="152" class="t center">2 mint on B</text>
+    <text x="273" y="167" class="t small center">matching assets issued</text>
+    <line x1="230" y1="174" x2="230" y2="212" class="line ok" />
+    <line x1="316" y1="174" x2="316" y2="212" class="line bad dash" />
+    <rect x="190" y="212" width="80" height="40" rx="8" class="d-ok" />
+    <text x="230" y="230" class="t small center">3 burn on A</text>
+    <text x="230" y="244" class="t small center">if it worked</text>
+    <rect x="276" y="212" width="80" height="40" rx="8" class="d-bad" />
+    <text x="316" y="230" class="t small center">release</text>
+    <text x="316" y="244" class="t small center">if it failed</text>
+    <text x="273" y="304" class="t small center muted">needs a common</text>
+    <text x="273" y="319" class="t small center muted">asset standard</text>
 
     <!-- panel 3: atomic swap -->
-    <rect x="392" y="12" width="178" height="296" rx="10" class="d-surface" />
-    <text x="481" y="36" class="t b center">Atomic swap, N ledgers</text>
-    <rect x="406" y="52" width="46" height="34" rx="8" class="d-a" /><text x="429" y="74" class="t center">A</text>
-    <rect x="458" y="52" width="46" height="34" rx="8" class="d-b" /><text x="481" y="74" class="t center">B</text>
-    <rect x="510" y="52" width="46" height="34" rx="8" class="d-c" /><text x="533" y="74" class="t center">C</text>
-    <text x="481" y="106" class="t small center">1 each gets ready, and says so</text>
-    <line x1="429" y1="86" x2="429" y2="118" class="line a" />
-    <line x1="481" y1="86" x2="481" y2="118" class="line b" />
-    <line x1="533" y1="86" x2="533" y2="118" class="line c" />
-    <rect x="406" y="124" width="150" height="40" rx="8" class="d-ok" />
-    <text x="481" y="142" class="t center">all ready → all commit</text>
-    <text x="481" y="157" class="t small center">the changes land together</text>
-    <rect x="406" y="178" width="150" height="40" rx="8" class="d-bad" />
-    <text x="481" y="196" class="t center">one fails → all roll back</text>
-    <text x="481" y="211" class="t small center">nothing lands anywhere</text>
-    <text x="481" y="248" class="t small center">two-phase commit, carried</text>
-    <text x="481" y="263" class="t small center">as ordinary messages</text>
-    <text x="481" y="292" class="t small center muted">every ledger must speak the protocol</text>
+    <rect x="378" y="12" width="192" height="318" rx="10" class="d-surface" />
+    <text x="474" y="36" class="t b center">Atomic swap, N ledgers</text>
+    <text x="474" y="60" class="t small center">1 each gets ready, and says so</text>
+    <rect x="390" y="70" width="52" height="34" rx="8" class="d-a" /><text x="416" y="92" class="t center">A</text>
+    <rect x="448" y="70" width="52" height="34" rx="8" class="d-b" /><text x="474" y="92" class="t center">B</text>
+    <rect x="506" y="70" width="52" height="34" rx="8" class="d-c" /><text x="532" y="92" class="t center">C</text>
+    <line x1="416" y1="104" x2="416" y2="136" class="line a" />
+    <line x1="474" y1="104" x2="474" y2="136" class="line b" />
+    <line x1="532" y1="104" x2="532" y2="136" class="line c" />
+    <rect x="390" y="142" width="168" height="40" rx="8" class="d-ok" />
+    <text x="474" y="160" class="t center">all ready → all commit</text>
+    <text x="474" y="175" class="t small center">the changes land together</text>
+    <rect x="390" y="194" width="168" height="40" rx="8" class="d-bad" />
+    <text x="474" y="212" class="t center">one fails → all roll back</text>
+    <text x="474" y="227" class="t small center">nothing lands anywhere</text>
+    <text x="474" y="262" class="t small center">two-phase commit, carried</text>
+    <text x="474" y="277" class="t small center">as ordinary messages</text>
+    <text x="474" y="304" class="t small center muted">every ledger must</text>
+    <text x="474" y="319" class="t small center muted">speak the protocol</text>
 
     <!-- panel 4: native Hiero assets -->
-    <rect x="582" y="12" width="166" height="296" rx="10" class="d-surface" />
+    <rect x="580" y="12" width="170" height="318" rx="10" class="d-surface" />
     <text x="665" y="36" class="t b center">Native Hiero assets</text>
-    <rect x="596" y="52" width="138" height="56" rx="8" class="d-a" />
+    <rect x="592" y="52" width="146" height="56" rx="8" class="d-a" />
     <text x="665" y="74" class="t center">Hiero network 1</text>
     <text x="665" y="92" class="t small center">a token, fungible or not</text>
-    <line x1="636" y1="108" x2="636" y2="176" class="line a" />
-    <text x="646" y="140" class="t small">moves by the</text>
-    <text x="646" y="154" class="t small">messaging layer</text>
-    <rect x="596" y="176" width="138" height="56" rx="8" class="d-a" />
+    <line x1="632" y1="108" x2="632" y2="176" class="line a" />
+    <text x="642" y="140" class="t small">moves by the</text>
+    <text x="642" y="154" class="t small">messaging layer</text>
+    <rect x="592" y="176" width="146" height="56" rx="8" class="d-a" />
     <text x="665" y="198" class="t center">Hiero network 2</text>
     <text x="665" y="216" class="t small center">the same token, here</text>
     <text x="665" y="262" class="t small center">no contract proxies</text>
-    <text x="665" y="292" class="t small center muted">CLPR-native handling</text>
+    <text x="665" y="304" class="t small center muted">CLPR-native handling</text>
 
-    <text x="380" y="328" class="t take center">Four patterns, one primitive: a data message that always gets exactly one reply.</text>
+    <text x="380" y="350" class="t take center">Four patterns, one primitive: a data message that always gets exactly one reply.</text>
   </svg>
 </Figure>

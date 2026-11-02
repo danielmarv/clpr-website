@@ -19,58 +19,58 @@ import { design, spec } from '../../../lib/sources';
     </defs>
 
     <!-- tamper marker above message 2 -->
-    <text x="312" y="24" class="t small center bad">change this one</text>
-    <line x1="312" y1="30" x2="312" y2="44" class="line bad" marker-end="url(#rhc-arrow-bad)"/>
+    <text x="316" y="24" class="t small center bad">change this one</text>
+    <line x1="316" y1="30" x2="316" y2="44" class="line bad" marker-end="url(#rhc-arrow-bad)"/>
 
     <!-- message row -->
-    <rect x="128" y="48" width="104" height="46" rx="8" class="d-a"/>
-    <text x="180" y="67" class="t small center b">message 1</text>
-    <text x="180" y="84" class="t mono center">ping</text>
-    <rect x="260" y="48" width="104" height="46" rx="8" class="d-a"/>
-    <text x="312" y="67" class="t small center b">message 2</text>
-    <text x="312" y="84" class="t mono center">pay Bo 5</text>
-    <text x="420" y="76" class="t b center muted">…</text>
-    <rect x="476" y="48" width="104" height="46" rx="8" class="d-a"/>
-    <text x="528" y="67" class="t small center b">message 40</text>
-    <text x="528" y="84" class="t small center">the last in the batch</text>
+    <rect x="130" y="48" width="108" height="46" rx="8" class="d-a"/>
+    <text x="184" y="67" class="t small center b">message 1</text>
+    <text x="184" y="84" class="t mono center">ping</text>
+    <rect x="262" y="48" width="108" height="46" rx="8" class="d-a"/>
+    <text x="316" y="67" class="t small center b">message 2</text>
+    <text x="316" y="84" class="t mono center">pay Bo 5</text>
+    <text x="410" y="76" class="t b center muted">…</text>
+    <rect x="450" y="48" width="128" height="46" rx="8" class="d-a"/>
+    <text x="514" y="67" class="t small center b">message 40</text>
+    <text x="514" y="84" class="t small center">the last in the batch</text>
 
     <!-- running hash row -->
-    <rect x="16" y="134" width="88" height="50" rx="8" class="d-grey"/>
-    <text x="60" y="154" class="t b center">H0</text>
-    <text x="60" y="172" class="t small center">32 zero bytes</text>
-    <rect x="128" y="134" width="104" height="50" rx="8" class="d-grey"/>
-    <text x="180" y="154" class="t b center">H1</text>
-    <text x="180" y="172" class="t mono center muted">SHA-256(H0‖m1)</text>
-    <rect x="260" y="134" width="104" height="50" rx="8" class="d-grey"/>
-    <text x="312" y="154" class="t b center">H2</text>
-    <text x="312" y="172" class="t mono center muted">SHA-256(H1‖m2)</text>
-    <text x="420" y="163" class="t b center muted">…</text>
-    <text x="420" y="200" class="t small center muted">3 to 39</text>
-    <rect x="476" y="134" width="104" height="50" rx="8" class="d-ok"/>
-    <text x="528" y="154" class="t b center">H40</text>
-    <text x="528" y="172" class="t small center">the anchor</text>
+    <rect x="16" y="134" width="92" height="50" rx="8" class="d-grey"/>
+    <text x="62" y="154" class="t b center">H0</text>
+    <text x="62" y="172" class="t small center">32 zero bytes</text>
+    <rect x="130" y="134" width="108" height="50" rx="8" class="d-grey"/>
+    <text x="184" y="154" class="t b center">H1</text>
+    <text x="184" y="172" class="t mono center muted">SHA-256(H0‖m1)</text>
+    <rect x="262" y="134" width="108" height="50" rx="8" class="d-grey"/>
+    <text x="316" y="154" class="t b center">H2</text>
+    <text x="316" y="172" class="t mono center muted">SHA-256(H1‖m2)</text>
+    <text x="410" y="163" class="t b center muted">…</text>
+    <text x="410" y="200" class="t small center muted">3 to 39</text>
+    <rect x="450" y="134" width="128" height="50" rx="8" class="d-ok"/>
+    <text x="514" y="154" class="t b center">H40</text>
+    <text x="514" y="172" class="t small center">the anchor</text>
 
     <!-- validators' signature -->
-    <rect x="620" y="126" width="124" height="66" rx="10" class="d-ok"/>
-    <text x="682" y="150" class="t b center">Validators'</text>
-    <text x="682" y="166" class="t b center">signature</text>
-    <text x="682" y="183" class="t small center">covers H40 only</text>
+    <rect x="624" y="126" width="120" height="66" rx="10" class="d-ok"/>
+    <text x="684" y="150" class="t b center">Validators'</text>
+    <text x="684" y="166" class="t b center">signature</text>
+    <text x="684" y="183" class="t small center">covers H40 only</text>
 
     <!-- arrows: message n feeds Hn -->
-    <line x1="180" y1="94" x2="180" y2="132" class="line a" marker-end="url(#rhc-arrow-a)"/>
-    <line x1="312" y1="94" x2="312" y2="132" class="line a" marker-end="url(#rhc-arrow-a)"/>
-    <line x1="528" y1="94" x2="528" y2="132" class="line a" marker-end="url(#rhc-arrow-a)"/>
+    <line x1="184" y1="94" x2="184" y2="132" class="line a" marker-end="url(#rhc-arrow-a)"/>
+    <line x1="316" y1="94" x2="316" y2="132" class="line a" marker-end="url(#rhc-arrow-a)"/>
+    <line x1="514" y1="94" x2="514" y2="132" class="line a" marker-end="url(#rhc-arrow-a)"/>
     <!-- arrows: Hn-1 feeds Hn -->
-    <line x1="104" y1="159" x2="126" y2="159" class="line" marker-end="url(#rhc-arrow)"/>
-    <line x1="232" y1="159" x2="258" y2="159" class="line" marker-end="url(#rhc-arrow)"/>
-    <line x1="364" y1="159" x2="404" y2="159" class="line" marker-end="url(#rhc-arrow)"/>
-    <line x1="436" y1="159" x2="474" y2="159" class="line" marker-end="url(#rhc-arrow)"/>
+    <line x1="108" y1="159" x2="128" y2="159" class="line" marker-end="url(#rhc-arrow)"/>
+    <line x1="238" y1="159" x2="260" y2="159" class="line" marker-end="url(#rhc-arrow)"/>
+    <line x1="370" y1="159" x2="394" y2="159" class="line" marker-end="url(#rhc-arrow)"/>
+    <line x1="426" y1="159" x2="448" y2="159" class="line" marker-end="url(#rhc-arrow)"/>
     <!-- signature signs H40 -->
-    <line x1="620" y1="159" x2="584" y2="159" class="line ok" marker-end="url(#rhc-arrow-ok)"/>
-    <text x="602" y="150" class="t small center muted">signs</text>
+    <line x1="624" y1="159" x2="582" y2="159" class="line ok" marker-end="url(#rhc-arrow-ok)"/>
+    <text x="601" y="150" class="t small center muted">signs</text>
 
     <!-- consequence of tampering: H2 … H40 all change -->
-    <path d="M262,206 L262,214 L578,214 L578,206" class="line bad"/>
+    <path d="M264,206 L264,214 L576,214 L576,206" class="line bad"/>
     <text x="420" y="232" class="t small center bad">then H2, H3 … H40 all change, and the signed H40 no longer matches</text>
 
     <!-- formula and takeaway -->

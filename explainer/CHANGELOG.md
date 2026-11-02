@@ -2,6 +2,16 @@
 
 Newest first. Each sync entry lists the upstream commit range it was reviewed against.
 
+## 2026-11-02 — figures and simulations fit the site's type
+
+Same upstream pins, content unchanged. Drawn in Sora, which runs wider than the engine's serif
+the drawings were laid out in, 68 labels in 29 figures and simulations ran past their boxes, onto
+each other or across box edges. Each of those drawings is laid out again (boxes widened or
+re-spaced, long labels split over two lines with the same words, lines moved off labels), and
+diagram titles take the website's weight, Sora 600. `checks/browser/check-diagram-text.mjs`, part of
+`pnpm run verify`, now fails when a label leaves its box. One label's doubled word ("running running
+hash") is gone.
+
 ## 2026-11-02 — footer and contents match the website's
 
 Same upstream pins, content unchanged. The footer now draws everything the website's footer does:
