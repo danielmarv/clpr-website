@@ -117,8 +117,20 @@ html .route a { border: 1px solid var(--line-strong); border-radius: 999px; back
 html .route a:hover { border-color: #fff; }
 html .act-band h2, html main > section > h2, html main > section > h3, html .sim__head h3, html .sim__head h4, html .step-card h4, html .check summary { font-weight: 600; letter-spacing: -0.02em; }
 html .act-band .act-no::after { background: var(--line-strong); }
-html .toc a[aria-current="true"] { border-left-color: var(--signal); }
 html .toc-inline { border-color: var(--line); background: var(--panel); }
+
+/* ---------- contents, in the website's type ----------
+   Labels as the website's eyebrows (Sora 500, sentence case, a gradient tick before the heading);
+   Plex Mono only for the numbers and at a weight the build ships, so nothing is synthesised bold.
+   The current section keeps its weight, as the website's step lists do, so its line never rewraps. */
+html .toc .kicker { font-family: var(--font); font-size: 0.8125rem; font-weight: 500; letter-spacing: 0; text-transform: none; color: var(--text-2); }
+html .toc h2 { display: flex; align-items: center; gap: 0.625rem; margin-bottom: 0.75rem; }
+html .toc h2::before { content: ""; width: 1.5rem; height: 1px; background: linear-gradient(90deg, var(--signal-glow), var(--proof-glow)); }
+html .toc .toc__act, html .toc .read-pct { font-size: 0.75rem; color: var(--text-3); }
+html .toc .toc__act { margin-top: 1.25rem; }
+html .toc a[aria-current="true"] { font-weight: inherit; color: #fff; border-left-color: var(--signal); }
+html .toc a[aria-current="true"] .num { color: var(--signal-ink); }
+html .toc a.done::after { font-weight: 400; }
 
 /* ---------- plates: figures, simulations, boxes ---------- */
 html .fig, html .wide, html .check, html .table-wrap, html .step-list { border-color: var(--line); background: var(--panel); }

@@ -2,13 +2,18 @@
 
 Newest first. Each sync entry lists the upstream commit range it was reviewed against.
 
-## 2026-11-02 — footer matches the website's
+## 2026-11-02 — footer and contents match the website's
 
 Same upstream pins, content unchanged. The footer now draws everything the website's footer does:
 the channel along its top edge, the partner logos (the website's `public/logos/` files, inlined as
 data URLs) instead of their names, the CLPR wordmark that follows the pointer, the website's arrow
 icons and its spacing. The explainer's status and licence lines moved into the legal line at the
 bottom.
+
+The contents list (the sidebar, and the "Start here" box on phones) sets its labels as the
+website's eyebrows, Sora 500 in sentence case, instead of tracked uppercase Plex Mono at 600, a
+weight the build does not ship and the browser was synthesising. The current section no longer
+turns bold, so its line does not rewrap as the reader moves.
 
 ## 2026-11-01 — moved into the CLPR website repository
 
