@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
  * Diagram text check. Renders both built pages in the site theme and measures every visible text
- * label in the figures and simulations: a label must stay inside the box it sits in and inside the
- * drawing, must not run into another box, and must not sit on another label. `kse preview-diagram`
+ * label in the figures and simulations: a label must keep a few units of room inside the box it
+ * sits in and inside the drawing, must not run into another box, and must not sit on another label. `kse preview-diagram`
  * draws a figure in the engine's own fonts; this check uses the fonts the pages ship (Sora is wider
  * than the engine's serif), so it catches what the preview cannot. Run after `pnpm run build`.
  */
@@ -37,7 +37,9 @@ for (const path of ['/', '/developers/']) {
   await page.goto(`${base}${path}`, { waitUntil: 'networkidle' });
   await page.evaluate(() => document.fonts.ready);
   const found = await page.evaluate(() => {
-    const SLACK = 1.5;
+    // Room a label keeps inside its box, in drawing units. Text renders a few per cent wider on some
+    // platforms than on others, so a label that only just fits here can spill out in CI.
+    const ROOM = 3;
     const shown = (el, svg) => {
       for (let n = el; n && n !== svg.parentNode; n = n.parentNode) {
         const s = getComputedStyle(n);
@@ -62,15 +64,17 @@ for (const path of ['/', '/developers/']) {
       const edge = svg.getBoundingClientRect();
       if (!edge.width) continue;
       drawings++;
+      const room = ROOM * (svg.viewBox.baseVal.width ? edge.width / svg.viewBox.baseVal.width : 1);
+      const tight = (b, r) => b.left < r.left + room || b.right > r.right - room;
       const boxes = [...svg.querySelectorAll('rect')].filter((r) => shown(r, svg) && painted(r)).map((r) => r.getBoundingClientRect()).filter((b) => b.width > 8 && b.height > 8);
       const texts = [...svg.querySelectorAll('text')].filter((t) => t.textContent.trim() && shown(t, svg)).map((t) => ({ text: t.textContent.trim().replace(/\s+/g, ' ').slice(0, 48), b: t.getBoundingClientRect() }));
       labels += texts.length;
       for (const [i, { text, b }] of texts.entries()) {
         const cx = b.left + b.width / 2, cy = b.top + b.height / 2;
-        if (b.left < edge.left - SLACK || b.right > edge.right + SLACK) out.push(`${name}: "${text}" runs past the drawing's edge`);
+        if (tight(b, edge)) out.push(`${name}: "${text}" is within ${ROOM} units of the drawing's edge, or past it`);
         const holders = boxes.filter((r) => cx > r.left && cx < r.right && cy > r.top && cy < r.bottom);
         const own = holders.sort((p, q) => p.width * p.height - q.width * q.height)[0];
-        if (own && (b.left < own.left - SLACK || b.right > own.right + SLACK)) out.push(`${name}: "${text}" runs past its box`);
+        if (own && tight(b, own)) out.push(`${name}: "${text}" is within ${ROOM} units of its box's edge, or past it`);
         // A box that does not hold the label but overlaps it: the label crosses that box's edge.
         const crossed = boxes.find((r) => !holders.includes(r) && overlap(b, r).every((d, k) => d > (k ? 3 : 2)));
         if (crossed) out.push(`${name}: "${text}" runs into a box`);

@@ -10,7 +10,7 @@ const { id = 'channel-life', detail = false } = Astro.props as { id?: string; de
 const S = [
   { k: 'NONE', x: 60, y: 70, w: 100, label: '(no channel)', sub: 'nothing', kind: 'end' },
   { k: 'PENDING', x: 280, y: 70, w: 100, label: 'PENDING', sub: 'claimed, silent', kind: 'trans' },
-  { k: 'ACTIVE', x: 500, y: 70, w: 100, label: 'ACTIVE', sub: 'normal operation', kind: 'ok' },
+  { k: 'ACTIVE', x: 500, y: 70, w: 112, label: 'ACTIVE', sub: 'normal operation', kind: 'ok' },
   { k: 'CLOSING', x: 720, y: 70, w: 100, label: 'CLOSING', sub: 'no new sends', kind: 'trans' },
   { k: 'PAUSED', x: 480, y: 180, w: 130, label: 'PAUSED', sub: 'out-of-order replies', kind: 'bad' },
   { k: 'DRAINED', x: 720, y: 180, w: 110, label: 'DRAINED', sub: 'all our data acked', kind: 'trans' },
@@ -30,8 +30,8 @@ const arrOk = `${id}-arr-ok`;
         </defs>
         <g class="edges" fill="none" stroke-width="1.5" marker-end={`url(#${arr})`}>
           <path d="M110,70 H230" pathLength="1" data-edge="NONE-PENDING" />
-          <path d="M330,70 H450" pathLength="1" data-edge="PENDING-ACTIVE" />
-          <path d="M550,70 H670" pathLength="1" data-edge="ACTIVE-CLOSING" />
+          <path d="M330,70 H444" pathLength="1" data-edge="PENDING-ACTIVE" />
+          <path d="M556,70 H670" pathLength="1" data-edge="ACTIVE-CLOSING" />
           <path d="M250,45 C250,4 90,4 90,45" pathLength="1" data-edge="PENDING-NONE" />
           <path d="M480,95 V155" pathLength="1" data-edge="ACTIVE-PAUSED" />
           <path d="M520,155 V95" pathLength="1" data-edge="PAUSED-ACTIVE" />

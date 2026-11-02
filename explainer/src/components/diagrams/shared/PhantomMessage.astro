@@ -51,11 +51,12 @@ import { design, spec } from '../../../lib/sources';
     <text x="446" y="70" class="t mono center">"send 5 to Bo"</text>
     <line x1="402" y1="40" x2="490" y2="76" class="line bad"/>
     <line x1="402" y1="76" x2="490" y2="40" class="line bad"/>
-    <rect x="384" y="108" width="124" height="44" rx="6" class="d-grey"/>
+    <rect x="384" y="108" width="124" height="58" rx="6" class="d-grey"/>
     <text x="446" y="126" class="t mono center">a different</text>
-    <text x="446" y="142" class="t mono center">block, no such line</text>
-    <text x="446" y="174" class="t small center bad">reversed</text>
-    <text x="446" y="188" class="t small center muted">replaced after the fact</text>
+    <text x="446" y="140" class="t mono center">block,</text>
+    <text x="446" y="154" class="t mono center">no such line</text>
+    <text x="446" y="188" class="t small center bad">reversed</text>
+    <text x="446" y="202" class="t small center muted">replaced after the fact</text>
 
     <!-- channel fast -->
     <rect x="520" y="40" width="220" height="64" rx="10" class="d-grey"/>
@@ -65,12 +66,13 @@ import { design, spec } from '../../../lib/sources';
     <line x1="494" y1="58" x2="518" y2="58" class="line" marker-end="url(#phm-arrow)"/>
 
     <!-- phantom message -->
-    <line x1="630" y1="104" x2="630" y2="130" class="line bad" marker-end="url(#phm-arrow-bad)"/>
-    <text x="640" y="122" class="t small bad">the block is reversed</text>
-    <rect x="520" y="132" width="220" height="64" rx="10" class="d-bad"/>
-    <text x="630" y="152" class="t b center">Phantom message on B</text>
-    <text x="630" y="170" class="t small center">"send 5 to Bo" ran on Ledger B;</text>
-    <text x="630" y="186" class="t small center">the line no longer exists on A</text>
+    <line x1="630" y1="104" x2="630" y2="140" class="line bad" marker-end="url(#phm-arrow-bad)"/>
+    <text x="640" y="120" class="t small bad">the block</text>
+    <text x="640" y="134" class="t small bad">is reversed</text>
+    <rect x="520" y="142" width="220" height="64" rx="10" class="d-bad"/>
+    <text x="630" y="162" class="t b center">Phantom message on B</text>
+    <text x="630" y="180" class="t small center">"send 5 to Bo" ran on Ledger B;</text>
+    <text x="630" y="196" class="t small center">the line no longer exists on A</text>
 
     <!-- channel safe -->
     <path d="M494,130 C508,130 508,250 518,250" class="line ok dash" marker-end="url(#phm-arrow-ok)"/>

@@ -62,6 +62,7 @@ the `viewBox`. Look at the PNGs. After placing the figure in the MDX, `pnpm run 
 The preview draws in the engine's own fonts. The pages set diagram text in Sora, which runs wider,
 so a label that fits in the preview can still spill out of its box on the site. After the build,
 `node checks/browser/check-diagram-text.mjs` renders both pages in the site theme and fails when a
-label runs past its box or the drawing's edge, runs into another box, or sits on another label; it
-also runs in `pnpm run verify`. It cannot see a line drawn through a label, so still look at the
+label comes within 3 units of its box's edge or the drawing's (text renders a little wider on some
+platforms, so a label that only just fits locally can spill out in CI), runs into another box, or
+sits on another label; it also runs in `pnpm run verify`. It cannot see a line drawn through a label, so still look at the
 figure on the built page.

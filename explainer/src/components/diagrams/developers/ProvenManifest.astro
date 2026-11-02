@@ -27,14 +27,14 @@ import { design, spec } from '../../../lib/sources';
     <text x="467" y="30" class="t small center">2 the verifier checks it, then it is stored</text>
 
     <!-- Ledger A's own list -->
-    <rect x="14" y="40" width="220" height="96" rx="8" class="d-a" />
-    <text x="124" y="64" class="t b center">Ledger A's endpoint list</text>
-    <text x="124" y="82" class="t small center">on-chain, kept by its CLPR Service</text>
-    <text x="124" y="98" class="t small center">Hiero: its consensus nodes, automatic</text>
-    <text x="124" y="114" class="t small center">EVM: apply with a bond, admin admits</text>
+    <rect x="14" y="40" width="236" height="96" rx="8" class="d-a" />
+    <text x="132" y="64" class="t b center">Ledger A's endpoint list</text>
+    <text x="132" y="82" class="t small center">on-chain, kept by its CLPR Service</text>
+    <text x="132" y="98" class="t small center">Hiero: its consensus nodes, automatic</text>
+    <text x="132" y="114" class="t small center">EVM: apply with a bond, admin admits</text>
 
     <!-- proof -->
-    <line x1="234" y1="88" x2="269" y2="88" class="line a" marker-end="url(#pab-arrow-a)" />
+    <line x1="250" y1="88" x2="269" y2="88" class="line a" marker-end="url(#pab-arrow-a)" />
     <rect x="272" y="56" width="176" height="64" rx="8" class="d-ok" />
     <rect x="280" y="71" width="26" height="22" rx="6" class="d-surface" /><circle cx="293" cy="82" r="5" class="d-ok" />
     <text x="378" y="86" class="t b center">Proof of the list</text>
@@ -49,19 +49,19 @@ import { design, spec } from '../../../lib/sources';
     <text x="608" y="114" class="t small center">never typed in by hand</text>
 
     <!-- update path: later changes -->
-    <rect x="14" y="166" width="220" height="56" rx="8" class="d-c" />
-    <text x="124" y="188" class="t b center">Later changes to the list</text>
-    <text x="124" y="206" class="t small center">arrive inside ordinary bundles</text>
-    <path d="M234,194 L580,194 L580,139" class="line c" marker-end="url(#pab-arrow-c)" />
+    <rect x="14" y="166" width="236" height="56" rx="8" class="d-c" />
+    <text x="132" y="188" class="t b center">Later changes to the list</text>
+    <text x="132" y="206" class="t small center">arrive inside ordinary bundles</text>
+    <path d="M250,194 L580,194 L580,139" class="line c" marker-end="url(#pab-arrow-c)" />
     <text x="400" y="184" class="t small center">3 via the endpoints, inside a bundle</text>
 
     <!-- update path: every endpoint replaced at once -->
-    <rect x="14" y="250" width="220" height="84" rx="8" class="d-ok" />
-    <text x="124" y="272" class="t b center">Every endpoint on A</text>
-    <text x="124" y="288" class="t b center">replaced at once?</text>
-    <text x="124" y="306" class="t small center">anyone fetches the new list, wraps it</text>
-    <text x="124" y="322" class="t small center">in a proof and submits it directly</text>
-    <path d="M234,292 L650,292 L650,139" class="line ok" marker-end="url(#pab-arrow-ok)" />
+    <rect x="14" y="250" width="236" height="84" rx="8" class="d-ok" />
+    <text x="132" y="272" class="t b center">Every endpoint on A</text>
+    <text x="132" y="288" class="t b center">replaced at once?</text>
+    <text x="132" y="306" class="t small center">anyone fetches the new list, wraps it</text>
+    <text x="132" y="322" class="t small center">in a proof and submits it directly</text>
+    <path d="M250,292 L650,292 L650,139" class="line ok" marker-end="url(#pab-arrow-ok)" />
     <text x="400" y="282" class="t small center">4 as an ordinary transaction, no endpoint needed</text>
 
     <!-- takeaway -->

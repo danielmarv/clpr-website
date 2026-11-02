@@ -14,7 +14,7 @@ rendering, with tools that run in seconds.
 | `pnpm run content-map` | regenerate `docs/content-map.md` from the references in `src/data/` and the components |
 | `pnpm exec kse check-scroll` | loads both built pages in Chromium and fails if either scrolls on its own within 2.5 s (a simulation once called `scrollIntoView` while initialising) |
 | `pnpm exec kse check-sims` | clicks every button of every simulation on both pages (and steps each step-through to its end) and fails on a console or page error, on a click that moves the window, or on SVG text under 10px at 400px; `DARK=1` for the dark theme |
-| `node checks/browser/check-diagram-text.mjs` | renders both built pages in the site theme and fails when a label in a figure or simulation runs past its box or the drawing's edge, runs into another box, or sits on another label |
+| `node checks/browser/check-diagram-text.mjs` | renders both built pages in the site theme and fails when a label in a figure or simulation comes within 3 units of its box's edge or the drawing's, runs into another box, or sits on another label |
 | `pnpm run check:browser` | the three checks above, in sequence; needs a Chromium (see Screenshots) |
 | `pnpm exec kse preview-diagram <Figure.astro> <out-prefix>` | renders one figure component with the engine's stylesheet and fonts (not the site theme; the diagram text check covers that), no build needed: light, dark and phone PNGs plus a report of text under 11px and elements outside the `viewBox` |
 | `pnpm test` | build, then check |

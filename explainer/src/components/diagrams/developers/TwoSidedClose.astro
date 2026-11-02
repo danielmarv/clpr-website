@@ -19,70 +19,70 @@ import { design, spec } from '../../../lib/sources';
     </defs>
 
     <!-- Admin triggers the close on A -->
-    <rect x="96" y="12" width="130" height="40" rx="8" class="d-grey"/>
-    <text x="161" y="29" class="t b small center">Admin (Ledger A)</text>
-    <text x="161" y="44" class="t mono center">closeChannel</text>
-    <line x1="161" y1="52" x2="161" y2="70" class="line" marker-end="url(#tsc-arrow)"/>
+    <rect x="97" y="12" width="130" height="40" rx="8" class="d-grey"/>
+    <text x="162" y="29" class="t b small center">Admin (Ledger A)</text>
+    <text x="162" y="44" class="t mono center">closeChannel</text>
+    <line x1="162" y1="52" x2="162" y2="70" class="line" marker-end="url(#tsc-arrow)"/>
 
     <!-- Lane A -->
     <text x="20" y="118" class="t b a">Ledger A</text>
-    <rect x="96" y="72" width="130" height="84" rx="8" class="d-a"/>
-    <text x="161" y="94" class="t b center">ACTIVE</text>
-    <text x="161" y="112" class="t small center">normal operation</text>
-    <text x="161" y="126" class="t small center muted">(or PAUSED)</text>
-    <line x1="226" y1="114" x2="244" y2="114" class="line a" marker-end="url(#tsc-arrow-a)"/>
-    <rect x="246" y="72" width="130" height="84" rx="8" class="d-a"/>
-    <text x="311" y="94" class="t b center">CLOSING</text>
-    <text x="311" y="112" class="t small center">sendMessage rejected;</text>
-    <text x="311" y="126" class="t small center">inbound still served</text>
-    <line x1="376" y1="114" x2="394" y2="114" class="line a" marker-end="url(#tsc-arrow-a)"/>
-    <rect x="396" y="72" width="130" height="84" rx="8" class="d-a"/>
-    <text x="461" y="94" class="t b center">DRAINED</text>
-    <text x="461" y="112" class="t small center">all own Data</text>
-    <text x="461" y="126" class="t small center">Messages acked</text>
-    <line x1="526" y1="114" x2="544" y2="114" class="line a" marker-end="url(#tsc-arrow-a)"/>
-    <rect x="546" y="72" width="130" height="84" rx="8" class="d-a"/>
-    <text x="611" y="94" class="t b center">CLOSED</text>
-    <text x="611" y="112" class="t small center">peer DRAINED or</text>
-    <text x="611" y="126" class="t small center">CLOSED, and all own</text>
-    <text x="611" y="140" class="t small center">messages acked</text>
+    <rect x="90" y="72" width="144" height="84" rx="8" class="d-a"/>
+    <text x="162" y="94" class="t b center">ACTIVE</text>
+    <text x="162" y="112" class="t small center">normal operation</text>
+    <text x="162" y="126" class="t small center muted">(or PAUSED)</text>
+    <line x1="234" y1="114" x2="248" y2="114" class="line a" marker-end="url(#tsc-arrow-a)"/>
+    <rect x="250" y="72" width="144" height="84" rx="8" class="d-a"/>
+    <text x="322" y="94" class="t b center">CLOSING</text>
+    <text x="322" y="112" class="t small center">sendMessage rejected;</text>
+    <text x="322" y="126" class="t small center">inbound still served</text>
+    <line x1="394" y1="114" x2="408" y2="114" class="line a" marker-end="url(#tsc-arrow-a)"/>
+    <rect x="410" y="72" width="144" height="84" rx="8" class="d-a"/>
+    <text x="482" y="94" class="t b center">DRAINED</text>
+    <text x="482" y="112" class="t small center">all own Data</text>
+    <text x="482" y="126" class="t small center">Messages acked</text>
+    <line x1="554" y1="114" x2="568" y2="114" class="line a" marker-end="url(#tsc-arrow-a)"/>
+    <rect x="570" y="72" width="144" height="84" rx="8" class="d-a"/>
+    <text x="642" y="94" class="t b center">CLOSED</text>
+    <text x="642" y="112" class="t small center">peer DRAINED or</text>
+    <text x="642" y="126" class="t small center">CLOSED, and all own</text>
+    <text x="642" y="140" class="t small center">messages acked</text>
 
     <!-- Lane B -->
     <text x="20" y="308" class="t b b-col">Ledger B</text>
-    <rect x="96" y="262" width="130" height="84" rx="8" class="d-b"/>
-    <text x="161" y="284" class="t b center">ACTIVE</text>
-    <text x="161" y="302" class="t small center">normal operation</text>
-    <line x1="226" y1="304" x2="244" y2="304" class="line b" marker-end="url(#tsc-arrow-b)"/>
-    <rect x="246" y="262" width="130" height="84" rx="8" class="d-b"/>
-    <text x="311" y="284" class="t b center">CLOSING</text>
-    <text x="311" y="302" class="t small center">followed the</text>
-    <text x="311" y="316" class="t small center">peer's status</text>
-    <line x1="376" y1="304" x2="394" y2="304" class="line b" marker-end="url(#tsc-arrow-b)"/>
-    <rect x="396" y="262" width="130" height="84" rx="8" class="d-b"/>
-    <text x="461" y="284" class="t b center">DRAINED</text>
-    <text x="461" y="302" class="t small center">its own queue</text>
-    <text x="461" y="316" class="t small center">fully acknowledged</text>
-    <line x1="526" y1="304" x2="544" y2="304" class="line b" marker-end="url(#tsc-arrow-b)"/>
-    <rect x="546" y="262" width="130" height="84" rx="8" class="d-b"/>
-    <text x="611" y="284" class="t b center">CLOSED</text>
-    <text x="611" y="302" class="t small center">peer DRAINED or</text>
-    <text x="611" y="316" class="t small center">CLOSED, and all own</text>
-    <text x="611" y="330" class="t small center">messages acked</text>
+    <rect x="90" y="262" width="144" height="84" rx="8" class="d-b"/>
+    <text x="162" y="284" class="t b center">ACTIVE</text>
+    <text x="162" y="302" class="t small center">normal operation</text>
+    <line x1="234" y1="304" x2="248" y2="304" class="line b" marker-end="url(#tsc-arrow-b)"/>
+    <rect x="250" y="262" width="144" height="84" rx="8" class="d-b"/>
+    <text x="322" y="284" class="t b center">CLOSING</text>
+    <text x="322" y="302" class="t small center">followed the</text>
+    <text x="322" y="316" class="t small center">peer's status</text>
+    <line x1="394" y1="304" x2="408" y2="304" class="line b" marker-end="url(#tsc-arrow-b)"/>
+    <rect x="410" y="262" width="144" height="84" rx="8" class="d-b"/>
+    <text x="482" y="284" class="t b center">DRAINED</text>
+    <text x="482" y="302" class="t small center">its own queue</text>
+    <text x="482" y="316" class="t small center">fully acknowledged</text>
+    <line x1="554" y1="304" x2="568" y2="304" class="line b" marker-end="url(#tsc-arrow-b)"/>
+    <rect x="570" y="262" width="144" height="84" rx="8" class="d-b"/>
+    <text x="642" y="284" class="t b center">CLOSED</text>
+    <text x="642" y="302" class="t small center">peer DRAINED or</text>
+    <text x="642" y="316" class="t small center">CLOSED, and all own</text>
+    <text x="642" y="330" class="t small center">messages acked</text>
 
     <!-- Bundles between the lanes -->
-    <line x1="311" y1="158" x2="311" y2="258" class="line c" marker-end="url(#tsc-arrow-c)"/>
-    <text x="319" y="200" class="t small">bundle:</text>
-    <text x="319" y="216" class="t mono">status = CLOSING</text>
+    <line x1="322" y1="158" x2="322" y2="258" class="line c" marker-end="url(#tsc-arrow-c)"/>
+    <text x="330" y="200" class="t small">bundle:</text>
+    <text x="330" y="216" class="t mono">status = CLOSING</text>
 
-    <line x1="461" y1="160" x2="461" y2="258" class="line c" marker-start="url(#tsc-arrow-c)" marker-end="url(#tsc-arrow-c)"/>
-    <text x="469" y="186" class="t small">bundles keep flowing</text>
-    <text x="469" y="202" class="t small">(responses, acks);</text>
-    <text x="469" y="218" class="t small">then each reports</text>
-    <text x="469" y="234" class="t mono">status = DRAINED</text>
+    <line x1="482" y1="160" x2="482" y2="258" class="line c" marker-start="url(#tsc-arrow-c)" marker-end="url(#tsc-arrow-c)"/>
+    <text x="490" y="186" class="t small">bundles keep flowing</text>
+    <text x="490" y="202" class="t small">(responses, acks);</text>
+    <text x="490" y="218" class="t small">then each reports</text>
+    <text x="490" y="234" class="t mono">status = DRAINED</text>
 
-    <line x1="611" y1="160" x2="611" y2="258" class="line c dash" marker-start="url(#tsc-arrow-c)" marker-end="url(#tsc-arrow-c)"/>
-    <text x="619" y="200" class="t small">bundle:</text>
-    <text x="619" y="216" class="t mono">status = CLOSED</text>
+    <line x1="642" y1="160" x2="642" y2="258" class="line c dash" marker-start="url(#tsc-arrow-c)" marker-end="url(#tsc-arrow-c)"/>
+    <text x="650" y="200" class="t small">bundle:</text>
+    <text x="650" y="216" class="t mono">status = CLOSED</text>
 
     <!-- takeaway -->
     <text x="380" y="376" class="t take center">Closing is a two-sided drain: a side closes only when it has drained and the peer says it has too.</text>
