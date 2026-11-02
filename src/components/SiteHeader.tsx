@@ -20,6 +20,8 @@ export function SiteHeader() {
   useEffect(() => {
     // The nav links point at section headings; what counts is the section around each one.
     const sections = nav.flatMap((item) => {
+      // Only in-page anchors take part in the scroll-spy; a path (the explainer) is a separate page.
+      if (!item.href.startsWith("#")) return [];
       const target = document.querySelector<HTMLElement>(item.href);
       return target ? [{ href: item.href, element: target.closest("section") ?? target }] : [];
     });

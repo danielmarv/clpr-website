@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // The explainer under public/plumbing/ is a built artefact of another repository.
+    "public/plumbing/**",
   ]),
 ]);
 
