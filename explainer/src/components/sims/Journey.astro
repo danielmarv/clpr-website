@@ -118,14 +118,14 @@ const phaseOf = (p: string) => journey.phases.find((x) => x.id === p)!;
 
       <!-- Endpoint B lives outside the ledger -->
       <g data-node="epB" class="node">
-        <rect x="395" y="300" width="150" height="46" rx="8" class="d-c" />
-        <text x="470" y="320" class="t b center">Endpoint</text>
-        <text x="470" y="336" class="t small center">separate process</text>
+        <rect x="428" y="300" width="120" height="46" rx="8" class="d-c" />
+        <text x="488" y="320" class="t b center">Endpoint</text>
+        <text x="488" y="336" class="t small center">separate process</text>
       </g>
       <g data-node="wire" class="node">
-        <line x1="360" y1="323" x2="395" y2="323" class="line c" />
-        <text x="377" y="344" class="t small center">gRPC</text>
-        <line x1="545" y1="323" x2="576" y2="290" class="line dash" />
+        <line x1="360" y1="323" x2="428" y2="323" class="line c" />
+        <text x="404" y="346" class="t small center">gRPC</text>
+        <line x1="548" y1="323" x2="576" y2="290" class="line dash" />
         <text x="575" y="312" class="t small">JSON-RPC</text>
       </g>
 
@@ -212,7 +212,7 @@ const phaseOf = (p: string) => journey.phases.find((x) => x.id === p)!;
   // sits on the gRPC line itself so the hop between the two endpoints is visibly along the wire.
   const POS: Record<string, [number, number]> = {
     appA: [212, 98], svcA: [348, 134], qA: [180, 162], verA: [336, 162], conA: [180, 220], epA: [348, 302], chainA: [348, 360],
-    wire: [378, 323], epB: [533, 302], svcB: [872, 134], verB: [716, 162], qB: [864, 162], conB: [864, 220], appB: [868, 74], chainB: [872, 360],
+    wire: [394, 323], epB: [542, 299], svcB: [872, 134], verB: [716, 162], qB: [864, 162], conB: [864, 220], appB: [868, 74], chainB: [872, 360],
   };
   // A waypoint on the JSON-RPC line, so Endpoint B's token follows that line into its ledger
   // instead of cutting diagonally across the drawing.

@@ -16,36 +16,38 @@ const refs = [{ doc: 'design', anchor: '343-n-ledger-atomic-swap-2pc', label: 'd
   <div class="sim__body">
     <div class="sim__scroll">
       <svg viewBox="0 0 760 262" role="img" aria-label="Three ledgers side by side. An application on Ledger A sends prepare messages to B and C over two channels, collects their replies, then sends commit or roll back.">
-        <rect x="20" y="30" width="200" height="170" rx="12" class="d-a" />
-        <text x="120" y="56" class="t b center">Ledger A</text>
-        <rect x="40" y="70" width="160" height="40" rx="8" class="d-surface" />
-        <text x="120" y="88" class="t center">the swap application</text>
-        <text x="120" y="103" class="t small center">starts it, keeps the tally</text>
-        <rect x="40" y="130" width="160" height="40" rx="8" class="d-surface" data-role="lockA" />
-        <text x="120" y="148" class="t center">its own change</text>
-        <text x="120" y="163" class="t small center" data-role="stateA">waiting</text>
-        <rect x="280" y="30" width="200" height="170" rx="12" class="d-b" />
+        <rect x="20" y="30" width="180" height="170" rx="12" class="d-a" />
+        <text x="110" y="56" class="t b center">Ledger A</text>
+        <rect x="35" y="70" width="150" height="58" rx="8" class="d-surface" />
+        <text x="110" y="97" class="t center">the swap application</text>
+        <text x="110" y="112" class="t small center">starts it, keeps the tally</text>
+        <rect x="35" y="142" width="150" height="40" rx="8" class="d-surface" data-role="lockA" />
+        <text x="110" y="160" class="t center">its own change</text>
+        <text x="110" y="175" class="t small center" data-role="stateA">waiting</text>
+        <rect x="290" y="30" width="180" height="170" rx="12" class="d-b" />
         <text x="380" y="56" class="t b center">Ledger B</text>
-        <rect x="300" y="70" width="160" height="40" rx="8" class="d-surface" />
-        <text x="380" y="88" class="t center">its application</text>
-        <text x="380" y="103" class="t small center">answers prepare and commit</text>
-        <rect x="300" y="130" width="160" height="40" rx="8" class="d-surface" data-role="lockB" />
-        <text x="380" y="148" class="t center">its change</text>
-        <text x="380" y="163" class="t small center" data-role="stateB">waiting</text>
-        <rect x="540" y="30" width="200" height="170" rx="12" class="d-c" />
-        <text x="640" y="56" class="t b center">Ledger C</text>
-        <rect x="560" y="70" width="160" height="40" rx="8" class="d-surface" />
-        <text x="640" y="88" class="t center">its application</text>
-        <text x="640" y="103" class="t small center">answers prepare and commit</text>
-        <rect x="560" y="130" width="160" height="40" rx="8" class="d-surface" data-role="lockC" />
-        <text x="640" y="148" class="t center">its change</text>
-        <text x="640" y="163" class="t small center" data-role="stateC">waiting</text>
-        <line x1="220" y1="90" x2="300" y2="90" class="line c" />
-        <text x="260" y="82" class="t small center">channel A–B</text>
-        <path d="M220,90 C 250,300 510,300 540,90" class="line c" fill="none" />
+        <rect x="305" y="70" width="150" height="58" rx="8" class="d-surface" />
+        <text x="380" y="89" class="t center">its application</text>
+        <text x="380" y="104" class="t small center">answers prepare</text>
+        <text x="380" y="118" class="t small center">and commit</text>
+        <rect x="305" y="142" width="150" height="40" rx="8" class="d-surface" data-role="lockB" />
+        <text x="380" y="160" class="t center">its change</text>
+        <text x="380" y="175" class="t small center" data-role="stateB">waiting</text>
+        <rect x="560" y="30" width="180" height="170" rx="12" class="d-c" />
+        <text x="650" y="56" class="t b center">Ledger C</text>
+        <rect x="575" y="70" width="150" height="58" rx="8" class="d-surface" />
+        <text x="650" y="89" class="t center">its application</text>
+        <text x="650" y="104" class="t small center">answers prepare</text>
+        <text x="650" y="118" class="t small center">and commit</text>
+        <rect x="575" y="142" width="150" height="40" rx="8" class="d-surface" data-role="lockC" />
+        <text x="650" y="160" class="t center">its change</text>
+        <text x="650" y="175" class="t small center" data-role="stateC">waiting</text>
+        <line x1="200" y1="99" x2="305" y2="99" class="line c" />
+        <text x="245" y="91" class="t small center">channel A–B</text>
+        <path d="M200,99 C 230,284 530,284 560,99" class="line c" fill="none" />
         <text x="380" y="256" class="t small center">channel A–C</text>
         <g data-role="env" hidden>
-          <rect x="-28" y="-11" width="56" height="22" rx="4" fill="var(--surface)" stroke="var(--text)" stroke-width="1.5" />
+          <rect x="-50" y="-11" width="100" height="22" rx="4" fill="var(--surface)" stroke="var(--text)" stroke-width="1.5" />
           <text x="0" y="4" class="t mono center" data-role="envlabel">prepare</text>
         </g>
       </svg>
@@ -70,7 +72,7 @@ const refs = [{ doc: 'design', anchor: '343-n-ledger-atomic-swap-2pc', label: 'd
   @media (min-width: 720px) { .sim.swap .sim__log { min-height: 6.4em; } }
 </style>
 <script>
-  const AT: Record<string, [number, number]> = { A: [120, 120], B: [380, 120], C: [640, 120] };
+  const AT: Record<string, [number, number]> = { A: [110, 120], B: [380, 120], C: [650, 120] };
   for (const root of Array.from(document.querySelectorAll<HTMLElement>('.sim.swap'))) {
     const $ = (s: string) => root.querySelector<HTMLElement>(s)!;
     const log = $('[data-role="log"]');
