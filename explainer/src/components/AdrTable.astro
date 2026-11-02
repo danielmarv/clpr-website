@@ -1,0 +1,20 @@
+---
+/**
+ * The accepted decision records, from src/data/adrs.json. `summary` is the plain one-sentence
+ * reading used on the general page; `detail` the developer page's. check-data.mjs keeps the rows
+ * in step with the files upstream.
+ */
+import adrs from '../data/adrs.json';
+import { pinned } from '../lib/sources';
+const { detail = false } = Astro.props as { detail?: boolean };
+---
+<div class="table-wrap">
+<table>
+<thead><tr><th>{detail ? 'ADR' : 'When'}</th><th class="wrap">{detail ? 'Decision' : 'What changed, and why'}</th></tr></thead>
+<tbody>
+  {adrs.adrs.map((a) => (
+    <tr><td><a href={pinned('clpr-spec', `ADR/${a.file}`)}>{a.date}</a></td><td class="wrap" set:html={detail ? a.detail : a.summary} /></tr>
+  ))}
+</tbody>
+</table>
+</div>

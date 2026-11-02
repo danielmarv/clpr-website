@@ -1,0 +1,21 @@
+---
+/** The six roles from src/data/roles.json as a table: what each does and what each risks. */
+import data from '../data/roles.json';
+import Refs from '@kse/components/Refs.astro';
+import type { Ref } from '../lib/sources';
+const refs = data.roles.flatMap((r) => r.refs) as Ref[];
+---
+<div class="table-wrap">
+<table class="roles-table">
+<thead><tr><th>Role</th><th class="wrap">What they do</th><th class="wrap">What they risk</th></tr></thead>
+<tbody>
+  {data.roles.map((r) => (
+    <tr><td><strong>{r.name}</strong></td><td class="wrap">{r.does}</td><td class="wrap">{r.risks}</td></tr>
+  ))}
+</tbody>
+</table>
+</div>
+<Refs refs={refs} />
+<style>
+  .roles-table td.wrap { min-width: 26ch; }
+</style>

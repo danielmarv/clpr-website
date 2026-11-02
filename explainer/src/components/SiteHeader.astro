@@ -1,0 +1,50 @@
+---
+/**
+ * The CLPR website's header (src/components/SiteHeader.tsx there), as static HTML: brand, the
+ * site's pill navigation with the explainer as the current item, GitHub and the call to action.
+ * Below it a bar for the explainer's two pages. Site links are root-relative, so they resolve on
+ * the website and on a standalone preview alike.
+ */
+import ClprMark from './ClprMark.astro';
+import GitHubMark from './GitHubMark.astro';
+import { SOURCES } from '../lib/sources';
+
+interface Props { path: '/' | '/developers/' }
+const { path } = Astro.props;
+const base = import.meta.env.BASE_URL.endsWith('/') ? import.meta.env.BASE_URL : import.meta.env.BASE_URL + '/';
+const nav = [
+  { label: 'How it works', href: '/#how-it-works' },
+  { label: 'Why bridgeless', href: '/#protocol' },
+  { label: 'Architecture', href: '/#architecture' },
+  { label: 'Code', href: '/#code' },
+  { label: 'Explainer', href: base, current: true },
+];
+---
+<header class="site-header">
+  <div class="shell">
+    <a class="brand" href="/" aria-label="CLPR home">
+      <ClprMark />
+      <span class="name">CLPR</span>
+      <span class="sep" aria-hidden="true"></span>
+      <span class="expansion">Cross Ledger Protocol</span>
+    </a>
+    <nav class="site-nav" aria-label="Main">
+      <ul>
+        {nav.map((item) => (
+          <li><a href={item.href} aria-current={item.current ? 'page' : undefined}>{item.label}</a></li>
+        ))}
+      </ul>
+    </nav>
+    <div class="actions">
+      <a class="site-btn ghost" href={SOURCES.org.url} target="_blank" rel="noreferrer"><GitHubMark /> GitHub</a>
+      <a class="site-btn primary" href="/#get-involved">Get involved</a>
+    </div>
+  </div>
+</header>
+<nav class="site-subnav" aria-label="Explainer pages">
+  <div class="shell">
+    <span class="label">The plumbing of CLPR</span>
+    <a href={base} aria-current={path === '/' ? 'page' : undefined}>For everyone</a>
+    <a href={base + 'developers/'} aria-current={path === '/developers/' ? 'page' : undefined}>For developers</a>
+  </div>
+</nav>

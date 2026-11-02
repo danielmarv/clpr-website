@@ -1,0 +1,111 @@
+---
+/** Where each member of the cast lives: state kept inside each ledger's CLPR Service (channel, connector, verifier and trust anchor), things that travel inside a bundle (messages and one state proof), and programs that act from outside (application, endpoint, admin). Draws from design §2.1 (terminology) and §3.1.0 (the CLPR Service holds all CLPR state). */
+import Figure from '@kse/components/Figure.astro';
+import { design } from '../../../lib/sources';
+---
+<Figure
+  lead="Three kinds of cast member."
+  caption="State that lives inside a ledger's CLPR Service (channel, connector, verifier, trust anchor), things that travel (message, bundle, state proof), and the programs around them (an application on each ledger, the endpoint outside both, the admin). The endpoint holds no key that either ledger trusts; what it carries is checked inside the receiving service."
+  source={[{ label: 'design §2.1', href: design('21-common-terminology') }, { label: 'design §3.1.0', href: design('310-the-clpr-service') }]}
+  kind="spec"
+  minWidth={760}
+>
+  <svg viewBox="0 0 760 404" role="img" aria-label="Two dashed frames, Ledger A on the left and Ledger B on the right. Inside each: an application and an admin at the top, a CLPR Service box holding the channel, the connector and the verifier with its trust anchor, and an endpoint straddling the bottom edge, half outside the ledger. Between the two endpoints a bundle box holds a data message, a reply, a housekeeping message and one state proof. Arrows: the application sends to the service, the endpoint reads the outbound queue, the bundle travels between endpoints, Ledger B's endpoint submits it as a transaction, and Ledger B's verifier checks the state proof.">
+    <defs>
+      <marker id="wlw-arrow-a" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9 Z" fill="var(--a)"/></marker>
+      <marker id="wlw-arrow-b" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9 Z" fill="var(--b)"/></marker>
+      <marker id="wlw-arrow-c" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9 Z" fill="var(--c)"/></marker>
+      <marker id="wlw-arrow-ok" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9 Z" fill="var(--ok)"/></marker>
+    </defs>
+
+    <!-- ===== Ledger A (left frame) ===== -->
+    <rect x="16" y="16" width="270" height="318" rx="12" class="line a dash"/>
+    <text x="30" y="38" class="t b a">Ledger A</text>
+    <text x="272" y="38" class="t mono muted end">acts from outside</text>
+
+    <rect x="26" y="48" width="118" height="46" rx="8" class="d-a"/>
+    <text x="85" y="68" class="t b center">Application</text>
+    <text x="85" y="84" class="t small center">sends, receives</text>
+    <rect x="158" y="48" width="118" height="46" rx="8" class="d-grey"/>
+    <text x="217" y="68" class="t b center">Service admin</text>
+    <text x="217" y="84" class="t small center">emergency brake</text>
+
+    <rect x="26" y="116" width="250" height="146" rx="10" class="d-surface"/>
+    <text x="151" y="136" class="t small center b">CLPR Service · the on-ledger core</text>
+    <text x="151" y="150" class="t mono center muted">state lives here</text>
+    <rect x="36" y="158" width="110" height="46" rx="8" class="d-grey"/>
+    <text x="91" y="176" class="t small center b">Channel</text>
+    <text x="91" y="192" class="t small center">queue + running hash</text>
+    <rect x="156" y="158" width="110" height="46" rx="8" class="d-money"/>
+    <text x="211" y="176" class="t small center b">Connector</text>
+    <text x="211" y="192" class="t small center">the connector</text>
+    <rect x="36" y="212" width="230" height="40" rx="8" class="d-ok"/>
+    <text x="151" y="229" class="t small center b">Verifier + trust anchor</text>
+    <text x="151" y="244" class="t small center">checks B's proofs; fixed at creation</text>
+
+    <rect x="26" y="312" width="250" height="44" rx="8" class="d-c"/>
+    <text x="151" y="330" class="t b center">Endpoint</text>
+    <text x="151" y="346" class="t small center">reads the outbound queue, talks to B's endpoint</text>
+
+    <!-- arrows inside A -->
+    <line x1="85" y1="94" x2="85" y2="114" class="line a" marker-end="url(#wlw-arrow-a)"/>
+    <text x="93" y="109" class="t small muted">sends</text>
+    <line x1="151" y1="262" x2="151" y2="310" class="line c" marker-end="url(#wlw-arrow-c)"/>
+
+    <!-- ===== Bundle (between the endpoints) ===== -->
+    <rect x="320" y="190" width="120" height="164" rx="10" class="d-c"/>
+    <text x="380" y="212" class="t b center">Bundle</text>
+    <text x="380" y="226" class="t mono center muted">travels</text>
+    <rect x="330" y="234" width="100" height="22" rx="6" class="d-grey"/>
+    <text x="380" y="249" class="t small center">data message</text>
+    <rect x="330" y="260" width="100" height="22" rx="6" class="d-grey"/>
+    <text x="380" y="275" class="t small center">reply</text>
+    <rect x="330" y="286" width="100" height="22" rx="6" class="d-grey"/>
+    <text x="380" y="301" class="t small center">housekeeping</text>
+    <rect x="330" y="318" width="100" height="26" rx="6" class="d-ok"/>
+    <text x="380" y="335" class="t small center b">one state proof</text>
+
+    <!-- endpoint A -> bundle -> endpoint B -->
+    <line x1="276" y1="334" x2="318" y2="334" class="line c" marker-end="url(#wlw-arrow-c)"/>
+    <line x1="440" y1="334" x2="482" y2="334" class="line c" marker-end="url(#wlw-arrow-c)"/>
+
+    <!-- ===== Ledger B (right frame) ===== -->
+    <rect x="474" y="16" width="270" height="318" rx="12" class="line b dash"/>
+    <text x="730" y="38" class="t b b-col end">Ledger B</text>
+    <text x="488" y="38" class="t mono muted">acts from outside</text>
+
+    <rect x="484" y="48" width="118" height="46" rx="8" class="d-b"/>
+    <text x="543" y="68" class="t b center">Application</text>
+    <text x="543" y="84" class="t small center">receives, replies</text>
+    <rect x="616" y="48" width="118" height="46" rx="8" class="d-grey"/>
+    <text x="675" y="68" class="t b center">Service admin</text>
+    <text x="675" y="84" class="t small center">emergency brake</text>
+
+    <rect x="484" y="116" width="250" height="146" rx="10" class="d-surface"/>
+    <text x="609" y="136" class="t small center b">CLPR Service · the on-ledger core</text>
+    <text x="609" y="150" class="t mono center muted">state lives here</text>
+    <rect x="494" y="158" width="110" height="46" rx="8" class="d-grey"/>
+    <text x="549" y="176" class="t small center b">Channel</text>
+    <text x="549" y="192" class="t small center">queue + running hash</text>
+    <rect x="614" y="158" width="110" height="46" rx="8" class="d-money"/>
+    <text x="669" y="176" class="t small center b">Connector</text>
+    <text x="669" y="192" class="t small center">the connector</text>
+    <rect x="494" y="212" width="230" height="40" rx="8" class="d-ok"/>
+    <text x="609" y="229" class="t small center b">Verifier + trust anchor</text>
+    <text x="609" y="244" class="t small center">checks A's proofs; fixed at creation</text>
+
+    <rect x="484" y="312" width="250" height="44" rx="8" class="d-c"/>
+    <text x="609" y="330" class="t b center">Endpoint</text>
+    <text x="609" y="346" class="t small center">submits it as an ordinary transaction</text>
+
+    <!-- arrows inside B -->
+    <line x1="609" y1="310" x2="609" y2="264" class="line c" marker-end="url(#wlw-arrow-c)"/>
+    <line x1="543" y1="114" x2="543" y2="96" class="line b" marker-end="url(#wlw-arrow-b)"/>
+    <text x="551" y="109" class="t small muted">delivers</text>
+    <!-- verifier B checks the state proof in the bundle -->
+    <path d="M494,236 C466,244 458,318 434,326" class="line ok" marker-end="url(#wlw-arrow-ok)"/>
+
+    <!-- takeaway -->
+    <text x="380" y="388" class="t take center">The endpoint holds no key either ledger trusts; everything it carries is checked inside the receiving service.</text>
+  </svg>
+</Figure>

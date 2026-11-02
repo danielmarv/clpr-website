@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // The explainer: its source under explainer/ has its own checks, and public/plumbing/ is its build output.
+    "explainer/**",
+    "public/plumbing/**",
   ]),
 ]);
 

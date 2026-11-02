@@ -1,0 +1,71 @@
+---
+/** What the specification consists of: the design document (the why) and the protocol specification (the what) side by side, one folder per supported proof system under the specification, the decision records that feed edits into both documents, and the options list of undecided ideas. Drawn from the clpr-spec repository layout. */
+import Figure from '@kse/components/Figure.astro';
+import { pinned } from '../../../lib/sources';
+---
+<Figure
+  lead="The document set."
+  caption="The design document explains the reasoning and the protocol specification fixes the rules. One folder per supported proof system says how that ledger's proofs are built and checked. Decision records carry every change with its reasoning; the options list holds what is undecided."
+  source={[
+    { label: 'clpr-spec', href: pinned('clpr-spec') },
+    { label: 'ADR/README.md', href: pinned('clpr-spec', 'ADR/README.md') },
+    { label: 'verifiers/README.md', href: pinned('clpr-spec', 'verifiers/README.md') },
+    { label: 'options to consider', href: pinned('clpr-spec', 'clpr-options-to-consider.md') },
+  ]}
+  kind="plain"
+  minWidth={760}
+>
+  <svg viewBox="0 0 760 316" role="img" aria-label="Two documents side by side: the design document (the why) and the protocol specification (the what). Below the specification, two folders, verifiers/hiero and verifiers/qbft, each with three short documents. Below the design document, the ADR folder of five dated decision records, with arrows carrying exact edits into both documents, and beside it the options list of thirteen undecided ideas.">
+    <defs>
+      <marker id="sdm-arrow" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9 Z" fill="var(--text-3)"/></marker>
+      <marker id="sdm-arrow-ok" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9 Z" fill="var(--ok)"/></marker>
+    </defs>
+
+    <!-- the two documents -->
+    <rect x="40" y="30" width="310" height="80" rx="10" class="d-ok"/>
+    <text x="195" y="54" class="t b center">Design document</text>
+    <text x="195" y="72" class="t mono center">clpr-service.md</text>
+    <text x="195" y="94" class="t small center">the why: problem, layers, roles, trust, failures</text>
+
+    <rect x="410" y="30" width="310" height="80" rx="10" class="d-ok"/>
+    <text x="565" y="54" class="t b center">Protocol specification</text>
+    <text x="565" y="72" class="t mono center">clpr-service-spec.md</text>
+    <text x="565" y="94" class="t small center">the what: byte formats, state, algorithms, operations</text>
+
+    <!-- one folder per proof system -->
+    <line x1="485" y1="110" x2="485" y2="168" class="line ok dash" marker-end="url(#sdm-arrow-ok)"/>
+    <line x1="645" y1="110" x2="645" y2="168" class="line ok dash" marker-end="url(#sdm-arrow-ok)"/>
+    <text x="565" y="144" class="t small center muted">one folder per proof system</text>
+
+    <rect x="410" y="170" width="150" height="86" rx="8" class="d-surface"/>
+    <text x="485" y="190" class="t mono center b">verifiers/hiero</text>
+    <text x="485" y="210" class="t mono center muted">state_proof</text>
+    <text x="485" y="226" class="t mono center muted">verifier_contract</text>
+    <text x="485" y="242" class="t mono center muted">trust_anchor</text>
+
+    <rect x="570" y="170" width="150" height="86" rx="8" class="d-surface"/>
+    <text x="645" y="190" class="t mono center b">verifiers/qbft</text>
+    <text x="645" y="210" class="t mono center muted">state_proof</text>
+    <text x="645" y="226" class="t mono center muted">verifier_contract</text>
+    <text x="645" y="242" class="t mono center muted">trust_anchor</text>
+
+    <!-- decision records -->
+    <rect x="40" y="170" width="160" height="66" rx="8" class="d-grey"/>
+    <text x="120" y="192" class="t mono center b">ADR/</text>
+    <text x="120" y="210" class="t small center">five dated</text>
+    <text x="120" y="226" class="t small center">decision records</text>
+    <line x1="120" y1="170" x2="120" y2="112" class="line" marker-end="url(#sdm-arrow)"/>
+    <text x="128" y="146" class="t small muted">exact edits</text>
+    <path d="M166,170 C166,134 300,134 410,114" class="line" marker-end="url(#sdm-arrow)"/>
+    <text x="296" y="128" class="t small center muted">exact edits</text>
+
+    <!-- options list -->
+    <rect x="220" y="170" width="160" height="66" rx="8" class="d-grey"/>
+    <text x="300" y="192" class="t b center">Options to consider</text>
+    <text x="300" y="210" class="t small center">thirteen ideas</text>
+    <text x="300" y="226" class="t small center">not yet decided</text>
+
+    <!-- takeaway -->
+    <text x="380" y="296" class="t take center">Two documents carry the rules; the records say why they changed; the options list says what is still open.</text>
+  </svg>
+</Figure>

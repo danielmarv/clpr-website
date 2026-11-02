@@ -1,0 +1,33 @@
+{
+  "$comment": "The application patterns the design document lists in §3.4, one row per sub-heading; check-data.mjs fails when the count differs. plain is the site's one- or two-sentence reading of each.",
+  "patterns": [
+    {
+      "id": "remote-call",
+      "name": "Remote smart contract call",
+      "plain": "A contract on one ledger calls a proxy, which records the call. An endpoint carries it across, the proxy on the other ledger invokes the target contract, and the result comes back the same way. Applications have to be written for answers that arrive later, not in the same call.",
+      "refs": [{ "doc": "design", "anchor": "341-remote-smart-contract-call", "label": "design §3.4.1" }]
+    },
+    {
+      "id": "escrow-mint-burn",
+      "name": "Escrow, mint, then burn",
+      "plain": "Assets are locked on the source ledger, then minted on the destination. If minting succeeds the locked assets may be burned; if it fails they are released. Needs atomic semantics and a common asset standard.",
+      "refs": [{ "doc": "design", "anchor": "342-escrow-mint-then-burn", "label": "design §3.4.2" }]
+    },
+    {
+      "id": "atomic-swap",
+      "name": "N-ledger atomic swap",
+      "plain": "Several ledgers make state changes tied together by two-phase commit: each enters a ready-or-roll-back state, and if any one fails, all roll back. Every participating ledger must understand the others' commit messages.",
+      "refs": [{ "doc": "design", "anchor": "343-n-ledger-atomic-swap-2pc", "label": "design §3.4.3" }]
+    },
+    {
+      "id": "hiero-assets",
+      "name": "Native Hiero asset management",
+      "plain": "Hiero tokens, fungible and non-fungible, handled across Hiero networks by the messaging layer directly, with no smart-contract proxies in between.",
+      "refs": [{ "doc": "design", "anchor": "344-native-hiero-asset-management", "label": "design §3.4.4" }]
+    }
+  ],
+  "channelChoice": {
+    "plain": "When several channels exist between the same two ledgers, for example one per Ethereum commitment level, the application picks one at send time by its own needs: a price feed may accept the risk of a reorganisation for speed, a high-value transfer waits for finality. CLPR imposes no default.",
+    "refs": [{ "doc": "design", "anchor": "34-application-layer", "label": "design §3.4" }]
+  }
+}

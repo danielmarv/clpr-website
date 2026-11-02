@@ -1,0 +1,69 @@
+---
+/** Why chain_id alone cannot name a peer: two CLPR Service contracts on one ledger both claim eip155:1, so a channel names its peer by (ChainID, ClprServiceAddress). Draws on design §3.1.1 and spec §1.1. */
+import Figure from '@kse/components/Figure.astro';
+import { design, spec } from '../../../lib/sources';
+---
+<Figure
+  lead="Two services, one chain id."
+  caption="Nothing stops two CLPR Service contracts on the same ledger from both claiming eip155:1, so a channel identifies its peer by chain id and service address together. Private networks may self-assign a namespace."
+  source={[{ label: 'design §3.1.1', href: design('311-ledger-identity-and-configuration') }, { label: 'spec §1.1', href: spec('11-ledger-identity-and-configuration') }]}
+  kind="spec"
+  minWidth={740}
+>
+  <svg viewBox="0 0 740 340" role="img" aria-label="Ledger A on the left holds a Channel whose chain_id is eip155:1 and whose peer service_address is 0x…1. On the right, a dashed frame labelled eip155:1 contains two CLPR Service contracts, 0x…1 and 0x…2, both publishing the same chain id. A solid arrow from the channel reaches service 1, labelled peer = (eip155:1, 0x…1); a dashed crossed-out arrow towards service 2 says chain_id alone cannot tell them apart. Below, a private network self-assigns the namespace hashsphere:acme-prod.">
+    <defs>
+      <marker id="cpi-arrow-a" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9 Z" fill="var(--a)"/></marker>
+      <marker id="cpi-arrow-bad" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9 Z" fill="var(--bad)"/></marker>
+    </defs>
+
+    <!-- Ledger A (left): the channel that names its peer -->
+    <rect x="20" y="36" width="270" height="184" rx="12" class="d-a"/>
+    <text x="36" y="58" class="t b">Ledger A</text>
+    <text x="36" y="74" class="t small muted">local ledger: holds the channel</text>
+    <rect x="36" y="96" width="238" height="108" rx="8" class="d-surface"/>
+    <text x="48" y="118" class="t b">Channel</text>
+    <text x="48" y="138" class="t mono">chain_id = eip155:1</text>
+    <text x="48" y="156" class="t mono">peer service_address = 0x…1</text>
+    <text x="48" y="176" class="t small muted">names its peer by both</text>
+
+    <!-- One ledger, two services (right, dashed frame) -->
+    <rect x="430" y="36" width="290" height="184" rx="12" class="d-b" stroke-dasharray="6 4"/>
+    <text x="446" y="58" class="t b b-col">eip155:1</text>
+    <text x="446" y="74" class="t small muted">one CAIP-2 id, one ledger</text>
+    <rect x="446" y="88" width="258" height="58" rx="8" class="d-b"/>
+    <text x="458" y="108" class="t b">CLPR Service 1</text>
+    <text x="458" y="126" class="t mono">service_address 0x…1</text>
+    <text x="458" y="140" class="t mono">publishes chain_id eip155:1</text>
+    <rect x="446" y="156" width="258" height="58" rx="8" class="d-grey"/>
+    <text x="458" y="176" class="t b">CLPR Service 2</text>
+    <text x="458" y="194" class="t mono">service_address 0x…2</text>
+    <text x="458" y="208" class="t mono">also publishes eip155:1</text>
+
+    <!-- Channel -> service 1: the compound key resolves -->
+    <line x1="278" y1="138" x2="444" y2="120" class="line a" marker-end="url(#cpi-arrow-a)"/>
+    <text x="361" y="100" class="t mono center a">peer =</text>
+    <text x="361" y="114" class="t mono center a">(eip155:1, 0x…1)</text>
+
+    <!-- Channel -> service 2: chain_id alone is ambiguous -->
+    <line x1="278" y1="162" x2="444" y2="186" class="line bad dash" marker-end="url(#cpi-arrow-bad)"/>
+    <circle cx="361" cy="174" r="10" class="d-surface"/>
+    <text x="361" y="178" class="t b center bad">✕</text>
+    <text x="361" y="200" class="t small center bad">chain_id alone cannot</text>
+    <text x="361" y="214" class="t small center bad">tell them apart</text>
+
+    <!-- The key the spec names -->
+    <rect x="20" y="236" width="270" height="64" rx="8" class="d-surface"/>
+    <text x="36" y="256" class="t b">Peer identity</text>
+    <text x="36" y="274" class="t mono">(ChainID, ClprServiceAddress)</text>
+    <text x="36" y="290" class="t small muted">a compound key; neither half is enough</text>
+
+    <!-- Private networks pick their own namespace -->
+    <rect x="430" y="236" width="290" height="64" rx="8" class="d-grey"/>
+    <text x="446" y="256" class="t b">Private network</text>
+    <text x="446" y="274" class="t mono">hashsphere:acme-prod</text>
+    <text x="446" y="290" class="t small muted">self-assigned, unregistered namespace</text>
+
+    <!-- takeaway -->
+    <text x="370" y="324" class="t take center">A peer is (ChainID, ClprServiceAddress); the chain id names a ledger, not a service.</text>
+  </svg>
+</Figure>

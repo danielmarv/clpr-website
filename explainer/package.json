@@ -1,0 +1,33 @@
+{
+  "name": "clpr-explainer",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "The plumbing of CLPR: a two-page explainer built into the website at /plumbing/.",
+  "license": "Apache-2.0",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "kse check",
+    "check:anchors": "kse check-anchors",
+    "check:browser": "kse check-scroll && kse check-sims",
+    "verify": "astro build && kse check && kse check-anchors && kse check-scroll && kse check-sims && DARK=1 kse check-sims && kse overflow / 400 && kse overflow /developers/ 400",
+    "content-map": "kse content-map",
+    "sync:fetch": "kse sync-upstream",
+    "sync:status": "kse sync-upstream --report-only",
+    "sync:pin": "kse pin-upstream",
+    "shot": "kse shot",
+    "export:single": "astro build && kse export-single",
+    "test": "astro build && kse check",
+    "build:embedded": "node embed.mjs"
+  },
+  "dependencies": {
+    "@astrojs/mdx": "^8.0.2",
+    "astro": "^7.3.5",
+    "knowledge-site-engine": "0.1.0"
+  },
+  "devDependencies": {
+    "playwright": "^1.63.0"
+  }
+}

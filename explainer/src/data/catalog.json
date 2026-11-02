@@ -1,0 +1,281 @@
+{
+  "$comment": "The pieces CLPR is made of, as the Architecture map and the \"where it lives\" sections show them. Text is rendered as written; refs are pinned links (see docs/provenance.md). Positions on the map stay in Architecture.astro: a new component needs a row here and a place in that SVG.",
+  "components": [
+    {
+      "k": "spec",
+      "name": "The specification",
+      "where": "LFDT-CLPR/clpr-spec",
+      "plain": "The rulebook every other piece must follow. Two documents: a design document that explains the why (trust model, layers, roles, recovery) and a protocol specification that fixes the what (wire formats, state, algorithms, a pseudo-API). Alongside them, one folder per supported proof system saying exactly how that ledger's proofs are built and checked, and a record of every decision that changed the text.",
+      "detail": "clpr-service.md (design), clpr-service-spec.md (normative: protobufs, on-ledger state model, verifier interface, §4 algorithms, §6 pseudo-API), verifiers/{hiero,qbft}/ (state_proof.md, verifier_contract.md, trust_anchor.md), ADR/ (five accepted records plus the ADR guide) and clpr-options-to-consider.md (thirteen undecided items). Specifications are licensed under the Community Specification License 1.0 per the Labs charter.",
+      "refs": [
+        {
+          "doc": "repo",
+          "id": "clpr-spec",
+          "path": "clpr-service.md",
+          "label": "design document"
+        },
+        {
+          "doc": "repo",
+          "id": "clpr-spec",
+          "path": "clpr-service-spec.md",
+          "label": "protocol specification"
+        },
+        {
+          "doc": "repo",
+          "id": "clpr-spec",
+          "path": "verifiers",
+          "label": "verifiers/"
+        },
+        {
+          "doc": "repo",
+          "id": "clpr-spec",
+          "path": "ADR",
+          "label": "ADR/"
+        }
+      ]
+    },
+    {
+      "k": "svcA",
+      "name": "CLPR Service, native (Hiero)",
+      "where": "hiero-ledger/hiero-consensus-node, feature branch",
+      "plain": "On Hiero networks the CLPR Service is built into the node software itself. Its queues and channels live in the node's own state tree, which is what makes them provable with the network's own signature. Contracts reach it through a fixed system address.",
+      "detail": "Reachable from the EVM at system address 0x…016e. State in the Merkle tree → provable via Hiero state proofs (Channel leaf tag 482, ClprMessageValue leaf tag 498). At the pinned organization profile the implementation lives on the clpr-feature branch of hiero-ledger/hiero-consensus-node, approved by the Hedera Governing Council and pending the Hiero TSC, to be merged only when it meets that project's hygiene, testing and documentation standards.",
+      "refs": [
+        {
+          "doc": "repo",
+          "id": "org-profile",
+          "path": "profile/README.md",
+          "label": "org profile: initial OSS"
+        },
+        {
+          "doc": "design",
+          "anchor": "310-the-clpr-service",
+          "label": "design §3.1.0"
+        }
+      ]
+    },
+    {
+      "k": "svcB",
+      "name": "CLPR Service, contract (EVM)",
+      "where": "LFDT-CLPR/clpr-smart-contracts",
+      "plain": "On EVM-compatible ledgers such as Besu networks the CLPR Service is a set of Solidity contracts. One immutable front door holds all the state and forwards each call to a module that knows how to handle it: channels, messaging, bundles, connectors, administration. Built and tested with Foundry.",
+      "detail": "ClprService.sol is a DELEGATECALL router over ClprServiceStorage.sol; logic modules ChannelLogic, MessagingLogic, BundleLogic, ConnectorLogic, AdminLogic; state-mutating libraries BundleLib, ConnectorLib, ManifestLib; pure codecs ClprProtobuf*, ClprTypes. Read functions are not `view` (call via eth_call). storage-layout.json is a CI-checked snapshot because endpoints derive proof slots from it. Deploy through the viem CLI; clprEnabled stays false until explicitly enabled. Known divergences from the spec are listed in docs/bundle-flow.md and docs/quirks.md.",
+      "refs": [
+        {
+          "doc": "repo",
+          "id": "clpr-smart-contracts",
+          "path": "src/ClprService.sol",
+          "label": "ClprService.sol"
+        },
+        {
+          "doc": "repo",
+          "id": "clpr-smart-contracts",
+          "path": "docs/architecture.md",
+          "label": "docs/architecture.md"
+        },
+        {
+          "doc": "repo",
+          "id": "clpr-smart-contracts",
+          "path": "src/interfaces/IClprService.sol",
+          "label": "IClprService.sol"
+        },
+        {
+          "doc": "repo",
+          "id": "clpr-smart-contracts",
+          "path": "README.md",
+          "label": "README"
+        }
+      ]
+    },
+    {
+      "k": "verB",
+      "name": "Verifier contracts",
+      "where": "LFDT-CLPR/clpr-smart-contracts/src/verifiers",
+      "plain": "The specialists that check another ledger's proofs. Each channel names one when it is created and can never change it. Two are documented as production in the spec: one for Hiero networks (checking the network's joint threshold signature) and one for Besu QBFT networks (checking validator seals on block headers plus storage proofs). The repository also carries verifier code for other consensus families.",
+      "detail": "hiero/HieroVerifier.sol (decodes the StateProof protobuf, derives the SHA-384 block root, calls TSSVerifier.sol for the hinTS BLS12-381 aggregate signature using EIP-2537 precompiles, walks leaf paths) with wraps/ helpers (WRAPS verification key, Poseidon/BN254); evm/qbft/QBFTVerifier.sol (committed seals, EIP-1186 account and storage proofs, epoch headers for rotation); evm/ethereum/EthMainnetVerifier.sol (sync-committee BLS light client); evm/sei/SeiCometBftVerifier.sol (CometBFT, Ed25519); evm/avalanche/MockAvalancheVerifier.sol. The spec's verifier documents describe a native verification path at 0x16e on Hiero.",
+      "refs": [
+        {
+          "doc": "repo",
+          "id": "clpr-smart-contracts",
+          "path": "src/verifiers/hiero/HieroVerifier.sol",
+          "label": "HieroVerifier.sol"
+        },
+        {
+          "doc": "repo",
+          "id": "clpr-smart-contracts",
+          "path": "src/verifiers/evm/qbft/QBFTVerifier.sol",
+          "label": "QBFTVerifier.sol"
+        },
+        {
+          "doc": "repo",
+          "id": "clpr-smart-contracts",
+          "path": "src/interfaces/IClprVerifier.sol",
+          "label": "IClprVerifier.sol"
+        },
+        {
+          "doc": "repo",
+          "id": "clpr-spec",
+          "path": "verifiers/README.md",
+          "label": "spec verifiers/"
+        }
+      ]
+    },
+    {
+      "k": "epB",
+      "name": "Endpoint (relay) for EVM ledgers",
+      "where": "LFDT-CLPR/clpr-endpoint",
+      "plain": "The endpoint program for EVM ledgers. It watches its own ledger's CLPR Service, talks to endpoints on the other side over gRPC, builds proofs of what its ledger has queued, dry-runs every bundle it receives, and submits the good ones as ordinary transactions. It never holds a key that any ledger trusts for anything but paying its own transaction fees.",
+      "detail": "Java 25, Gradle, seven modules: proto (protobuf/PBJ), core (interfaces: TransactionSubmitter, ContractStateReader, BundlePayloadCodec, BundleConstructor, PeerSyncClient, PeerEndpointCache, CommitmentLevel), evm (JSON-RPC, ABI codec, ECDSA signer, EIP-1559 submission), grpc-server (Helidon + PBJ), grpc-client, sync (per-channel virtual-thread loops, peer selection: never-failed > recent-success > round-robin), app (YAML config, wiring, Prometheus metrics). Two listeners: info (9546, plaintext) and sync (9545, optional mandatory mTLS). Local proof types QBFT and CometBFT; Hiero only as a peer. Dockerfile and a Helm chart are included. Polls the chain rather than subscribing to events.",
+      "refs": [
+        {
+          "doc": "repo",
+          "id": "clpr-endpoint",
+          "path": "README.md",
+          "label": "README"
+        },
+        {
+          "doc": "repo",
+          "id": "clpr-endpoint",
+          "path": "docs/architecture.md",
+          "label": "docs/architecture.md"
+        },
+        {
+          "doc": "repo",
+          "id": "clpr-endpoint",
+          "path": "docs/sync-protocol.md",
+          "label": "docs/sync-protocol.md"
+        },
+        {
+          "doc": "repo",
+          "id": "clpr-endpoint",
+          "path": "clpr-relay-app/src/main/resources/relay-config-example.yaml",
+          "label": "relay-config-example.yaml"
+        }
+      ]
+    },
+    {
+      "k": "epA",
+      "name": "Endpoints on Hiero",
+      "where": "part of the native implementation",
+      "plain": "On a Hiero network there is no separate endpoint program: every consensus node is automatically an endpoint, and the list of them is kept up to date by the network itself. The node builds and signs the proofs as part of producing blocks; the endpoint only fetches the finished proof and carries it.",
+      "detail": "The endpoint manifest is derived from the consensus roster (joins, leaves and identity rotations bump its version; stake-only changes do not). Proofs are built by the node's state-proof machinery and retrieved by the endpoint; the relay's HieroProofCodec parses them and submits them untrimmed. Misbehaving nodes are removed by Hiero governance, which removes them from the manifest.",
+      "refs": [
+        {
+          "doc": "design",
+          "anchor": "312-endpoint-manifest",
+          "label": "design §3.1.2"
+        },
+        {
+          "doc": "repo",
+          "id": "clpr-spec",
+          "path": "verifiers/hiero/state_proof.md",
+          "label": "verifiers/hiero/state_proof.md"
+        }
+      ]
+    },
+    {
+      "k": "wire",
+      "name": "The sync protocol",
+      "where": "spec §1.5; clpr-endpoint proto + grpc modules",
+      "plain": "How two endpoints talk: over mutual TLS, each sync is one stream for one channel, on which each side says how far it has got and receives exactly the messages it is missing, together with the proof. Requests are cheap and unproven; bundles are proven. Nothing is delivered that the receiver did not ask for.",
+      "detail": "gRPC ClprEndpointService.sync: a bidirectional stream of ClprSyncPayload (channel_id, optional BundleRequest, optional BundleResponse); one stream is one cycle; both fields absent closes it. mTLS with an on-chain ECDSA P-384 CA per endpoint (≤ 512 bytes) and a per-process Ed25519 leaf. Message sizes bounded by max_sync_bytes. Defined in clpr-relay-proto and served by clpr-relay-grpc-server.",
+      "refs": [
+        {
+          "doc": "spec",
+          "anchor": "15-sync-protocol",
+          "label": "spec §1.5"
+        },
+        {
+          "doc": "repo",
+          "id": "clpr-spec",
+          "path": "ADR/2026-07-14-endpoint-sync-streaming-and-mtls.md",
+          "label": "ADR 2026-07-14"
+        },
+        {
+          "doc": "repo",
+          "id": "clpr-endpoint",
+          "path": "clpr-relay-proto",
+          "label": "clpr-relay-proto"
+        }
+      ]
+    },
+    {
+      "k": "conB",
+      "name": "Connector contracts",
+      "where": "IClprConnector (EVM); native registration on Hiero",
+      "plain": "The account that pays, present on both ledgers under one identity. On the sending side its contract decides whether to approve a message; on the receiving side its balance pays for running the message and its locked stake is what gets fined if it breaks its promise. Anyone can register one, on any channel, with a balance and a stake.",
+      "detail": "IClprConnector: authorizeOutboundMessage(channelId, targetApplication, sender, messageData) → bool; payForExecution(amount) must transfer exactly amount to the caller; onInboundMessage(...) is a best-effort notification under a gas stipend. Registered by commit-reveal with connector_id = keccak256(channel_id ‖ public_key ‖ salt). EVM specifics: per-connector queue quota and geometric slashing (docs/evm-platform-spec.md).",
+      "refs": [
+        {
+          "doc": "repo",
+          "id": "clpr-smart-contracts",
+          "path": "src/interfaces/IClprConnector.sol",
+          "label": "IClprConnector.sol"
+        },
+        {
+          "doc": "design",
+          "anchor": "331-connectors",
+          "label": "design §3.3.1"
+        },
+        {
+          "doc": "spec",
+          "anchor": "63-connector-management",
+          "label": "spec §6.3"
+        }
+      ]
+    },
+    {
+      "k": "appB",
+      "name": "Applications",
+      "where": "IClprApplication; anything you deploy",
+      "plain": "Your program. It calls one function to send and implements two callbacks to receive: one for an incoming message (whatever it returns becomes the reply) and one for the reply to a message it sent. Everything else, proofs, endpoints, verification and payment, is handled below it.",
+      "detail": "IClprApplication.onClprMessage(channelId, sender, messageData) → responseData; onClprResponse(channelId, messageId, status, responseData), invoked best-effort and only for senders with code. Send with IClprService.sendMessage(channelId, connectorId, targetApplication, messageData) → messageId. The repository's E2EApplication.sol shows a contract acting as both sender and receiver; the PingPong echo contract is the demo application.",
+      "refs": [
+        {
+          "doc": "repo",
+          "id": "clpr-smart-contracts",
+          "path": "src/interfaces/IClprApplication.sol",
+          "label": "IClprApplication.sol"
+        },
+        {
+          "doc": "repo",
+          "id": "clpr-smart-contracts",
+          "path": "test/E2EApplication.sol",
+          "label": "E2EApplication.sol"
+        },
+        {
+          "doc": "design",
+          "anchor": "34-application-layer",
+          "label": "design §3.4"
+        }
+      ]
+    },
+    {
+      "k": "lab",
+      "name": "The lab: LF Decentralized Trust",
+      "where": "LFDT-CLPR/governance and .github",
+      "plain": "Where all of this is governed: an incubation space under the Linux Foundation's LF Decentralized Trust, donated by the Hedera Governing Council with Hashgraph as initial steward, open to anyone under the Apache License 2.0 with a Developer Certificate of Origin sign-off on every contribution.",
+      "detail": "governance/: the signed Labs charter (TAC oversight; Apache-2.0 code; DCO; CSL-1.0 specifications; CC BY 4.0 docs), teams.yml (clpr-maintainers with maintain rights everywhere; lfdt-staff with admin on .github and governance) and CODEOWNERS. .github/profile/README.md: scope of the lab, terminology, the four layers, the extension process.",
+      "refs": [
+        {
+          "doc": "repo",
+          "id": "org-profile",
+          "path": "profile/README.md",
+          "label": "organization profile"
+        },
+        {
+          "doc": "repo",
+          "id": "governance",
+          "path": "teams.yml",
+          "label": "teams.yml"
+        },
+        {
+          "doc": "repo",
+          "id": "governance",
+          "path": "lf-decentralized-trust-labs_Charter.pdf",
+          "label": "Labs charter (PDF)"
+        }
+      ]
+    }
+  ]
+}

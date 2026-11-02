@@ -1,0 +1,70 @@
+---
+/** How a change to the specification travels: one dated Architecture Decision Record carries the problem, the options, the accepted solution and the exact edits (ADR/README.md, "The ADR Final Form"), with the 2026-08-01 redaction record as the worked example. Governance and process, not a protocol claim. */
+import Figure from '@kse/components/Figure.astro';
+import { pinned } from '../../../lib/sources';
+---
+<Figure
+  lead="One file carries the change and its reasoning."
+  caption="An Architecture Decision Record states the problem, the options weighed, the accepted solution and the exact edits; only that finished form reaches the specification. The example lines follow the 2026-08-01 record that removed message redaction."
+  source={[{ label: 'ADR guide', href: pinned('clpr-spec', 'ADR/README.md') }, { label: 'ADR 2026-08-01', href: pinned('clpr-spec', 'ADR/2026-08-01-remove-message-redaction.md') }]}
+  kind="plain"
+  minWidth={760}
+>
+  <svg viewBox="0 0 760 250" role="img" aria-label="A rounded frame labelled with the file name pattern year-month-day-short-title dot md holds four boxes in a row joined by arrows: problem, options considered, accepted solution, exact edits. An arrow leaves the frame to a box labelled specification files: design document, protocol spec, verifier documents.">
+    <defs>
+      <marker id="adr-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--text-3)"/></marker>
+      <marker id="adr-arrow-ok" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--ok)"/></marker>
+    </defs>
+
+    <!-- the one dated file -->
+    <rect x="12" y="44" width="570" height="168" rx="12" class="d-surface"/>
+    <text x="28" y="66" class="t mono">YYYY-MM-DD-short-title.md</text>
+    <text x="566" y="66" class="t small muted end">one dated file</text>
+
+    <rect x="28" y="84" width="118" height="108" rx="8" class="d-grey"/>
+    <text x="87" y="106" class="t b center">Problem</text>
+    <text x="87" y="124" class="t small center">what is broken,</text>
+    <text x="87" y="138" class="t small center">in one statement</text>
+    <text x="87" y="156" class="t small center muted">e.g. a redacted</text>
+    <text x="87" y="170" class="t small center muted">and a full message</text>
+    <text x="87" y="184" class="t small center muted">hash alike</text>
+
+    <rect x="168" y="84" width="118" height="108" rx="8" class="d-grey"/>
+    <text x="227" y="100" class="t b center">Options</text>
+    <text x="227" y="116" class="t b center">considered</text>
+    <text x="227" y="136" class="t small center">weighed; rejected</text>
+    <text x="227" y="150" class="t small center">ones stay on record</text>
+    <text x="227" y="168" class="t small center muted">e.g. prove every</text>
+    <text x="227" y="182" class="t small center muted">message; too costly</text>
+
+    <rect x="308" y="84" width="118" height="108" rx="8" class="d-ok"/>
+    <text x="367" y="100" class="t b center">Accepted</text>
+    <text x="367" y="116" class="t b center">solution</text>
+    <text x="367" y="136" class="t small center">the one chosen,</text>
+    <text x="367" y="150" class="t small center">written in full</text>
+    <text x="367" y="168" class="t small center muted">e.g. remove</text>
+    <text x="367" y="182" class="t small center muted">redaction</text>
+
+    <rect x="448" y="84" width="118" height="108" rx="8" class="d-ok"/>
+    <text x="507" y="106" class="t b center">Exact edits</text>
+    <text x="507" y="124" class="t small center">file and line refs</text>
+    <text x="507" y="138" class="t small center">for every change</text>
+    <text x="507" y="156" class="t small center muted">e.g. running hash</text>
+    <text x="507" y="170" class="t small center muted">formula simplified</text>
+
+    <line x1="146" y1="138" x2="168" y2="138" class="line" marker-end="url(#adr-arrow)"/>
+    <line x1="286" y1="138" x2="308" y2="138" class="line ok" marker-end="url(#adr-arrow-ok)"/>
+    <line x1="426" y1="138" x2="448" y2="138" class="line ok" marker-end="url(#adr-arrow-ok)"/>
+
+    <!-- what the edits land in -->
+    <line x1="566" y1="138" x2="620" y2="138" class="line ok" marker-end="url(#adr-arrow-ok)"/>
+    <rect x="620" y="84" width="128" height="108" rx="8" class="d-ok"/>
+    <text x="684" y="106" class="t b center">Specification</text>
+    <text x="684" y="122" class="t b center">files</text>
+    <text x="684" y="144" class="t small center">design document</text>
+    <text x="684" y="158" class="t small center">protocol spec</text>
+    <text x="684" y="172" class="t small center">verifier documents</text>
+
+    <text x="380" y="238" class="t take center">The edits ship with the argument: anyone can read why the text says what it says.</text>
+  </svg>
+</Figure>

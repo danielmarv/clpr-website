@@ -1,0 +1,181 @@
+---
+/**
+ * The running hash chain. Real SHA-256 (WebCrypto) over a toy queue, so the numbers on screen
+ * are genuine. Spec §4.1: running_hash = SHA-256(previous_running_hash || serialized_payload),
+ * initial value 32 zero bytes. Here the "serialized payload" is the UTF-8 text shown, which is a
+ * simplification of the protobuf encoding the protocol actually hashes.
+ */
+const { id = 'running-hash-sim', detail = false } = Astro.props as { id?: string; detail?: boolean };
+const msgs = ['ping', 'pay Bo 5', 'config update', 'ping', 'pay Cy 2'];
+---
+<div class="sim rhash" id={id} aria-busy="true">
+  <div class="sim__head"><div><span class="kind">Simulation</span><h3>Five messages, one chain of running hashes</h3></div><span class="pill ok" data-role="status">chain intact</span></div>
+  <div class="sim__body">
+    {detail && <p class="small" style="margin:0 0 10px"><code>H<sub>n</sub> = SHA-256( H<sub>n−1</sub> ‖ payload<sub>n</sub> )</code>, with <code>H<sub>0</sub></code> = 32 zero bytes. Only <code>H<sub>5</sub></code>, the anchor, is covered by the state proof. The receiver recomputes the chain from its own stored hash and compares.</p>}
+    <div class="table-wrap rhash__wrap" style="margin:0">
+      <table>
+        <thead><tr><th>#</th><th>message</th><th>running hash after it</th><th>proven?</th><th>check</th></tr></thead>
+        <tbody data-role="rows">
+          {msgs.map((m, i) => (
+            <tr data-row={i} class:list={[{ first: i === 0, last: i === msgs.length - 1 }]}>
+              <td class="n" data-role="id">{i + 1}</td>
+              <td><code data-role="payload">{m}</code></td>
+              <td class="hash"><code data-role="hash" class="pending">…</code><span class="break" data-role="break" hidden>chain breaks here</span></td>
+              <td data-role="proven">{i === msgs.length - 1 ? '🔏 anchor' : '-'}</td>
+              <td data-role="check"></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p class="anchor">🔏 anchor: <code data-role="anchor">…</code></p>
+  </div>
+  <div class="sim__controls">
+    <div class="group">
+      <button class="btn danger" type="button" data-op="tamper" aria-pressed="false">Change message 3</button>
+      <button class="btn danger" type="button" data-op="drop" aria-pressed="false">Drop message 2</button>
+      <button class="btn danger" type="button" data-op="swap" aria-pressed="false">Swap 3 and 4</button>
+      <button class="btn danger" type="button" data-op="insert" aria-pressed="false">Insert a fake message</button>
+    </div>
+    <span class="spacer"></span>
+    <button class="btn" type="button" data-op="restore">Restore</button>
+  </div>
+  <div class="sim__log" data-role="log">Each running hash is computed from the previous running hash and the message. Try changing something and watch where the chain breaks.</div>
+</div>
+<style is:global>
+  .sim.rhash .rhash__wrap td, .sim.rhash .rhash__wrap th { white-space: normal; }
+  .sim.rhash .rhash__wrap td:nth-child(2), .sim.rhash .rhash__wrap td:nth-child(3) { white-space: nowrap; }
+  .sim.rhash td { transition: background-color 300ms; }
+  .sim.rhash tr.broken td { background: var(--bad-soft); background: color-mix(in srgb, var(--bad-soft) 55%, transparent); }
+  .sim.rhash code.bad { color: var(--bad); }
+  .sim.rhash code.pending { color: var(--text-3); animation: rhash-shimmer 1.2s ease-in-out infinite; }
+  @keyframes rhash-shimmer { 50% { opacity: 0.35; } }
+  /* the chain: a dotted line runs down the running hash column, an arrowhead where each row takes the one above */
+  .sim.rhash td.hash { position: relative; padding-left: 26px; }
+  .sim.rhash td.hash::before { content: ""; position: absolute; left: 11px; top: 0; bottom: 0; border-left: 2px dotted var(--border-2); }
+  .sim.rhash tr.first td.hash::before { top: 50%; }
+  .sim.rhash tr.last td.hash::before { bottom: 50%; }
+  .sim.rhash tr:not(.first) td.hash::after { content: ""; position: absolute; left: 8px; top: 3px; border: 4px solid transparent; border-top: 5px solid var(--border-2); border-bottom: 0; }
+  .sim.rhash tr.broken td.hash::before { border-color: var(--bad); }
+  .sim.rhash tr.broken td.hash::after { border-top-color: var(--bad); }
+  .sim.rhash .break { display: block; font-family: var(--mono); font-size: 0.68rem; color: var(--bad); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 2px; white-space: normal; }
+  .sim.rhash .break[hidden] { display: none; }
+  .sim.rhash .anchor { margin: 8px 0 0; font-family: var(--mono); font-size: 0.78rem; color: var(--ok); }
+  .sim.rhash .anchor code { color: var(--ok); }
+  @media (max-width: 560px) { .sim.rhash th:nth-child(4), .sim.rhash td:nth-child(4) { display: none; } }
+  @media (min-width: 720px) { .sim.rhash .sim__log { min-height: 8em; } }
+</style>
+
+<script>
+  const HONEST = ['ping', 'pay Bo 5', 'config update', 'ping', 'pay Cy 2'];
+  const enc = new TextEncoder();
+  const subtle = globalThis.crypto?.subtle;
+  async function sha256(bytes: Uint8Array): Promise<Uint8Array> {
+    return new Uint8Array(await subtle.digest('SHA-256', bytes as BufferSource));
+  }
+  function hex(b: Uint8Array, n = 6) { return Array.from(b.slice(0, n)).map((x) => x.toString(16).padStart(2, '0')).join(''); }
+  async function chain(msgs: string[]): Promise<Uint8Array[]> {
+    let h = new Uint8Array(32);
+    const out: Uint8Array[] = [];
+    for (const m of msgs) {
+      const p = enc.encode(m);
+      const buf = new Uint8Array(h.length + p.length); buf.set(h); buf.set(p, h.length);
+      h = await sha256(buf); out.push(h);
+    }
+    return out;
+  }
+  for (const root of Array.from(document.querySelectorAll<HTMLElement>('.sim.rhash'))) {
+    const $ = (s: string) => root.querySelector<HTMLElement>(s)!;
+    const tbody = $('[data-role="rows"]') as HTMLTableSectionElement;
+    const log = $('[data-role="log"]');
+    const status = $('[data-role="status"]');
+    const anchorEl = $('[data-role="anchor"]');
+    const buttons = Array.from(root.querySelectorAll<HTMLButtonElement>('button[data-op]'));
+    const faults = buttons.filter((b) => b.dataset.op !== 'restore');
+    const INTACT_LOG = 'Each running hash is computed from the previous running hash and the message. The receiver recomputes all five from its own last known running hash and compares only the final one with the proven anchor. Try changing something.';
+    if (!subtle) {
+      root.removeAttribute('aria-busy');
+      status.textContent = 'no WebCrypto';
+      status.className = 'pill grey';
+      for (const c of Array.from(root.querySelectorAll('code.pending'))) c.classList.remove('pending');
+      for (const b of buttons) b.disabled = true;
+      log.innerHTML = '<span class="line">crypto.subtle unavailable</span>WebCrypto is not available here (browsers switch it on for https pages only), so the running hashes cannot be computed.';
+      continue;
+    }
+    let anchor = '';
+    let current = [...HONEST];
+    // Every render gets a number; a render that finishes after a newer one started is dropped.
+    let renderId = 0;
+    status.addEventListener('animationend', () => status.classList.remove('pulse'));
+    const rows = () => Array.from(tbody.querySelectorAll<HTMLTableRowElement>('tr'));
+    function ensureRows(n: number): HTMLTableRowElement[] {
+      let rs = rows();
+      while (rs.length < n) { tbody.appendChild(rs[rs.length - 1].cloneNode(true)); rs = rows(); }
+      rs.forEach((tr, i) => {
+        tr.hidden = i >= n;
+        tr.dataset.row = String(i);
+        tr.classList.toggle('first', i === 0);
+        tr.classList.toggle('last', i === n - 1);
+      });
+      return rs.slice(0, n);
+    }
+    function setStatus(text: string, kind: string, pulse: boolean) {
+      status.textContent = text;
+      status.className = 'pill ' + kind;
+      if (pulse) { void status.offsetWidth; status.classList.add('pulse'); }
+    }
+    async function render(op: string) {
+      const my = ++renderId;
+      root.setAttribute('aria-busy', 'true');
+      const [hs, honest] = await Promise.all([chain(current), chain(HONEST)]);
+      if (my !== renderId) return;
+      root.removeAttribute('aria-busy');
+      if (!anchor) { anchor = hex(honest[honest.length - 1]); anchorEl.textContent = anchor + '…'; }
+      const n = current.length;
+      const rs = ensureRows(n);
+      let broken = -1;
+      for (let i = 0; i < n; i++) {
+        const h = hex(hs[i]);
+        const ok = i < honest.length && h === hex(honest[i]);
+        if (!ok && broken < 0) broken = i;
+        const tr = rs[i];
+        const cell = (role: string) => tr.querySelector<HTMLElement>(`[data-role="${role}"]`)!;
+        const last = i === n - 1;
+        cell('id').textContent = String(i + 1);
+        cell('payload').textContent = current[i];
+        const code = cell('hash');
+        code.textContent = h + '…';
+        code.classList.remove('pending');
+        code.classList.toggle('bad', !ok);
+        cell('break').hidden = i !== broken;
+        cell('proven').textContent = last ? '🔏 anchor' : '-';
+        cell('check').innerHTML = last
+          ? (h === anchor ? '<span class="pill ok">matches proof</span>' : '<span class="pill bad">does not match</span>')
+          : ok ? '<span class="pill grey">recomputed</span>' : '<span class="pill bad">differs</span>';
+        tr.classList.toggle('broken', broken >= 0 && i >= broken);
+      }
+      const lastHash = hex(hs[n - 1]);
+      const intact = lastHash === anchor && n === HONEST.length;
+      setStatus(intact ? 'chain intact' : 'bundle rejected', intact ? 'ok' : 'bad', op !== 'init');
+      for (const b of faults) b.setAttribute('aria-pressed', String(b.dataset.op === op));
+      if (op === 'restore' || op === 'init') {
+        log.innerHTML = intact ? `<span class="line">intact: H${n} == anchor</span>${INTACT_LOG}` : '';
+      } else {
+        const from = broken < 0 ? n : broken + 1;
+        log.innerHTML = `<span class="line">${op}: H${from}..H${n} differ; H${n} != anchor</span><span class="bad">Rejected.</span> From message ${broken + 1} onwards every recomputed running hash is different, so the final one no longer equals the anchor that Ledger A's validators signed. The receiver does not need to know <em>what</em> changed; a single mismatch is enough to throw the whole bundle away. This is why proving only the last message is sufficient.`;
+      }
+    }
+    for (const b of buttons) {
+      b.addEventListener('click', () => {
+        const op = b.dataset.op!;
+        if (op === 'restore') current = [...HONEST];
+        if (op === 'tamper') { current = [...HONEST]; current[2] = 'pay Mallory 500'; }
+        if (op === 'drop') current = HONEST.filter((_, i) => i !== 1);
+        if (op === 'swap') { current = [...HONEST]; [current[2], current[3]] = [current[3], current[2]]; }
+        if (op === 'insert') { current = [...HONEST]; current.splice(3, 0, 'mint 1,000,000 to Mallory'); }
+        render(op);
+      });
+    }
+    render('init');
+  }
+</script>

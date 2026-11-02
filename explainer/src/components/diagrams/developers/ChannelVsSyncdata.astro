@@ -1,0 +1,77 @@
+---
+/** The Channel record stays on its own ledger; only each side's ChannelSyncData (status, received_message_id, next_message_id) is state-proven and carried in every bundle. Draws on spec §2.1. */
+import Figure from '@kse/components/Figure.astro';
+import { spec } from '../../../lib/sources';
+---
+<Figure
+  lead="What a proof actually covers."
+  caption="The Channel record stays on its own ledger; only each side's ChannelSyncData, holding status, received_message_id and next_message_id, is state-proven and carried in every bundle. That is how one side's close reaches the other."
+  source={[{ label: 'spec §2.1', href: spec('21-channel') }]}
+  kind="spec"
+  minWidth={720}
+>
+  <svg viewBox="0 0 720 388" role="img" aria-label="Two tall frames, Channel on Ledger A on the left and Channel on Ledger B on the right, each holding a list of channel fields that stays on its own ledger and, below it, a green ChannelSyncData box with status, received_message_id and next_message_id. A solid arrow carries A's ChannelSyncData, state-proven, in a bundle to Ledger B; a dashed arrow below carries B's back the other way. A note in the middle says: where the spec says Channel.status, read this side's ChannelSyncData.status.">
+    <defs>
+      <marker id="cvs-arrow-ok" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9 Z" fill="var(--ok)"/></marker>
+      <marker id="cvs-arrow-c" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9 Z" fill="var(--c)"/></marker>
+    </defs>
+
+    <!-- Ledger A (left) -->
+    <rect x="20" y="36" width="250" height="312" rx="12" class="d-a"/>
+    <text x="34" y="58" class="t b">Channel on Ledger A</text>
+    <text x="34" y="74" class="t small muted">stays home; never crosses the gap</text>
+    <rect x="34" y="84" width="222" height="174" rx="8" class="d-surface"/>
+    <text x="46" y="102" class="t small muted">the record, kept on A</text>
+    <text x="46" y="120" class="t mono">channel_id</text>
+    <text x="46" y="136" class="t mono">chain_id</text>
+    <text x="46" y="152" class="t mono">verifier_contract · immutable</text>
+    <text x="46" y="168" class="t mono">trust_anchor</text>
+    <text x="46" y="184" class="t mono">endpoint_manifest</text>
+    <text x="46" y="200" class="t mono">acked_message_id</text>
+    <text x="46" y="216" class="t mono">sent_running_hash</text>
+    <text x="46" y="232" class="t mono">received_running_hash</text>
+    <text x="46" y="248" class="t small muted">… and the rest of the record</text>
+    <rect x="34" y="270" width="222" height="64" rx="8" class="d-ok"/>
+    <text x="46" y="290" class="t b">ChannelSyncData (A's own)</text>
+    <text x="46" y="308" class="t mono">status · received_message_id</text>
+    <text x="46" y="324" class="t mono">next_message_id</text>
+
+    <!-- Ledger B (right) -->
+    <rect x="450" y="36" width="250" height="312" rx="12" class="d-b"/>
+    <text x="464" y="58" class="t b">Channel on Ledger B</text>
+    <text x="464" y="74" class="t small muted">same channel_id, its own record</text>
+    <rect x="464" y="84" width="222" height="174" rx="8" class="d-surface"/>
+    <text x="476" y="102" class="t small muted">the record, kept on B</text>
+    <text x="476" y="122" class="t small">the same fields,</text>
+    <text x="476" y="138" class="t small">its own values</text>
+    <text x="476" y="166" class="t small">from A's sync data, B sets:</text>
+    <text x="476" y="186" class="t mono">acked_message_id</text>
+    <text x="476" y="202" class="t mono">= A's received_message_id</text>
+    <text x="476" y="226" class="t small muted">and reads A's status</text>
+    <text x="476" y="242" class="t small muted">(how a close propagates)</text>
+    <rect x="464" y="270" width="222" height="64" rx="8" class="d-ok"/>
+    <text x="476" y="290" class="t b">ChannelSyncData (B's own)</text>
+    <text x="476" y="308" class="t mono">status · received_message_id</text>
+    <text x="476" y="324" class="t mono">next_message_id</text>
+
+    <!-- Middle note: what the spec means by Channel.status -->
+    <text x="360" y="140" class="t small center muted">where the spec says</text>
+    <text x="360" y="156" class="t mono center">Channel.status</text>
+    <text x="360" y="172" class="t small center muted">read this side's</text>
+    <text x="360" y="188" class="t mono center">ChannelSyncData.status</text>
+
+    <!-- A's sync data crosses in every bundle, state-proven -->
+    <text x="360" y="266" class="t small center ok">A's ChannelSyncData, state-proven</text>
+    <line x1="258" y1="286" x2="462" y2="286" class="line ok" marker-end="url(#cvs-arrow-ok)"/>
+    <rect x="330" y="276" width="60" height="20" rx="10" class="d-c"/>
+    <text x="360" y="290" class="t mono center">bundle</text>
+    <!-- B's goes the other way -->
+    <line x1="462" y1="312" x2="258" y2="312" class="line c dash" marker-end="url(#cvs-arrow-c)"/>
+    <rect x="330" y="302" width="60" height="20" rx="10" class="d-c"/>
+    <text x="360" y="316" class="t mono center">bundle</text>
+    <text x="360" y="336" class="t small center muted">B's, the same in reverse</text>
+
+    <!-- takeaway -->
+    <text x="360" y="372" class="t take center">Proofs carry the minimum: only ChannelSyncData crosses the gap; the Channel record never does.</text>
+  </svg>
+</Figure>

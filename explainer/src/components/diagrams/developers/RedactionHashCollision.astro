@@ -1,0 +1,69 @@
+---
+/** Why ADR 2026-08-01 removed redaction: a redacted marker carried the same payload_hash the original payload contributed, so both encodings folded to the same running hash and a permissionless submitter could swap one for the other with every check passing. Draws on that ADR and spec §4.1. */
+import Figure from '@kse/components/Figure.astro';
+import { pinned, spec } from '../../../lib/sources';
+---
+<Figure
+  lead="Why redaction was removed."
+  caption="A redacted and an unredacted encoding of the same message folded to the same running hash, so anyone submitting a bundle could flip one for the other and every check would still pass. ADR 2026-08-01 deleted the feature; the EVM code still carries a REDACTED type."
+  source={[{ label: 'ADR 2026-08-01', href: pinned('clpr-spec', 'ADR/2026-08-01-remove-message-redaction.md') }, { label: 'spec §4.1', href: spec('41-running-hash-computation') }]}
+  kind="spec"
+  minWidth={720}
+>
+  <svg viewBox="0 0 720 364" role="img" aria-label="Two encodings of one message on the left, the unredacted message m with its full payload bytes and the redacted m′ whose marker carries the same payload_hash, both feed the old running hash step SHA-256(prev concatenated with payload_hash) and produce the same digest. On the right, any submitter, since submitBundle is not gated, swaps m′ in for m; the verifier and service, which state-prove only the anchor and recompute the chain from the submitted bytes, pass either way. A green box at the bottom: since ADR 2026-08-01 there is no redaction, one encoding per message, and the running hash is SHA-256(previous_running_hash concatenated with serialized_payload).">
+    <defs>
+      <marker id="rhc-arrow" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9 Z" fill="var(--text-3)"/></marker>
+      <marker id="rhc-arrow-bad" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9 Z" fill="var(--bad)"/></marker>
+    </defs>
+
+    <!-- Two encodings of one message -->
+    <rect x="20" y="40" width="200" height="58" rx="8" class="d-grey"/>
+    <text x="32" y="60" class="t b">Message m, unredacted</text>
+    <text x="32" y="78" class="t small">full payload bytes;</text>
+    <text x="32" y="92" class="t small">contributes payload_hash</text>
+    <rect x="20" y="112" width="200" height="58" rx="8" class="d-grey"/>
+    <text x="32" y="132" class="t b">Message m′, redacted</text>
+    <text x="32" y="150" class="t small">a marker carrying the</text>
+    <text x="32" y="164" class="t small">same payload_hash, directly</text>
+    <line x1="222" y1="69" x2="268" y2="90" class="line" marker-end="url(#rhc-arrow)"/>
+    <line x1="222" y1="141" x2="268" y2="120" class="line" marker-end="url(#rhc-arrow)"/>
+
+    <!-- The old chain step -->
+    <rect x="270" y="58" width="210" height="94" rx="8" class="d-surface"/>
+    <text x="282" y="78" class="t b">Running hash, before</text>
+    <text x="282" y="96" class="t mono">SHA-256(prev ‖ payload_hash)</text>
+    <text x="282" y="114" class="t small">the chain only ever saw</text>
+    <text x="282" y="128" class="t small">payload_hash, never which</text>
+    <text x="282" y="142" class="t small">encoding supplied it</text>
+    <line x1="375" y1="152" x2="375" y2="168" class="line bad" marker-end="url(#rhc-arrow-bad)"/>
+    <rect x="270" y="170" width="210" height="44" rx="8" class="d-bad"/>
+    <text x="375" y="190" class="t b center bad">same digest</text>
+    <text x="375" y="206" class="t mono center">hash(m) = hash(m′)</text>
+
+    <!-- Anyone can submit the swapped bundle -->
+    <rect x="520" y="40" width="180" height="58" rx="8" class="d-c"/>
+    <text x="532" y="60" class="t b">Any submitter</text>
+    <text x="532" y="78" class="t small">submitBundle is not gated;</text>
+    <text x="532" y="92" class="t small">swaps m′ in for m</text>
+    <line x1="610" y1="98" x2="610" y2="122" class="line bad" marker-end="url(#rhc-arrow-bad)"/>
+    <text x="602" y="114" class="t small end bad">swapped bundle</text>
+    <rect x="520" y="124" width="180" height="90" rx="8" class="d-bad"/>
+    <text x="532" y="144" class="t b">Verifier + service</text>
+    <text x="532" y="162" class="t small">only the anchor is</text>
+    <text x="532" y="176" class="t small">state-proven; the chain is</text>
+    <text x="532" y="190" class="t small">recomputed from the bytes</text>
+    <text x="532" y="206" class="t small bad">passes either way</text>
+    <line x1="482" y1="192" x2="518" y2="192" class="line bad dash" marker-end="url(#rhc-arrow-bad)"/>
+    <text x="485" y="232" class="t small center bad">nothing in the chain tells the two encodings apart</text>
+
+    <!-- The decision -->
+    <rect x="20" y="252" width="680" height="74" rx="8" class="d-ok"/>
+    <text x="32" y="272" class="t b">Since ADR 2026-08-01</text>
+    <text x="200" y="272" class="t small">no redaction: one encoding per message, one chain contribution</text>
+    <text x="32" y="292" class="t mono">running_hash = SHA-256(previous_running_hash ‖ serialized_payload) · protocol version bump</text>
+    <text x="32" y="310" class="t small muted">the EVM contracts still carry a REDACTED type (reference implementation)</text>
+
+    <!-- takeaway -->
+    <text x="360" y="348" class="t take center">Two encodings, one hash: the chain cannot tell them apart, so the feature was removed.</text>
+  </svg>
+</Figure>

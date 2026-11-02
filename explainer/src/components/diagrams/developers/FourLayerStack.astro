@@ -1,0 +1,59 @@
+---
+/** The four CLPR layers as a stack, bottom up, each with its key abstractions and the capability it adds; design §3 and the organization profile. */
+import Figure from '@kse/components/Figure.astro';
+import { design, pinned } from '../../../lib/sources';
+---
+<Figure
+  lead="Four layers, four capabilities."
+  caption="The table's rows as a stack: Network lets two ledgers connect, Messaging lets them pass ordered and proven messages, Payment & Routing pays for and polices delivery, and Applications sit on top. The sections below follow the same order."
+  source={[{ label: 'design §3', href: design('3-architecture') }, { label: 'organization profile', href: pinned('org-profile', 'profile/README.md') }]}
+  kind="spec"
+  minWidth={720}
+>
+  <svg viewBox="0 0 720 364" role="img" aria-label="A stack of four layers numbered from the bottom. One, Network: channel, endpoint, verifier contract, gRPC stream, protobuf; two ledgers can connect. Two, Messaging: message queues, bundles, running hashes, state proofs; two ledgers can pass messages. Three, Payment and Routing: connector contracts, application interfaces, slashing; messages are paid for, submitters reimbursed, misbehaving connectors punished. Four, Application: remote contract calls, asset movement, atomic swaps; applications address a destination ledger, application and connector.">
+    <defs>
+      <marker id="fls-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--text-3)" /></marker>
+    </defs>
+
+    <!-- 4 application -->
+    <circle cx="34" cy="47" r="9" class="d-grey" /><text x="34" y="51" class="t small center b">4</text>
+    <rect x="52" y="16" width="368" height="62" rx="8" class="d-surface" />
+    <text x="64" y="37" class="t b">Application</text>
+    <text x="64" y="54" class="t mono">remote contract calls · asset movement</text>
+    <text x="64" y="68" class="t mono">atomic swaps</text>
+    <line x1="420" y1="47" x2="434" y2="47" class="line" marker-end="url(#fls-arrow)" />
+    <text x="444" y="43" class="t small">Applications address a destination</text>
+    <text x="444" y="57" class="t small">ledger, application and connector.</text>
+
+    <!-- 3 payment and routing -->
+    <circle cx="34" cy="129" r="9" class="d-grey" /><text x="34" y="133" class="t small center b">3</text>
+    <rect x="52" y="98" width="368" height="62" rx="8" class="d-money" />
+    <text x="64" y="119" class="t b">Payment &amp; Routing</text>
+    <text x="64" y="136" class="t mono">connector contracts · application interfaces</text>
+    <text x="64" y="150" class="t mono">slashing</text>
+    <line x1="420" y1="129" x2="434" y2="129" class="line" marker-end="url(#fls-arrow)" />
+    <text x="444" y="118" class="t small">Messages are paid for, submitters</text>
+    <text x="444" y="132" class="t small">reimbursed, misbehaving</text>
+    <text x="444" y="146" class="t small">connectors punished.</text>
+
+    <!-- 2 messaging -->
+    <circle cx="34" cy="211" r="9" class="d-grey" /><text x="34" y="215" class="t small center b">2</text>
+    <rect x="52" y="180" width="368" height="62" rx="8" class="d-ok" />
+    <text x="64" y="201" class="t b">Messaging</text>
+    <text x="64" y="218" class="t mono">message queues · bundles</text>
+    <text x="64" y="232" class="t mono">running hashes · state proofs</text>
+    <line x1="420" y1="211" x2="434" y2="211" class="line" marker-end="url(#fls-arrow)" />
+    <text x="444" y="215" class="t small">Two ledgers can pass messages.</text>
+
+    <!-- 1 network -->
+    <circle cx="34" cy="293" r="9" class="d-grey" /><text x="34" y="297" class="t small center b">1</text>
+    <rect x="52" y="262" width="368" height="62" rx="8" class="d-c" />
+    <text x="64" y="283" class="t b">Network</text>
+    <text x="64" y="300" class="t mono">channel · endpoint · verifier contract</text>
+    <text x="64" y="314" class="t mono">gRPC stream · protobuf</text>
+    <line x1="420" y1="293" x2="434" y2="293" class="line" marker-end="url(#fls-arrow)" />
+    <text x="444" y="297" class="t small">Two ledgers can connect.</text>
+
+    <text x="360" y="350" class="t take center">Read upward: connect, then pass messages, then pay for them, then build on them.</text>
+  </svg>
+</Figure>

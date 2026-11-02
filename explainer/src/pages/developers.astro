@@ -1,0 +1,33 @@
+---
+import Site from '../layouts/Site.astro';
+import Toc from '@kse/components/Toc.astro';
+import Hero from '@kse/components/Hero.astro';
+import JourneyTrailer from '../components/JourneyTrailer.astro';
+import Developers from '../content/developers.mdx';
+import sections from '../data/sections.json';
+const list = sections.developers;
+const acts = sections.acts.developers;
+---
+<Site
+  title="CLPR for developers"
+  description="The Cross Ledger Protocol in full depth for developers: wire formats, the bundle verification algorithm, channels, connectors, verifiers, trust anchors, the application API and the reference implementations."
+  sections={list}
+  acts={acts}
+  path="/developers/"
+>
+  <Hero
+    kicker="An explainer · for developers · no prior knowledge of CLPR assumed"
+    lede="From zero to the full protocol: what you can build, the API, one message end to end, then the machinery underneath it, trust and money, operating and extending, and the reference material. Comfort with ledgers, hashes and contracts is assumed; nothing about CLPR is."
+    routes={acts.map((a) => ({ href: `#act-${a.id}`, numeral: a.numeral, label: a.name }))}
+  >
+    CLPR for <em>developers</em>
+    <JourneyTrailer slot="trailer" mode="protocol" href="#journey" />
+    <Fragment slot="meta">
+      <span>About 95 minutes, with things to play with</span>
+      <span>Repositories and commits are listed at the end of the page</span>
+      <span><a href="../">Non-technical version →</a></span>
+    </Fragment>
+  </Hero>
+  <Toc sections={list} acts={acts} inline />
+  <Developers />
+</Site>

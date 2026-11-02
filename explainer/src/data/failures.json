@@ -1,0 +1,235 @@
+{
+  "$comment": "The \"what can go wrong\" cases of the Failures simulation. Every outcome is taken from the design document and the specification; refs point at the passage each case rests on.",
+  "cases": [
+    {
+      "k": "app",
+      "q": "The application on the other side crashes",
+      "what": "The bundle still succeeds. The application's revert is caught; the reply carries APPLICATION_ERROR and the revert data. Delivery worked; the application simply did not like the message.",
+      "pays": "The connector pays for the gas used, as normal. No fine.",
+      "state": "ACTIVE",
+      "recovers": "Nothing to recover. The sending application decides what to do with the error.",
+      "refs": [
+        {
+          "doc": "design",
+          "anchor": "333-receiving-routing-and-paying",
+          "label": "design §3.3.3"
+        }
+      ]
+    },
+    {
+      "k": "nf",
+      "q": "The connector was never registered on the other side",
+      "what": "The message gets a deterministic answer: CONNECTOR_NOT_FOUND. The application is not called.",
+      "pays": "The destination submitter absorbs the execution cost with no compensation there. When the reply reaches home, the source connector that approved the message is fined from its locked stake, paid to the submitter of the reply bundle.",
+      "state": "ACTIVE",
+      "recovers": "Yes; other messages in the same bundle are unaffected. The uncompensated destination submitter is a known limitation.",
+      "refs": [
+        {
+          "doc": "spec",
+          "anchor": "46-slashing-decision",
+          "label": "spec §4.6"
+        }
+      ]
+    },
+    {
+      "k": "uf",
+      "q": "The connector on the other side has run out of funds",
+      "what": "CONNECTOR_UNDERFUNDED. The destination connector's locked stake is slashed and the failure reply is queued.",
+      "pays": "Slash proceeds reimburse the destination submitter on the spot. The source connector is fined too when the reply arrives. Penalties escalate to a ban.",
+      "state": "ACTIVE",
+      "recovers": "Yes; the connector operator tops up or is replaced by the application.",
+      "refs": [
+        {
+          "doc": "spec",
+          "anchor": "46-slashing-decision",
+          "label": "spec §4.6"
+        }
+      ]
+    },
+    {
+      "k": "tamper",
+      "q": "An endpoint changes a message in transit",
+      "what": "Recomputing the running hash over the delivered messages no longer reproduces the proven anchor hash. The whole bundle is rejected before any message is dispatched.",
+      "pays": "The endpoint paid the transaction fee and gets nothing back.",
+      "state": "ACTIVE (a bad bundle changes no state)",
+      "recovers": "Immediately: any honest endpoint can deliver the genuine bundle.",
+      "refs": [
+        {
+          "doc": "spec",
+          "anchor": "42-bundle-verification-algorithm",
+          "label": "spec §4.2"
+        }
+      ]
+    },
+    {
+      "k": "replay",
+      "q": "An endpoint re-submits an old bundle",
+      "what": "Every message must have an id strictly greater than the last one received, and the first must be exactly one past it. A stale bundle fails this check even if its proof is valid.",
+      "pays": "The endpoint wasted its own fee.",
+      "state": "ACTIVE",
+      "recovers": "Nothing to recover.",
+      "refs": [
+        {
+          "doc": "spec",
+          "anchor": "42-bundle-verification-algorithm",
+          "label": "spec §4.2, step 3"
+        }
+      ]
+    },
+    {
+      "k": "offline",
+      "q": "All the endpoints on one side go offline",
+      "what": "Nothing is delivered. Messages queue up until the outbound queue reaches its depth limit, then new sends are refused (backpressure). Nothing is lost or forged.",
+      "pays": "Nobody; nothing happened.",
+      "state": "ACTIVE",
+      "recovers": "Automatically, as soon as any endpoint, including a brand-new one, submits a valid bundle. Safety never depended on the endpoints; only liveness does.",
+      "refs": [
+        {
+          "doc": "design",
+          "anchor": "5-recovery-scenarios",
+          "label": "design §5, R7–R8"
+        }
+      ]
+    },
+    {
+      "k": "down",
+      "q": "The other ledger goes down entirely",
+      "what": "Same as above from this side's point of view: the queue fills to its limit and then refuses new messages.",
+      "pays": "Nobody.",
+      "state": "ACTIVE",
+      "recovers": "When the peer returns, syncs resume from exactly where they stopped; message ids and running hashes make the resumption verifiable.",
+      "refs": [
+        {
+          "doc": "design",
+          "anchor": "5-recovery-scenarios",
+          "label": "design §5, R8"
+        }
+      ]
+    },
+    {
+      "k": "order",
+      "q": "Replies come back in the wrong order",
+      "what": "This is the one failure the protocol treats as corruption rather than noise. The channel is set to PAUSED: no new sends, and bundles with out-of-order replies are rejected outright. Syncs continue.",
+      "pays": "Nobody is slashed; you cannot slash a ledger.",
+      "state": "PAUSED",
+      "recovers": "Automatically, if the peer produces a correctly ordered bundle. Otherwise the admin can close the channel; it drains once the peer fixes its ordering. Some in-flight messages may end up needing reconciliation outside the protocol.",
+      "refs": [
+        {
+          "doc": "spec",
+          "anchor": "45-response-ordering-verification",
+          "label": "spec §4.5"
+        }
+      ]
+    },
+    {
+      "k": "big",
+      "q": "The message is larger than the other side accepts",
+      "what": "Rejected at send time on the source ledger, against the limit the peer published, before it costs anyone a delivery. The destination independently rejects any oversized bundle too.",
+      "pays": "The sender pays only for the failed attempt.",
+      "state": "ACTIVE",
+      "recovers": "Send a smaller message.",
+      "refs": [
+        {
+          "doc": "design",
+          "anchor": "326-bundle-size-and-throughput-limits",
+          "label": "design §3.2.6"
+        }
+      ]
+    },
+    {
+      "k": "rotate",
+      "q": "Every endpoint on the other side was replaced and nobody knows the new addresses",
+      "what": "The list of peer endpoints lives on-chain and can be proved. Anyone can read the new list from the remote ledger, wrap it in a proof, and submit it as an ordinary transaction. No connection to the old endpoints is needed.",
+      "pays": "Whoever submits pays a transaction fee.",
+      "state": "ACTIVE",
+      "recovers": "Yes. This case was the reason the endpoint manifest was moved out of the message queue.",
+      "refs": [
+        {
+          "doc": "design",
+          "anchor": "5-recovery-scenarios",
+          "label": "design §5, R1/R9"
+        }
+      ]
+    },
+    {
+      "k": "verifier",
+      "q": "The verifier turns out to be buggy or compromised",
+      "what": "A bad verifier can accept fabricated proofs, so the protocol's own checks cannot save a channel whose verifier lies. The admin closes the channel; because verifiers are fixed for a channel's lifetime, a new channel with a correct verifier is registered.",
+      "pays": "Whoever trusted the channel. Connector operators are expected to vet verifiers before staking.",
+      "state": "CLOSING → DRAINED → CLOSED",
+      "recovers": "Yes, on a new channel. Messages in flight when it closed may be left unresolved and need application-level reconciliation.",
+      "refs": [
+        {
+          "doc": "design",
+          "anchor": "5-recovery-scenarios",
+          "label": "design §5, R5"
+        }
+      ]
+    },
+    {
+      "k": "format",
+      "q": "A ledger changes how its proofs look",
+      "what": "The old verifier can no longer read the new proofs. A new verifier is published, a new channel registered with it, applications migrate, and the admin closes the old channel.",
+      "pays": "Migration effort. The source ledger must keep the old format alive long enough.",
+      "state": "old channel CLOSED",
+      "recovers": "Yes; this is the normal upgrade path.",
+      "refs": [
+        {
+          "doc": "design",
+          "anchor": "47-cross-role-scenarios",
+          "label": "design §4.7"
+        }
+      ]
+    },
+    {
+      "k": "consensus",
+      "q": "A ledger's own validators are compromised",
+      "what": "Then messages from that ledger can be forged, and CLPR does not claim otherwise. A message is exactly as trustworthy as the consensus that sealed it.",
+      "pays": "Everyone relying on that ledger, on-chain or cross-chain.",
+      "state": "n/a",
+      "recovers": "Outside the protocol's scope. What CLPR guarantees is that there is no additional party, beyond the two ledgers, whose compromise could do this.",
+      "refs": [
+        {
+          "doc": "design",
+          "anchor": "23-trust-model",
+          "label": "design §2.3"
+        }
+      ]
+    }
+  ],
+  "groups": [
+    {
+      "kicker": "application and connector",
+      "keys": [
+        "app",
+        "nf",
+        "uf"
+      ]
+    },
+    {
+      "kicker": "endpoints and peer ledger",
+      "keys": [
+        "tamper",
+        "replay",
+        "offline",
+        "down",
+        "rotate"
+      ]
+    },
+    {
+      "kicker": "ordering and limits",
+      "keys": [
+        "order",
+        "big"
+      ]
+    },
+    {
+      "kicker": "trust",
+      "keys": [
+        "verifier",
+        "format",
+        "consensus"
+      ]
+    }
+  ]
+}

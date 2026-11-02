@@ -1,3 +1,9 @@
+packages:
+  - explainer
+
 allowBuilds:
   sharp: false
   unrs-resolver: false
+
+minimumReleaseAgeExclude:
+  - knowledge-site-engine@0.1.0

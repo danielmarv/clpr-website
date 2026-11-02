@@ -51,6 +51,14 @@ function ChannelEdge() {
 
 function FooterLink({ href, label }: { href: string; label: string }) {
   const className = "group text-[0.9375rem] leading-snug text-white/55 transition-colors hover:text-white";
+  // The explainer under /plumbing/ is static HTML served beside the app, not a route of it.
+  if (href.startsWith("/plumbing/")) {
+    return (
+      <a href={href} className={className}>
+        {label}
+      </a>
+    );
+  }
   if (!isExternal(href)) {
     return (
       <Link href={href} className={className}>

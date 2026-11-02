@@ -1,0 +1,17 @@
+---
+/** The application patterns from src/data/patterns.json as cards, with the channel-choice note. */
+import data from '../data/patterns.json';
+import Refs from '@kse/components/Refs.astro';
+import type { Ref } from '../lib/sources';
+const refs = [...data.patterns.flatMap((p) => p.refs), ...data.channelChoice.refs] as Ref[];
+---
+<div class="cards">
+  {data.patterns.map((p) => (
+    <div class="card">
+      <h4>{p.name}</h4>
+      <p>{p.plain}</p>
+    </div>
+  ))}
+</div>
+<p>{data.channelChoice.plain}</p>
+<Refs refs={refs} />

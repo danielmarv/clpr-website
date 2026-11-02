@@ -1,0 +1,743 @@
+---
+/**
+ * The bundle verification algorithm (spec §4.2) applied to one concrete inbound bundle, one step
+ * at a time, on a channel whose stored state is shown on screen.
+ *
+ * Running hashes are real SHA-256 (WebCrypto): H_n = SHA-256(H_{n-1} ‖ payload_n), H_0 = 32 zero
+ * bytes (spec §4.1). The "payload" is the UTF-8 text of each message, a simplification of the
+ * canonical protobuf serialization the protocol hashes. The stored running hash H42 is computed the
+ * same way over 42 placeholder payloads, so every number on screen is genuine.
+ *
+ * "Fault injection" alters the bundle before it is submitted. Every rejection shows which step
+ * rejects, that the submitting account paid the transaction fee, and that no channel state
+ * changed. The one exception, out-of-order responses, pauses the channel (spec §4.5).
+ *
+ * Where the EVM reference implementation differs (clpr-smart-contracts/docs/bundle-flow.md), the
+ * note at the bottom says so explicitly; the steps themselves follow the spec.
+ */
+import { design, spec, sol, pinned } from '../../lib/sources';
+const { id = 'bundle-verify' } = Astro.props as { id?: string };
+const links = {
+  spec42: spec('42-bundle-verification-algorithm'),
+  spec212: spec('212-bundle-progress-criteria'),
+  spec41: spec('41-running-hash-computation'),
+  spec44: spec('44-message-lifecycle'),
+  spec45: spec('45-response-ordering-verification'),
+  spec46: spec('46-slashing-decision'),
+  spec11: spec('11-ledger-identity-and-configuration'),
+  spec13: spec('13-control-messages'),
+  spec14: spec('14-message-queue'),
+  spec211: spec('211-channel-status-transitions'),
+  spec241: spec('241-local-endpoint-manifest'),
+  spec242: spec('242-peer-manifest-on-ledger-per-channel'),
+  spec31: spec('31-verifier-contract-interface'),
+  design322: design('322-message-storage'),
+  design323: design('323-bundle-transport'),
+  design324: design('324-bundle-progress-criteria'),
+  design325: design('325-bundle-verification'),
+  design326: design('326-bundle-size-and-throughput-limits'),
+  design327: design('327-message-lifecycle'),
+  design328: design('328-response-ordering-and-correlation'),
+  design333: design('333-receiving-routing-and-paying'),
+  design334: design('334-failure-consequences-and-slashing'),
+};
+const faults = [
+  { k: 'none', label: 'no fault' },
+  { k: 'a', label: '(a) verifier reverts' },
+  { k: 'b', label: '(b) no progress' },
+  { k: 'c', label: '(c) oversized payload' },
+  { k: 'd', label: '(d) gap in ids' },
+  { k: 'e', label: '(e) tampered payload' },
+  { k: 'f', label: '(f) reply out of order' },
+];
+---
+<div class="sim bundleverify" id={id} data-links={JSON.stringify(links)}>
+  <div class="sim__head">
+    <div><span class="kind">Simulation</span><h3>One inbound bundle, checked step by step (spec §4.2)</h3></div>
+    <div class="bv__pills"><span class="pill grey" data-role="fault">no fault</span><span class="pill grey" data-role="counter">step 0 of 16</span><span class="pill ok" data-role="status">ACTIVE</span></div>
+  </div>
+  <div class="sim__body">
+    <div class="bv__grid">
+      <section class="bv__panel" aria-label="Our channel, stored state">
+        <h4>Our channel (Ledger B) <span class="bv__sub">stored state, updated as the steps run</span></h4>
+        <dl class="bv__kv">
+          <div><dt>status</dt><dd data-f="status">ACTIVE</dd></div>
+          <div><dt>received_message_id</dt><dd data-f="received">42</dd></div>
+          <div><dt>received_running_hash</dt><dd data-f="rhash"><code class="computing">computing…</code></dd></div>
+          <div><dt>acked_message_id</dt><dd data-f="acked">17</dd></div>
+          <div><dt>next_message_id</dt><dd data-f="next">21</dd></div>
+          <div><dt>trust_anchor_id</dt><dd data-f="anchorId">epoch 7</dd></div>
+          <div><dt>endpoint_manifest.version</dt><dd data-f="manifestV">3</dd></div>
+          <div><dt>throttles we advertise</dt><dd><code class="nw">max_messages_per_bundle 10</code> · <code class="nw">max_message_payload_bytes 64</code></dd></div>
+        </dl>
+      </section>
+      <section class="bv__panel" aria-label="The inbound bundle">
+        <h4>The bundle from Ledger A <span class="bv__sub">as the verifier returns it</span></h4>
+        <dl class="bv__kv">
+          <div><dt>sync_data</dt><dd data-f="sync"><code class="nw">received_message_id 19</code> · ACTIVE · <code class="nw">next_message_id 47</code></dd></div>
+          <div><dt>anchor_message_id</dt><dd data-f="anchorMsg">46</dd></div>
+          <div><dt>anchor_running_hash</dt><dd data-f="anchorHash"><code class="computing">computing…</code></dd></div>
+          <div><dt>new_trust_anchor_id</dt><dd data-f="newAnchor">(empty)</dd></div>
+          <div><dt>new_endpoint_manifest</dt><dd data-f="newManifest">(empty)</dd></div>
+          <div><dt>messages</dt><dd data-f="count">4</dd></div>
+        </dl>
+        <div class="bv__msgs" data-role="bundle"><span class="bv__empty" data-role="reverted" hidden>verifier reverted: nothing returned</span></div>
+      </section>
+    </div>
+    <section class="bv__panel bv__qpanel" aria-label="Our outbound queue">
+      <h4>Our outbound queue (to Ledger A) <span class="bv__sub">what we sent and have not finished with</span></h4>
+      <div class="bv__msgs" data-role="queue"><span class="bv__empty" data-role="qempty" hidden>empty</span></div>
+    </section>
+  </div>
+  <div class="sim__controls" role="group" aria-label="Fault injection">
+    <span class="kicker">Before submitting:</span>
+    <span class="group">{faults.map((f) => <button class={`btn${f.k === 'none' ? '' : ' danger'}`} type="button" data-fault={f.k} aria-pressed={f.k === 'none' ? 'true' : 'false'}>{f.label}</button>)}</span>
+    <span class="spacer"></span>
+    <label class="range"><input type="checkbox" data-opt="rotate" /> also rotate the trust anchor (epoch 7 → 8)</label>
+    <label class="range"><input type="checkbox" data-opt="manifest" /> also carry manifest v4</label>
+  </div>
+  <div class="sim__controls">
+    <button class="btn" type="button" data-role="prev" disabled>◀ Prev</button>
+    <button class="btn primary" type="button" data-role="next">Next ▶</button>
+    <button class="btn" type="button" data-role="reset">Reset</button>
+  </div>
+  <div class="sim__body">
+    <div class="sim__track seg bv__track" data-role="track" aria-hidden="true">{Array.from({ length: 17 }, () => <i></i>)}</div>
+    <div class="steps two" style="--l:1.35fr;--r:.85fr">
+      <div class="step-card" data-role="card"></div>
+      <ol class="step-list" data-role="list" aria-label="Verification steps"></ol>
+    </div>
+  </div>
+  <div class="sim__log" data-role="log">Computing the running hashes…</div>
+  <div class="bv__notes">
+    <aside class="callout impl">
+      <span class="label">Reference implementation</span>
+      <p class="small" style="margin:0">The EVM contracts implement the same checks but not in the spec's numbering: their <a href={pinned('clpr-smart-contracts', 'docs/bundle-flow.md')} rel="noopener">bundle-flow.md</a> splits §4.2 into 12 code steps (the spec's replay defence is code step 4, the hash check step 5), and <a href={sol('src/libraries/service/BundleLib.sol')} rel="noopener">BundleLib.sol</a> runs the response-ordering check as a pre-pass before any dispatch (code step 7, pausing an ACTIVE channel and returning without a revert), adds an ack-monotonicity check the spec does not list (code step 6), and folds <code>sha256(prev ‖ sha256(payload))</code> rather than <code>sha256(prev ‖ payload)</code>. Its own docs list further divergences, including that cross-bundle response ordering is not validated.</p>
+    </aside>
+    <p class="small" style="margin:8px 0 0">Source: <a href={links.spec42} rel="noopener">spec §4.2</a> · <a href={links.spec212} rel="noopener">§2.1.2</a> · <a href={links.spec41} rel="noopener">§4.1</a> · <a href={links.spec44} rel="noopener">§4.4</a> · <a href={links.spec45} rel="noopener">§4.5</a> · <a href={links.spec46} rel="noopener">§4.6</a> · <a href={links.design325} rel="noopener">design §3.2.5</a> · <a href={links.design328} rel="noopener">§3.2.8</a>. Running hashes are real SHA-256 over the UTF-8 text of each message; the protocol hashes the canonical protobuf serialization of <code>ClprMessagePayload</code>.</p>
+  </div>
+</div>
+
+<style is:global>
+  /* Global (not scoped) because the message rows, tables and list items are created at runtime;
+     every selector is prefixed with .bundleverify so nothing leaks. */
+  .bundleverify .bv__grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  @media (min-width: 720px) { .bundleverify .bv__grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+  .bundleverify .bv__panel { border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; background: var(--bg-2); min-width: 0; }
+  .bundleverify .bv__qpanel { margin-top: 10px; }
+  .bundleverify .bv__panel h4 { margin: 0 0 6px; font-size: 0.92rem; }
+  .bundleverify .bv__sub { display: block; font-weight: 400; font-size: 0.78rem; color: var(--text-3); }
+  .bundleverify .bv__kv { margin: 0; font-size: 0.82rem; }
+  .bundleverify .bv__kv > div { display: flex; flex-wrap: wrap; gap: 2px 10px; padding: 3px 0; border-bottom: 1px dashed var(--border); }
+  .bundleverify .bv__kv > div:last-child { border-bottom: 0; }
+  .bundleverify .bv__kv dt { font-family: var(--mono); font-size: 0.74rem; color: var(--text-3); flex: 0 0 11.5em; }
+  .bundleverify .bv__kv dd { margin: 0; flex: 1 1 10em; min-width: 0; overflow-wrap: anywhere; transition: color 250ms; }
+  .bundleverify .bv__kv dd.chg { color: var(--ok); font-weight: 700; animation: bv-flash 700ms ease; }
+  .bundleverify .bv__kv dd.chg::after { content: ' ●'; font-size: 0.6em; vertical-align: middle; }
+  .bundleverify .bv__kv dd.was::after { content: ' ●'; font-size: 0.6em; vertical-align: middle; color: var(--ok); opacity: 0.7; }
+  .bundleverify .bv__kv dd.bad, .bundleverify .bv__kv dd.chg.bad { color: var(--bad); font-weight: 700; }
+  .bundleverify .bv__kv code { font-size: 0.75rem; }
+  .bundleverify .bv__kv code.nw { white-space: nowrap; }
+  .bundleverify .bv__kv code.computing { animation: bv-shimmer 900ms ease-in-out infinite alternate; }
+  @keyframes bv-flash { from { background: var(--ok-soft); } }
+  @keyframes bv-shimmer { from { opacity: 0.4; } to { opacity: 1; } }
+  /* The pills always take their own row in the head, so a long fault label never changes the head's height. */
+  .bundleverify .bv__pills { display: flex; flex-basis: 100%; flex-wrap: wrap; gap: 6px; }
+  .bundleverify .bv__msgs { display: flex; flex-direction: column; gap: 5px; margin-top: 8px; min-height: 2em; }
+  /* Reserve room for four rows (a row measures 36 px), so picking a fault with fewer rows (or none,
+     when the verifier reverts) does not move the control bar under the pointer. At desktop width
+     the bundle panel also reserves the three extra lines its rows wrap onto at most, when a mark
+     or the oversized payload appears (measured 236 px for fault c at 1280 px). */
+  .bundleverify .bv__msgs { min-height: calc(4 * 2.3rem + 3 * 5px); }
+  @media (min-width: 720px) { .bundleverify .bv__msgs[data-role="bundle"] { min-height: calc(4 * 2.3rem + 3 * 5px + 3 * 1.65rem); } }
+  .bundleverify .bv__msgs.is-reverted .bv__msg { display: none; }
+  .bundleverify .bv__msg { position: relative; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 7px; border: 1px solid var(--border-2); border-radius: 8px; padding: 5px 8px; background: var(--surface); font-size: 0.8rem; transition: opacity 250ms, border-color 250ms, background-color 250ms, transform 250ms, box-shadow 250ms; }
+  .bundleverify .bv__msg b { font-variant-numeric: tabular-nums; }
+  .bundleverify .bv__msg code { font-size: 0.74rem; }
+  .bundleverify .bv__msg .meta { color: var(--text-3); font-size: 0.72rem; }
+  .bundleverify .bv__msg .marks { margin-left: auto; display: inline-flex; flex-wrap: wrap; gap: 4px; }
+  .bundleverify .bv__msg.cur { border-color: var(--text); border-width: 2px; box-shadow: var(--shadow); transform: translateX(4px); }
+  .bundleverify .bv__msg.done { opacity: 0.55; }
+  .bundleverify .bv__msg.bad { border-color: var(--bad); background: var(--bad-soft); }
+  .bundleverify .bv__msg::after { content: ''; position: absolute; left: 8px; right: 8px; top: 50%; height: 1px; background: var(--text-2); transform: scaleX(0); transform-origin: left; transition: transform 300ms ease; pointer-events: none; }
+  .bundleverify .bv__msg.del { opacity: 0.6; border-style: dashed; }
+  .bundleverify .bv__msg.del::after { transform: scaleX(1); }
+  .bundleverify .bv__msg.fresh { border-color: var(--ok); animation: bv-slide 220ms ease-out; }
+  @keyframes bv-slide { from { opacity: 0; transform: translateY(-6px); } }
+  .bundleverify .bv__empty { color: var(--text-3); font-size: 0.8rem; font-style: italic; align-self: center; }
+  .bundleverify .bv__track { margin: 0 0 10px; }
+  .bundleverify .sim__track.seg > i.skip { background: var(--grey); opacity: 0.6; }
+  @media (max-width: 479px) {
+    .bundleverify .bv__kv > div { flex-direction: column; gap: 0; }
+    .bundleverify .bv__kv dt, .bundleverify .bv__kv dd { flex: 0 0 auto; }
+  }
+  .bundleverify .step-card table { font-size: 0.8rem; margin: 6px 0 8px; }
+  .bundleverify .step-card th, .bundleverify .step-card td { padding: 4px 6px; white-space: normal; vertical-align: middle; }
+  .bundleverify .step-card td code { font-size: 0.72rem; white-space: nowrap; }
+  .bundleverify .step-card .verdict { font-weight: 700; }
+  .bundleverify .step-card .verdict.is-pass { color: var(--ok); }
+  .bundleverify .step-card .verdict.is-reject, .bundleverify .step-card .verdict.is-pause { color: var(--bad); }
+  .bundleverify .step-card .verdict.is-skip { color: var(--text-3); }
+  .bundleverify .step-list li { cursor: pointer; }
+  .bundleverify .step-list li.is-nr { cursor: default; opacity: 0.5; }
+  .bundleverify .step-list li.is-nr:hover { background: transparent; }
+  .bundleverify .step-list li .ev.is-pass { color: var(--ok); }
+  .bundleverify .step-list li .ev.is-skip { color: var(--text-3); }
+  .bundleverify .step-list li .ev.is-reject, .bundleverify .step-list li .ev.is-pause { color: var(--bad); }
+  .bundleverify .step-list li .ev.is-nr { color: var(--text-3); font-weight: 500; text-transform: none; letter-spacing: 0; }
+  .bundleverify .bv__notes { padding: 10px 14px 14px; border-top: 1px solid var(--border); }
+  .bundleverify .bv__notes .callout { margin: 0; padding: 10px 14px; }
+  .bundleverify .sim__log .k { font-family: var(--mono); font-size: 0.8em; }
+</style>
+
+<script>
+  import { scrollListTo } from '@kse/lib/scroll';
+  type MType = 'DATA' | 'REPLY' | 'CONTROL';
+  type Outcome = 'SUCCESS' | 'APPLICATION_ERROR' | 'CONNECTOR_UNDERFUNDED';
+  type Verdict = 'info' | 'pass' | 'skip' | 'reject' | 'pause' | 'done';
+  interface BMsg { id: number; type: MType; text: string; meta: string; replyTo?: number; outcome?: Outcome; connector?: string }
+  interface QItem { id: number; type: MType; label: string; note: string; acked: boolean; del?: string; fresh?: boolean }
+  interface State { status: string; received: number; rhash: string; acked: number; next: number; anchorId: string; manifestV: number; queue: QItem[] }
+  interface Step {
+    n: string; label: string; title: string; where: string; plain: string; proto: string; refs: [string, string][];
+    extra?: string; verdict: Verdict; state: State; changed: string[]; log: string; cur?: number; bad?: number; dispatched: number[];
+  }
+  interface Sync { received: number; status: string; next: number }
+  interface Scenario { key: string; verifierReverts?: boolean; msgs: BMsg[]; sender: BMsg[]; sync: Sync; anchorId: number; rotate: boolean; manifest: boolean }
+  interface Hashes { stored: string; computed: string[]; sender: string[]; anchor: string }
+
+  const MAX_MSGS = 10;
+  const MAX_BYTES = 64;
+  const enc = new TextEncoder();
+  const ZERO = new Uint8Array(32);
+  async function sha256(b: Uint8Array): Promise<Uint8Array> { return new Uint8Array(await crypto.subtle.digest('SHA-256', b as BufferSource)); }
+  async function chain(seed: Uint8Array, texts: string[]): Promise<Uint8Array[]> {
+    let h = seed; const out: Uint8Array[] = [];
+    for (const t of texts) { const p = enc.encode(t); const buf = new Uint8Array(32 + p.length); buf.set(h); buf.set(p, 32); h = await sha256(buf); out.push(h); }
+    return out;
+  }
+  const hex = (b: Uint8Array, n = 6) => Array.from(b.slice(0, n)).map((x) => x.toString(16).padStart(2, '0')).join('') + '…';
+  const bytes = (t: string) => enc.encode(t).length;
+  const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const clone = <T,>(x: T): T => JSON.parse(JSON.stringify(x));
+
+  // The peer's 42 earlier messages, as placeholders, so that H42 is a genuine chain value.
+  const PREFIX_TEXTS = Array.from({ length: 42 }, (_, i) => `msg ${i + 1}`);
+  const HONEST: BMsg[] = [
+    { id: 43, type: 'DATA', text: 'ping', meta: 'via c1 → PingPong', connector: 'c1', outcome: 'SUCCESS' },
+    { id: 44, type: 'DATA', text: 'pay Bo 5', meta: 'via c1 → Bank', connector: 'c1', outcome: 'APPLICATION_ERROR' },
+    { id: 45, type: 'REPLY', text: 'reply(18) SUCCESS', meta: 'answers our #18', replyTo: 18 },
+    { id: 46, type: 'DATA', text: 'pay Cy 2', meta: 'via c2 → Bank', connector: 'c2', outcome: 'CONNECTOR_UNDERFUNDED' },
+  ];
+  const SYNC: Sync = { received: 19, status: 'ACTIVE', next: 47 };
+  function scenario(key: string, rotate: boolean, manifest: boolean): Scenario {
+    const base: Scenario = { key, msgs: clone(HONEST), sender: clone(HONEST), sync: { ...SYNC }, anchorId: 46, rotate, manifest };
+    if (key === 'a') base.verifierReverts = true;
+    if (key === 'b') {
+      const stale: BMsg[] = [40, 41, 42].map((id) => ({ id, type: 'DATA', text: `msg ${id}`, meta: 'already processed', connector: 'c1', outcome: 'SUCCESS' }));
+      base.msgs = stale; base.sender = clone(stale); base.sync = { received: 17, status: 'ACTIVE', next: 43 }; base.anchorId = 42;
+    }
+    if (key === 'c') { const t = 'pay Bo 5 and Dee 3 and Ed 4 and Fay 1 and Gus 2 and Hal 9 and Ivy 6 and Jo 7 and Kay 8'; base.msgs[1].text = t; base.sender[1].text = t; }
+    if (key === 'd') { base.msgs = base.msgs.slice(1); base.sender = base.sender.slice(1); }
+    if (key === 'e') { base.msgs[1].text = 'pay Mallory 500'; }
+    if (key === 'f') { base.msgs[2] = { id: 45, type: 'REPLY', text: 'reply(20) SUCCESS', meta: 'answers our #20', replyTo: 20 }; base.sender[2] = clone(base.msgs[2]); }
+    return base;
+  }
+
+  let prefixP: Promise<Uint8Array[]> | null = null;
+  let honestP: Promise<Uint8Array[]> | null = null;
+  function getPrefix() { return (prefixP ??= chain(ZERO, PREFIX_TEXTS)); }
+  async function getHonest() { return (honestP ??= chain((await getPrefix())[41], HONEST.map((m) => m.text))); }
+  async function prepare(sc: Scenario): Promise<Hashes> {
+    const prefix = await getPrefix(); const honest = await getHonest();
+    const before = (id: number) => (id === 1 ? ZERO : id - 1 <= 42 ? prefix[id - 2] : honest[id - 1 - 43]);
+    const stored = prefix[41];
+    const computed = await chain(stored, sc.msgs.map((m) => m.text));
+    const senderChain = await chain(before(sc.sender[0].id), sc.sender.map((m) => m.text));
+    return { stored: hex(stored), computed: computed.map((h) => hex(h)), sender: senderChain.map((h) => hex(h)), anchor: hex(senderChain[senderChain.length - 1]) };
+  }
+
+  const PILL: Record<MType, string> = { DATA: 'c', REPLY: 'b', CONTROL: 'grey' };
+  const FEE = 'The submitting account paid the transaction fee and is not reimbursed.';
+  const NOCHANGE = 'No channel state changed: rejecting a bundle is a failed transaction, so nothing in it, including any manifest or trust-anchor update, is applied.';
+
+  function build(sc: Scenario, H: Hashes): { steps: Step[]; canon: { n: string; label: string }[] } {
+    const stored: State = {
+      status: 'ACTIVE', received: 42, rhash: H.stored, acked: 17, next: 21, anchorId: 'epoch 7', manifestV: 3,
+      queue: [
+        { id: 18, type: 'DATA', label: 'pay Cy 2', note: 'to Bank on A · via c1', acked: false },
+        { id: 19, type: 'CONTROL', label: 'ConfigUpdate', note: 'our new throttles', acked: false },
+        { id: 20, type: 'DATA', label: 'ping', note: 'to PingPong on A · via c1', acked: false },
+      ],
+    };
+    const canon: { n: string; label: string }[] = [
+      { n: '0', label: 'bundle submitted' }, { n: '1', label: 'verifier call' }, { n: '1a', label: 'NoProgress check' }, { n: '1b', label: 'manifest update' },
+      { n: '1c', label: 'trust-anchor update' }, { n: '2', label: 'size checks' }, { n: '3', label: 'replay defence' }, { n: '4', label: 'running hash' },
+      { n: '5', label: 'ack update' }, { n: '5a', label: 'status check' }, { n: '5b', label: 'drain check' }, { n: '5c', label: 'lazy config' },
+      ...sc.msgs.map((m) => ({ n: '6', label: `dispatch #${m.id} (${m.type})` })), { n: '✓', label: 'bundle processed' },
+    ];
+    const steps: Step[] = [];
+    let st = clone(stored);
+    let dispatched: number[] = [];
+    const first = sc.msgs[0];
+    const last = sc.msgs[sc.msgs.length - 1];
+    const idsText = sc.msgs.map((m) => m.id).join(', ');
+    const tidy = (s: State) => { s.queue = s.queue.filter((q) => !q.del); for (const q of s.queue) q.fresh = false; };
+    const push = (s: Omit<Step, 'state' | 'dispatched'> & { state?: State }) => {
+      steps.push({ ...s, state: s.state ?? clone(st), dispatched: [...dispatched] });
+      tidy(st);
+    };
+    const reject = (base: Omit<Step, 'state' | 'dispatched' | 'verdict' | 'changed' | 'log'>, log: string) => {
+      steps.push({ ...base, verdict: 'reject', state: clone(stored), changed: [], log: `<span class="bad">Rejected at step ${base.n}.</span> ${log} ${FEE} ${NOCHANGE}`, dispatched: [] });
+    };
+
+    // 0 — submission
+    push({
+      n: '0', label: 'bundle submitted', title: 'An endpoint submits the bundle as a transaction', where: 'before §4.2',
+      plain: 'An endpoint has fetched a bundle from Ledger A\'s side and now submits it to our ledger as an ordinary transaction. Everything that follows runs inside that transaction, after consensus. The submitting account has already paid the transaction fee; whether it earns anything back depends on what happens next. On the left is what our ledger already knows about this channel; on the right, what the bundle claims.',
+      proto: 'submitBundle(channel_id, bundle_payload). Bundle submission is permissionless: any account may call it. The Channel\'s own fields (acked_message_id, received_running_hash, trust_anchor_id, endpoint_manifest) and this side\'s own ChannelSyncData (status, received_message_id, next_message_id) are the stored state the algorithm checks against.',
+      refs: [['spec42', 'spec §4.2'], ['spec241', 'spec §2.4.1'], ['design323', 'design §3.2.3']], verdict: 'info', changed: [], log: 'Nothing has happened yet. Press Next to run step 1, or pick a fault first.',
+    });
+
+    // 1 — verifier
+    if (sc.verifierReverts) {
+      reject({
+        n: '1', label: 'verifier call', title: 'The verifier reverts', where: 'spec §4.2 · step 1',
+        plain: 'The ledger hands the raw proof bytes to the channel\'s verifier contract together with the trust anchor it currently believes in (epoch 7). The verifier\'s cryptography fails: the proof is not valid against that anchor. Nothing else is looked at.',
+        proto: 'verifyBundle(bundle_payload, Channel.trust_anchor, Channel.channel_context) reverts. "If the verifier reverts or returns an error, reject the entire bundle. The submitting account pays the transaction cost."',
+        refs: [['spec42', 'spec §4.2 step 1'], ['spec31', 'spec §3.1'], ['design325', 'design §3.2.5']], extra: '<p class="verdict is-reject">verifier reverted → bundle rejected</p>', bad: undefined,
+      }, 'The proof does not verify against trust anchor "epoch 7".');
+      return { steps, canon };
+    }
+    push({
+      n: '1', label: 'verifier call', title: 'The verifier extracts and vouches for the contents', where: 'spec §4.2 · step 1',
+      plain: 'The ledger hands the raw proof bytes to the channel\'s verifier contract, together with the trust anchor it currently believes in (epoch 7). The verifier does the cryptography and hands back the verified contents: the peer\'s sync data, the messages, the anchor, and any rotation or manifest update. The CLPR Service never reads proof bytes itself; everything on the right of the screen is what the verifier returned.',
+      proto: `verifyBundle(bundle_payload, Channel.trust_anchor, Channel.channel_context) → (sync_data, messages[${sc.msgs.length}], anchor_message_id ${sc.anchorId}, anchor_running_hash, new_trust_anchor${sc.rotate ? ' = epoch 8' : ' = empty'}, new_trust_anchor_id, new_endpoint_manifest${sc.manifest ? ' v4' : ' = empty'}). The verifier is responsible for binding the data to the (trust_anchor, service_address, channel_id) triple; the running-hash chain, message ordering and replay defence are the Service's job after this call.`,
+      refs: [['spec42', 'spec §4.2 step 1'], ['spec31', 'spec §3.1'], ['design325', 'design §3.2.5']], extra: '<p class="verdict is-pass">verifier returned normally → continue</p>',
+      verdict: 'pass', changed: [], log: 'Nothing changed yet; the verifier only reads. The returned values are now on the right.',
+    });
+
+    // 1a — NoProgress
+    const closingSet = ['CLOSING', 'DRAINED', 'CLOSED'];
+    const c1 = sc.msgs.length > 0 && sc.anchorId > st.received;
+    const c2 = sc.rotate;
+    const c3 = sc.manifest && 4 > st.manifestV;
+    const c4 = sc.sync.received > st.acked;
+    const c5 = (closingSet.includes(sc.sync.status) && ['ACTIVE', 'PAUSED'].includes(st.status));
+    const crit = [
+      [1, 'New messages', `anchor_message_id ${sc.anchorId} > received_message_id ${st.received}`, c1],
+      [2, 'Trust anchor advancement', `new_trust_anchor_id ${sc.rotate ? '"epoch 8" ≠ "epoch 7"' : 'empty; "epoch 7" unchanged'}`, c2],
+      [3, 'Endpoint manifest advancement', sc.manifest ? 'new_endpoint_manifest v4 > stored v3' : 'new_endpoint_manifest empty', c3],
+      [4, 'Acknowledgement progress', `sync_data.received_message_id ${sc.sync.received} > acked_message_id ${st.acked}`, c4],
+      [5, 'Channel state transition', `sync_data.status ${sc.sync.status}, own status ${st.status}: no transition due`, c5],
+    ] as [number, string, string, boolean][];
+    const critTable = `<table><thead><tr><th>#</th><th>criterion</th><th>holds?</th></tr></thead><tbody>${crit.map(([n, name, why, ok]) => `<tr><td>${n}</td><td><b>${name}</b><br/><span class="small">${esc(why)}</span></td><td><span class="pill ${ok ? 'ok' : 'grey'}">${ok ? 'yes' : 'no'}</span></td></tr>`).join('')}</tbody></table>`;
+    if (!(c1 || c2 || c3 || c4 || c5)) {
+      reject({
+        n: '1a', label: 'NoProgress check', title: 'The bundle changes nothing: NoProgress', where: 'spec §4.2 · step 1a, §2.1.2',
+        plain: `The proof is genuine, but the bundle carries messages ${idsText}, which we already have, and sync data we already know. None of the five progress criteria holds, so the bundle is rejected as NoProgress. Endpoints are required to suppress such bundles before submitting (the endpoint pre-check); the on-chain post-check exists so that a lazy or malicious endpoint pays for wasting the ledger's time.`,
+        proto: `Reject with NoProgress when all of: messages empty or anchor_message_id ≤ received_message_id (${sc.anchorId} ≤ ${st.received}); new_trust_anchor_id == trust_anchor_id or empty; new_endpoint_manifest empty or version ≤ stored; sync_data.received_message_id ≤ acked_message_id (${sc.sync.received} ≤ ${st.acked}); no Criterion-5 transition. "A bundle rejected at Step 1a costs the submitting account its transaction fee; the endpoint pre-check is the primary gate."`,
+        refs: [['spec42', 'spec §4.2 step 1a'], ['spec212', 'spec §2.1.2'], ['design324', 'design §3.2.4']], extra: critTable + '<p class="verdict is-reject">no criterion holds → NoProgress</p>',
+      }, 'None of the five Bundle Progress Criteria holds.');
+      return { steps, canon };
+    }
+    push({
+      n: '1a', label: 'NoProgress check', title: 'Does this bundle make progress?', where: 'spec §4.2 · step 1a, §2.1.2',
+      plain: 'Before doing any more work, the ledger asks whether this bundle changes anything at all. It must satisfy at least one of five progress criteria; a bundle that satisfies none is rejected as NoProgress, so endpoints cannot burn on-chain resources with empty deliveries. One criterion is enough: a bundle that only rotates the trust anchor, or only refreshes the endpoint list, is valid.',
+      proto: 'Reject with NoProgress if none of the five Bundle Progress Criteria (§2.1.2) holds: new messages (anchor beyond received_message_id), trust-anchor advancement, manifest advancement, acknowledgement progress, or a channel state transition. The endpoint applies the same check before submitting (pre-check); this is the on-chain post-check.',
+      refs: [['spec42', 'spec §4.2 step 1a'], ['spec212', 'spec §2.1.2'], ['design324', 'design §3.2.4']], extra: critTable + `<p class="verdict is-pass">${[c1, c2, c3, c4, c5].filter(Boolean).length} criteria hold → continue</p>`,
+      verdict: 'pass', changed: [], log: `Criteria that hold: ${crit.filter((c) => c[3]).map((c) => c[0]).join(', ')}. Nothing changed.`,
+    });
+
+    // 1b — manifest
+    if (sc.manifest) {
+      st.manifestV = 4;
+      push({
+        n: '1b', label: 'manifest update', title: 'A newer endpoint list: replace ours', where: 'spec §4.2 · step 1b, §2.4.2',
+        plain: 'The bundle carries a proof of Ledger A\'s current list of endpoints at version 4, newer than the version 3 we cached. We replace our cached list in one go. This is how a ledger learns new endpoint addresses without trusting any endpoint to tell it.',
+        proto: 'new_endpoint_manifest.version 4 > Channel.endpoint_manifest.version 3 → atomically replace Channel.endpoint_manifest (truncated to max_peer_endpoints if longer). The manifest update is applied before the trust-anchor update.',
+        refs: [['spec42', 'spec §4.2 step 1b'], ['spec242', 'spec §2.4.2']], extra: '<p class="verdict is-pass">version 4 > 3 → manifest replaced</p>',
+        verdict: 'pass', changed: ['manifestV'], log: '<span class="k">endpoint_manifest.version</span> 3 → 4.',
+      });
+    } else {
+      push({
+        n: '1b', label: 'manifest update', title: 'No manifest in this bundle: skip', where: 'spec §4.2 · step 1b',
+        plain: 'A bundle may carry a proof of the peer\'s current list of endpoints. This one does not, so we keep the version-3 list we have and move on. A stale manifest (same or lower version) is also skipped silently rather than treated as an error.',
+        proto: 'new_endpoint_manifest is empty bytes → "silently skip — do not revert". Non-empty with version ≤ Channel.endpoint_manifest.version is skipped the same way; only version > stored triggers the §2.4.2 update.',
+        refs: [['spec42', 'spec §4.2 step 1b'], ['spec242', 'spec §2.4.2']], extra: '<p class="verdict is-skip">nothing to apply → skipped, not an error</p>',
+        verdict: 'skip', changed: [], log: 'Nothing changed. (Tick "also carry manifest v4" above to see the update.)',
+      });
+    }
+
+    // 1c — trust anchor
+    if (sc.rotate) {
+      st.anchorId = 'epoch 8';
+      push({
+        n: '1c', label: 'trust-anchor update', title: 'The peer\'s signing authority rotated: adopt it now', where: 'spec §4.2 · step 1c',
+        plain: 'The bundle proves that Ledger A\'s signing authority has moved to epoch 8 (a new validator set, say), and that the move was authorised by epoch 7. We adopt the new anchor before touching any message, so there is never a bundle half-checked under the old authority and half under the new.',
+        proto: 'new_trust_anchor.length > 0 → atomically set Channel.trust_anchor and Channel.trust_anchor_id = "epoch 8" before processing any message in this bundle. Only verifyBundle may change these fields; no admin path does. Rotation evidence must itself be state-proven against the old anchor or the verifier must revert.',
+        refs: [['spec42', 'spec §4.2 step 1c'], ['spec31', 'spec §3.1'], ['design325', 'design §3.2.5']], extra: '<p class="verdict is-pass">new anchor adopted before any message is processed</p>',
+        verdict: 'pass', changed: ['anchorId'], log: '<span class="k">trust_anchor_id</span> epoch 7 → epoch 8. If a later step rejects this bundle, this update is discarded with it.',
+      });
+    } else {
+      push({
+        n: '1c', label: 'trust-anchor update', title: 'No rotation in this bundle: skip', where: 'spec §4.2 · step 1c',
+        plain: 'If the bundle proved that Ledger A\'s signing authority had rotated, we would adopt the new authority here, before any message is processed. It did not, so "epoch 7" still applies.',
+        proto: 'new_trust_anchor is empty → no change. When present, Channel.trust_anchor and trust_anchor_id are set atomically before message processing so that every message in the bundle is attributed to the authority that produced it.',
+        refs: [['spec42', 'spec §4.2 step 1c'], ['design325', 'design §3.2.5']], extra: '<p class="verdict is-skip">no new anchor → skipped</p>',
+        verdict: 'skip', changed: [], log: 'Nothing changed. (Tick "also rotate the trust anchor" above to see the update.)',
+      });
+    }
+
+    // 2 — size
+    const sizes = sc.msgs.map((m) => [m, bytes(m.text)] as [BMsg, number]);
+    const tooBig = sizes.find(([, n]) => n > MAX_BYTES);
+    const sizeTable = `<table><thead><tr><th>#</th><th>type</th><th>bytes</th><th>≤ ${MAX_BYTES}?</th></tr></thead><tbody>${sizes.map(([m, n]) => `<tr><td>${m.id}</td><td>${m.type}</td><td>${n}</td><td><span class="pill ${n <= MAX_BYTES ? 'ok' : 'bad'}">${n <= MAX_BYTES ? 'yes' : 'no'}</span></td></tr>`).join('')}</tbody></table><p class="small" style="margin:0 0 6px">messages: ${sc.msgs.length} ≤ max_messages_per_bundle ${MAX_MSGS} <span class="pill ${sc.msgs.length <= MAX_MSGS ? 'ok' : 'bad'}">${sc.msgs.length <= MAX_MSGS ? 'yes' : 'no'}</span></p>`;
+    if (tooBig || sc.msgs.length > MAX_MSGS) {
+      const bad = tooBig ? tooBig[0].id : undefined;
+      reject({
+        n: '2', label: 'size checks', title: 'A message is larger than we accept', where: 'spec §4.2 · step 2',
+        plain: `Message ${bad} is ${tooBig![1]} bytes, more than the ${MAX_BYTES}-byte limit this ledger advertises. Ledger A's CLPR Service should never have enqueued it, so an oversized message is evidence of a dishonest source, and the whole bundle is tainted: it is rejected, not just the one message.`,
+        proto: `Any individual message payload > max_message_payload_bytes (${MAX_BYTES}) → reject the entire bundle. The limit is enforced on both sides: at enqueue on the source (§4.3 step 4, against the destination's advertised limit) and here at bundle processing, which is the authoritative enforcement regardless of what the source allowed.`,
+        refs: [['spec42', 'spec §4.2 step 2'], ['spec11', 'spec §1.1'], ['design326', 'design §3.2.6']], extra: sizeTable + '<p class="verdict is-reject">oversized payload → bundle rejected</p>', bad,
+      }, `Message ${bad} exceeds max_message_payload_bytes.`);
+      return { steps, canon };
+    }
+    push({
+      n: '2', label: 'size checks', title: 'Not too many, not too big', where: 'spec §4.2 · step 2',
+      plain: `Two cheap sanity limits, both taken from the throttles this ledger publishes in its own configuration: at most ${MAX_MSGS} messages in a bundle, and no single message above ${MAX_BYTES} bytes. Ledger A was obliged to respect them when it enqueued the messages; checking again here makes the destination the authority.`,
+      proto: `messages.length (${sc.msgs.length}) ≤ max_messages_per_bundle (${MAX_MSGS}); each serialized payload ≤ max_message_payload_bytes (${MAX_BYTES}). Either violation rejects the entire bundle; an oversized payload is evidence of a dishonest source (design §3.2.5), so the entire bundle is tainted.`,
+      refs: [['spec42', 'spec §4.2 step 2'], ['spec11', 'spec §1.1'], ['design326', 'design §3.2.6']], extra: sizeTable + '<p class="verdict is-pass">within limits → continue</p>',
+      verdict: 'pass', changed: [], log: 'Nothing changed.',
+    });
+
+    // 3 — replay
+    let gapAt: number | undefined;
+    if (first.id !== st.received + 1) gapAt = first.id;
+    else for (let i = 1; i < sc.msgs.length; i++) if (sc.msgs[i].id !== sc.msgs[i - 1].id + 1) { gapAt = sc.msgs[i].id; break; }
+    if (gapAt !== undefined) {
+      reject({
+        n: '3', label: 'replay defence', title: 'The numbers do not line up', where: 'spec §4.2 · step 3',
+        plain: `We have processed Ledger A's messages through ${st.received}, so the bundle must start at ${st.received + 1}. It starts at ${first.id}: message ${st.received + 1} is missing. Even though every message in it is genuine and the proof is valid, the bundle is rejected. Nothing may be skipped, and nothing may be delivered twice.`,
+        proto: `First message id MUST equal received_message_id + 1 (${first.id} ≠ ${st.received + 1}); subsequent ids MUST be contiguous and ascending. Any violation rejects the entire bundle, "regardless of whether the verifier accepted the proof": this check is the CLPR Service's own and holds even if the verifier is buggy and accepts stale proofs. A replayed old bundle fails the same test.`,
+        refs: [['spec42', 'spec §4.2 step 3'], ['design325', 'design §3.2.5']], extra: `<p class="verdict is-reject">first id ${first.id}, expected ${st.received + 1} → bundle rejected</p>`, bad: gapAt,
+      }, `The bundle starts at ${first.id}; we expected ${st.received + 1}.`);
+      return { steps, canon };
+    }
+    push({
+      n: '3', label: 'replay defence', title: 'Exactly the next messages, with no gaps', where: 'spec §4.2 · step 3',
+      plain: `We have processed Ledger A's messages through ${st.received}. The bundle starts at ${first.id} and runs to ${last.id} without gaps: exactly the next ones. This is the replay defence. An old bundle, or one that skips a message, fails here even if its proof is perfectly valid, and the ledger does this check itself rather than trusting the verifier to.`,
+      proto: `first.id == received_message_id + 1 (${first.id} == ${st.received} + 1) and each id == previous + 1 (${idsText}). Every message id is strictly greater than this side's stored received_message_id; any bundle containing an id ≤ that value is rejected outright, regardless of the verifier's verdict.`,
+      refs: [['spec42', 'spec §4.2 step 3'], ['design325', 'design §3.2.5']], extra: `<p class="verdict is-pass">contiguous from ${first.id} → continue</p>`,
+      verdict: 'pass', changed: [], log: 'Nothing changed.',
+    });
+
+    // 4 — running hash
+    const computedLast = H.computed[H.computed.length - 1];
+    const match = computedLast === H.anchor;
+    let firstDiff = -1;
+    const rows = sc.msgs.map((m, i) => {
+      const senderIdx = sc.sender.findIndex((s) => s.id === m.id);
+      const same = senderIdx >= 0 && H.sender[senderIdx] === H.computed[i];
+      if (!same && firstDiff < 0) firstDiff = i;
+      return `<tr><td>#${m.id}</td><td><code style="color:${same ? 'inherit' : 'var(--bad)'}">${H.computed[i]}</code></td><td>${same ? '<span class="pill grey">recomputed</span>' : '<span class="pill bad">differs</span>'}</td></tr>`;
+    });
+    const chainTable = `<table><thead><tr><th>after</th><th>running hash</th><th></th></tr></thead><tbody><tr><td>#${st.received} (stored)</td><td><code>${H.stored}</code></td><td><span class="pill grey">seed</span></td></tr>${rows.join('')}<tr><td>anchor (proof)</td><td><code>${H.anchor}</code></td><td>${match ? '<span class="pill ok">matches</span>' : '<span class="pill bad">does not match</span>'}</td></tr></tbody></table>`;
+    if (!match) {
+      const badMsg = sc.msgs[Math.max(firstDiff, 0)];
+      reject({
+        n: '4', label: 'running hash', title: 'The chain does not reproduce the anchor', where: 'spec §4.2 · step 4, §4.1',
+        plain: `Starting from the running hash we stored after message ${st.received}, we recompute the chain over the messages the verifier handed us. Message ${badMsg.id} reads "${esc(badMsg.text)}", which is not what Ledger A enqueued, so from there on every running hash differs and the last one does not equal the anchor that Ledger A's state proof vouches for. The ledger does not need to know what changed; one mismatch is enough to throw the whole bundle away.`,
+        proto: `H_n = SHA-256(H_{n−1} ‖ serialized_payload_n) from Channel.received_running_hash; final H (${computedLast}) ≠ anchor_running_hash (${H.anchor}) → reject the entire bundle. The proof covers only the anchor, so the endpoint could not have adjusted it; and this check is independent of the verifier, defending against a verifier that authenticates a proof but returns garbled messages.`,
+        refs: [['spec42', 'spec §4.2 step 4'], ['spec41', 'spec §4.1'], ['design325', 'design §3.2.5']], extra: chainTable + '<p class="verdict is-reject">hash mismatch → bundle rejected</p>', bad: badMsg.id,
+      }, 'The recomputed running hash does not equal the proven anchor.');
+      return { steps, canon };
+    }
+    push({
+      n: '4', label: 'running hash', title: 'Recompute the running hash chain and compare the last link', where: 'spec §4.2 · step 4, §4.1',
+      plain: `Starting from the running hash we stored after message ${st.received}, we recompute the chain over the messages the verifier handed us, one SHA-256 per message. Only the final value is compared, with the anchor hash that Ledger A's state proof vouches for. Anything altered, dropped, reordered or inserted on the way would change it. It matches.`,
+      proto: `H_n = SHA-256(H_{n−1} ‖ serialized_payload_n), seeded with Channel.received_running_hash; final H MUST equal anchor_running_hash, the sender's running_hash_after_processing at anchor_message_id ${sc.anchorId} (through the last message in the bundle, not necessarily everything the sender ever enqueued). This defends against verifier bugs that return garbled messages; it does not defend against a compromised verifier, which could fabricate a matching hash. Here the payload is the UTF-8 text shown; the protocol hashes the canonical protobuf serialization of ClprMessagePayload.`,
+      refs: [['spec42', 'spec §4.2 step 4'], ['spec41', 'spec §4.1'], ['design325', 'design §3.2.5']], extra: chainTable + '<p class="verdict is-pass">final running hash = anchor → continue</p>',
+      verdict: 'pass', changed: [], log: 'Nothing changed yet: the recomputed running hashes are only adopted as messages are dispatched in step 6.',
+    });
+
+    // 5 — ack update
+    const prevAcked = st.acked;
+    st.acked = sc.sync.received;
+    const deleted: QItem[] = []; const retained: QItem[] = [];
+    for (const q of st.queue) {
+      if (q.id <= st.acked) { q.acked = true; if (q.type !== 'DATA') { q.del = 'deleted on ack'; deleted.push(q); } else retained.push(q); }
+    }
+    push({
+      n: '5', label: 'ack update', title: 'Record the peer\'s ack and tidy our own queue', where: 'spec §4.2 · step 5, §4.4',
+      plain: `Ledger A's sync data says it has received our messages through ${st.acked}. We record that, then clean our own outbound queue: acknowledged replies and control messages can go, because nothing will ever come back for them. Acknowledged data messages stay: we still need each one to check that Ledger A's reply to it arrives in the right order.`,
+      proto: `acked_message_id ← sync_data.received_message_id (${prevAcked} → ${st.acked}). Delete acknowledged Response Messages and Control Messages from the outbound queue (neither generates a further response): ${deleted.length ? deleted.map((q) => `#${q.id} ${q.type}`).join(', ') : 'none'}. Retain acknowledged Data Messages until their corresponding response arrives: ${retained.length ? retained.map((q) => `#${q.id}`).join(', ') : 'none'}.`,
+      refs: [['spec42', 'spec §4.2 step 5'], ['spec44', 'spec §4.4'], ['design327', 'design §3.2.7']], extra: `<p class="verdict is-pass">acked ${prevAcked} → ${st.acked}; ${deleted.length} deleted, ${retained.length} retained</p>`,
+      verdict: 'pass', changed: ['acked'], log: `<span class="k">acked_message_id</span> ${prevAcked} → ${st.acked} · ${deleted.map((q) => `#${q.id} (${q.type}) deleted on ack`).join(' · ')}${deleted.length ? ' · ' : ''}${retained.map((q) => `#${q.id} (DATA) retained, awaiting its reply`).join(' · ')} · #20 still unacknowledged.`,
+    });
+
+    // 5a — status
+    push({
+      n: '5a', label: 'status check', title: 'Is the peer closing? No', where: 'spec §4.2 · step 5a',
+      plain: `If Ledger A had told us it is closing the channel, we would follow it into CLOSING so that both sides drain together. Its sync data says ${sc.sync.status}, so nothing changes.`,
+      proto: `sync_data.status ∈ {CLOSING, DRAINED, CLOSED} and own status ∈ {ACTIVE, PAUSED} → own status ← CLOSING, carried to the peer in our next sync. Here sync_data.status = ${sc.sync.status}: no transition. (CLOSED covers close-notification bundles arriving at a channel that has not begun closing locally.)`,
+      refs: [['spec42', 'spec §4.2 step 5a'], ['spec211', 'spec §2.1.1']], extra: '<p class="verdict is-skip">peer is ACTIVE → no transition</p>',
+      verdict: 'skip', changed: [], log: 'Nothing changed.',
+    });
+
+    // 5b — drain
+    push({
+      n: '5b', label: 'drain check', title: 'Are we draining? No', where: 'spec §4.2 · step 5b',
+      plain: 'Two checks that only matter while a channel is winding down: a CLOSING channel whose data messages have all been acknowledged becomes DRAINED, and a DRAINED channel whose peer is also drained and whose replies have all been acknowledged becomes CLOSED. We are ACTIVE, so neither applies.',
+      proto: `(1) own status CLOSING and no Data Messages with id > acked_message_id remain in the outbound queue → DRAINED (may fire in the same bundle as 5a). (2) own status DRAINED, sync_data.status ∈ {DRAINED, CLOSED} and acked_message_id ≥ next_message_id − 1 → CLOSED. Own status is ${st.status}: neither applies.`,
+      refs: [['spec42', 'spec §4.2 step 5b'], ['spec211', 'spec §2.1.1']], extra: '<p class="verdict is-skip">channel is ACTIVE → nothing to do</p>',
+      verdict: 'skip', changed: [], log: 'Nothing changed.',
+    });
+
+    // 5c — lazy config
+    push({
+      n: '5c', label: 'lazy config', title: 'Any configuration change to tell the peer about? No', where: 'spec §4.2 · step 5c, §1.3',
+      plain: 'If our admin had changed this ledger\'s limits since we last told Ledger A, a ConfigUpdate control message would be queued right here, after the ack update and before any replies this bundle generates, so that the peer sees the change at a well-defined point in the stream. Our last change already went out as message 19, so nothing is queued.',
+      proto: 'If Channel.last_config_timestamp < current configuration\'s consensus_timestamp → enqueue a ConfigUpdate Control Message on this Channel\'s outbound queue and update last_config_timestamp. ConfigUpdate carries throttle and protocol-version changes only; endpoint manifests travel in bundle payloads (step 1b). Not due here.',
+      refs: [['spec42', 'spec §4.2 step 5c'], ['spec13', 'spec §1.3']], extra: '<p class="verdict is-skip">last_config_timestamp is current → nothing enqueued</p>',
+      verdict: 'skip', changed: [], log: 'Nothing changed.',
+    });
+
+    // 6 — dispatch
+    for (let i = 0; i < sc.msgs.length; i++) {
+      const m = sc.msgs[i];
+      const hAfter = H.computed[i];
+      const prevReceived = st.received;
+      if (m.type === 'DATA') {
+        const replyId = st.next;
+        st.queue.push({ id: replyId, type: 'REPLY', label: `reply(${m.id}) ${m.outcome}`, note: 'to Ledger A', acked: false, fresh: true });
+        st.next += 1; st.received = m.id; st.rhash = hAfter; dispatched.push(m.id);
+        const common = `Advance received_message_id → ${m.id} and received_running_hash → H${m.id} (${hAfter}).`;
+        let plain = '', proto = '', verdictLine = '';
+        if (m.outcome === 'SUCCESS') {
+          plain = `Message ${m.id} is a data message for the PingPong application here. The ledger looks up the connector that vouched for it (${m.connector}), charges ${m.connector} the cost of this delivery plus ${m.connector}'s margin, every unit of which goes to the account that submitted the bundle, hands the message to PingPong, and queues a SUCCESS reply for Ledger A as our message ${replyId}. Then it advances its own counter and running hash.`;
+          proto = `Resolve connector_id ${m.connector} via (channel_id, connector_id) → local Connector found and funded. Charge actual_gas_used × (1 + connector.margin_percent / 100), paid in full to the submitting account; there is no protocol treasury. Dispatch to target_application; generate Response Message SUCCESS with the application's reply bytes, enqueued as our message ${replyId}. ${common}`;
+          verdictLine = `<p class="verdict is-pass">delivered · reply SUCCESS queued as #${replyId}</p>`;
+        } else if (m.outcome === 'APPLICATION_ERROR') {
+          plain = `Message ${m.id} asks the Bank application to pay Bo 5, and Bank reverts (say Bo has no account). That is not the connector's fault: ${m.connector} is still charged for the delivery, the reply carries APPLICATION_ERROR, and nobody is fined. The bundle carries on with the next message; one failure never stops the rest.`;
+          proto = `Same path as a successful message: Connector ${m.connector} resolved and charged actual_gas_used × (1 + margin_percent / 100) to the submitting account. The application reverts → Response Message APPLICATION_ERROR (no penalty on either side, §4.6), enqueued as our message ${replyId}. "A failure on one message does NOT stop processing of remaining messages in the bundle." ${common}`;
+          verdictLine = `<p class="verdict is-pass">application reverted · reply APPLICATION_ERROR queued as #${replyId} · no penalty</p>`;
+        } else {
+          plain = `Message ${m.id} was vouched for by connector ${m.connector}, whose balance on this ledger cannot cover the charge. The application is not called. ${m.connector}'s locked stake is slashed to reimburse the submitter, and a CONNECTOR_UNDERFUNDED reply is queued as our message ${replyId}, so that Ledger A fines the source-side connector too when the reply gets home. The other messages in the bundle are unaffected.`;
+          proto = `Connector ${m.connector} found, but its balance < actual_gas_used × (1 + margin_percent / 100) → slash the destination Connector's locked_stake, reimburse the submitting account, enqueue failure response CONNECTOR_UNDERFUNDED as our message ${replyId}. Slashing is two-sided: on Ledger A that status slashes the source Connector as well (§4.6). Penalties escalate; the schedule is platform-specific. ${common}`;
+          verdictLine = `<p class="verdict is-pass">connector underfunded · stake slashed · reply CONNECTOR_UNDERFUNDED queued as #${replyId}</p>`;
+        }
+        push({
+          n: '6', label: `dispatch #${m.id} (DATA)`, title: `Data Message ${m.id}: pay, deliver, reply`, where: 'spec §4.2 · step 6, §4.6',
+          plain, proto, refs: [['spec42', 'spec §4.2 step 6'], ['spec46', 'spec §4.6'], ['design333', 'design §3.3.3'], ['design334', 'design §3.3.4']], extra: verdictLine,
+          verdict: 'pass', changed: ['received', 'rhash', 'next'], cur: m.id,
+          log: `<span class="k">received_message_id</span> ${prevReceived} → ${m.id} · <span class="k">received_running_hash</span> → H${m.id} · queue: +#${replyId} REPLY(${m.id}) ${m.outcome} · <span class="k">next_message_id</span> ${replyId} → ${st.next}${m.outcome === 'CONNECTOR_UNDERFUNDED' ? ` · ${m.connector}'s locked stake slashed, submitter reimbursed` : ` · ${m.connector} charged actual_gas_used × (1 + margin/100), paid to the submitter`}.`,
+        });
+      } else if (m.type === 'REPLY') {
+        const oldest = st.queue.find((q) => q.type === 'DATA' && !q.del);
+        const expected = oldest ? oldest.id : undefined;
+        if (expected !== undefined && m.replyTo === expected) {
+          oldest!.del = 'deleted: reply matched';
+          st.received = m.id; st.rhash = hAfter; dispatched.push(m.id);
+          push({
+            n: '6', label: `dispatch #${m.id} (REPLY)`, title: `Response Message ${m.id}: check the order, deliver, delete #${expected}`, where: 'spec §4.2 · step 6, §4.5',
+            plain: `Message ${m.id} is Ledger A's answer to our own message ${expected}. Before delivering it, the ledger checks that it answers the oldest data message still waiting for an answer, and ${expected} is exactly that. So the reply goes to the application that sent ${expected}, message ${expected} is finally deleted from our queue, and the connector that vouched for ${expected} pays for the delivery.`,
+            proto: `§4.5: walk the outbound queue of retained Data Messages, skipping Response and Control Messages; the reply's message_id MUST equal the oldest unresponded Data Message's id (${m.replyTo} = ${expected}: match). Deliver to ClprMessage.sender of #${expected} and delete the slot. Status SUCCESS → no penalty (§4.6 source-side table). Charge the Connector actual_gas_used × (1 + margin_percent / 100), paid to the submitting account. Advance received_message_id → ${m.id}, received_running_hash → H${m.id} (${hAfter}).`,
+            refs: [['spec42', 'spec §4.2 step 6'], ['spec45', 'spec §4.5'], ['spec46', 'spec §4.6'], ['design328', 'design §3.2.8']], extra: `<p class="verdict is-pass">reply(${m.replyTo}) matches oldest unresponded #${expected} → delivered, #${expected} deleted</p>`,
+            verdict: 'pass', changed: ['received', 'rhash'], cur: m.id,
+            log: `<span class="k">received_message_id</span> ${prevReceived} → ${m.id} · <span class="k">received_running_hash</span> → H${m.id} · queue: #${expected} (DATA) deleted, its reply delivered to the sender · connector charged, submitter paid.`,
+          });
+        } else {
+          const paused = clone(stored); paused.status = 'PAUSED';
+          steps.push({
+            n: '6', label: `dispatch #${m.id} (REPLY)`, title: `Response Message ${m.id} is out of order: PAUSED`, where: 'spec §4.2 · step 6, §4.5',
+            plain: `Message ${m.id} claims to answer our message ${m.replyTo}, but the oldest data message still waiting for an answer is ${expected ?? 'none'}. Replies are generated in arrival order, so a healthy ledger cannot produce this: Ledger A's reply generation is corrupt. The channel is PAUSED and the whole bundle is thrown away: the deliveries of ${dispatched.join(' and ')}, the ack and the running hash advance are all discarded. Nobody is fined, because you cannot slash a ledger. The channel resumes on its own when Ledger A delivers a correctly ordered bundle; the admin may also close it.`,
+            proto: `§4.5 step 4, mismatch (${m.replyTo} ≠ ${expected}): set Channel status to PAUSED and reject new sendMessage calls. Inbound bundles with out-of-order responses are rejected outright: nothing is dispatched, acknowledged or advanced (§4.5, §2.1.1). No slashing. Auto-resume when the next inbound bundle contains correctly ordered responses; while PAUSED, queued messages remain and continue syncing; the admin may close the Channel (→ CLOSING). This is the only rejection that changes channel state.`,
+            refs: [['spec45', 'spec §4.5'], ['spec211', 'spec §2.1.1'], ['design328', 'design §3.2.8']], extra: `<p class="verdict is-pause">reply(${m.replyTo}) ≠ oldest unresponded #${expected} → channel PAUSED, bundle rejected</p>`,
+            verdict: 'pause', state: paused, changed: ['status'], cur: m.id, bad: m.id, dispatched: [],
+            log: `<span class="bad">Channel PAUSED.</span> The bundle is rejected as a whole: acked_message_id stays 17, received_message_id stays 42, the queue is as it was, no reply was delivered or generated. ${FEE} Contrast with the other faults: a bad hash, a replay or an oversized payload changes nothing at all; PAUSED is reserved for response-ordering violations.`,
+          });
+          return { steps, canon };
+        }
+      } else {
+        st.received = m.id; st.rhash = hAfter; dispatched.push(m.id);
+        push({
+          n: '6', label: `dispatch #${m.id} (CONTROL)`, title: `Control Message ${m.id}: apply the peer's new configuration`, where: 'spec §4.2 · step 6, §1.3',
+          plain: `Message ${m.id} is a ConfigUpdate from Ledger A: new limits it wants us to respect. It is applied directly. No connector is involved, no application is called, and no reply is generated.`,
+          proto: `Apply directly (store new config values). The enclosed configuration's timestamp must be strictly greater than the stored peer_config_timestamp. No response generated. Advance received_message_id → ${m.id}, received_running_hash → H${m.id}.`,
+          refs: [['spec42', 'spec §4.2 step 6'], ['spec13', 'spec §1.3']], extra: '<p class="verdict is-pass">configuration stored · no reply</p>',
+          verdict: 'pass', changed: ['received', 'rhash'], cur: m.id, log: `<span class="k">received_message_id</span> ${prevReceived} → ${m.id} · peer configuration updated.`,
+        });
+      }
+    }
+
+    // done
+    push({
+      n: '✓', label: 'bundle processed', title: 'Done: the channel has moved on', where: 'after §4.2',
+      plain: `The bundle is fully processed. We now hold Ledger A's messages through ${st.received}, our running hash equals the proven anchor, the peer's ack is recorded, and ${st.queue.filter((q) => q.type === 'REPLY' && !q.del).length} replies are waiting in our outbound queue for the next endpoint going the other way. The submitter's fee was covered by the connector charges, with margin, for the messages that were delivered, and by the slash for the one whose connector could not pay.`,
+      proto: `received_message_id 42 → ${st.received}; received_running_hash = anchor_running_hash; acked_message_id 17 → ${st.acked}; next_message_id 21 → ${st.next}; status ${st.status}. Each generated reply was appended to our outbound queue and extends our own sent_running_hash: all three message types share one queue, one hash chain and one bundle transport. Ledger A will learn all of this from our ChannelSyncData in the next sync.`,
+      refs: [['spec42', 'spec §4.2'], ['spec14', 'spec §1.4'], ['design322', 'design §3.2.2']], extra: '<p class="verdict is-pass">bundle accepted; all state changes committed together</p>',
+      verdict: 'done', changed: [], log: 'All changes from steps 1b to 6 are committed in one transaction. Choose a fault above and step through again to see a rejection.',
+    });
+    return { steps, canon };
+  }
+
+  for (const root of Array.from(document.querySelectorAll<HTMLElement>('.sim.bundleverify'))) {
+    const $ = (s: string) => root.querySelector<HTMLElement>(s)!;
+    const links: Record<string, string> = JSON.parse(root.dataset.links || '{}');
+    const card = $('[data-role="card"]'); const list = $('[data-role="list"]'); const log = $('[data-role="log"]');
+    const status = $('[data-role="status"]'); const counter = $('[data-role="counter"]'); const faultPill = $('[data-role="fault"]');
+    const bundleEl = $('[data-role="bundle"]'); const queueEl = $('[data-role="queue"]'); const track = $('[data-role="track"]');
+    const reverted = $('[data-role="reverted"]'); const qempty = $('[data-role="qempty"]');
+    const prev = $('[data-role="prev"]') as HTMLButtonElement; const next = $('[data-role="next"]') as HTMLButtonElement;
+    const faultBtns = Array.from(root.querySelectorAll<HTMLButtonElement>('button[data-fault]'));
+    const opts = Array.from(root.querySelectorAll<HTMLInputElement>('input[data-opt]'));
+    let sc = scenario('none', false, false);
+    let H: Hashes | null = null;
+    let steps: Step[] = []; let canon: { n: string; label: string }[] = [];
+    let i = 0;
+    let token = 0;
+    let wasBad = false;
+    // Rows are persistent elements keyed by message id; renders only toggle classes and marks, so
+    // the CSS transitions (walk down the bundle, strike a deleted row, slide a reply in) can run.
+    const bundleRows = new Map<number, HTMLElement>();
+    const queueRows = new Map<number, HTMLElement>();
+
+    function field(name: string) { return root.querySelector<HTMLElement>(`[data-f="${name}"]`)!; }
+    function row(type: MType, id: number, text: string, meta: string, size?: number): HTMLElement {
+      const el = document.createElement('div'); el.className = 'bv__msg';
+      el.innerHTML = `<span class="pill ${PILL[type]}">${type}</span><b>#${id}</b><code>${esc(text)}</code><span class="meta">${esc(meta)}</span>${size === undefined ? '' : `<span class="meta">${size} B</span>`}<span class="marks"></span>`;
+      return el;
+    }
+    function setMarks(el: HTMLElement, html: string) { const m = el.querySelector<HTMLElement>('.marks')!; if (m.innerHTML !== html) m.innerHTML = html; }
+    function buildRows() {
+      for (const el of Array.from(bundleRows.values())) el.remove();
+      for (const el of Array.from(queueRows.values())) el.remove();
+      bundleRows.clear(); queueRows.clear();
+      for (const m of sc.msgs) { const el = row(m.type, m.id, m.text, m.meta, bytes(m.text)); bundleRows.set(m.id, el); bundleEl.appendChild(el); }
+    }
+    function renderBundle(step: Step) {
+      const rev = !!sc.verifierReverts && step.n !== '0';
+      bundleEl.classList.toggle('is-reverted', rev); reverted.hidden = !rev;
+      for (const m of sc.msgs) {
+        const el = bundleRows.get(m.id)!;
+        const isCur = step.cur === m.id, isBad = step.bad === m.id, hit = step.dispatched.includes(m.id);
+        el.classList.toggle('cur', isCur); el.classList.toggle('bad', isBad); el.classList.toggle('done', hit && !isCur);
+        setMarks(el, [hit ? '<span class="pill ok">dispatched</span>' : '', isBad ? '<span class="pill bad">rejected here</span>' : ''].join(''));
+      }
+    }
+    function renderQueue(s: State) {
+      qempty.hidden = s.queue.length > 0;
+      const keep = new Set<number>();
+      let cursor: Element | null = qempty.nextElementSibling;
+      for (const q of s.queue) {
+        keep.add(q.id);
+        let el = queueRows.get(q.id);
+        if (!el) { el = row(q.type, q.id, q.label, q.note); queueRows.set(q.id, el); }
+        if (el !== cursor) queueEl.insertBefore(el, cursor); else cursor = cursor.nextElementSibling;
+        el.classList.toggle('del', !!q.del); el.classList.toggle('fresh', !!q.fresh);
+        setMarks(el, [
+          q.del ? `<span class="pill bad">${q.del}</span>` : '',
+          !q.del && q.acked ? '<span class="pill ok">acked</span>' : '',
+          !q.del && !q.acked ? '<span class="pill grey">not yet acked</span>' : '',
+          !q.del && q.acked && q.type === 'DATA' ? '<span class="pill b">retained: awaiting reply</span>' : '',
+          q.fresh ? '<span class="pill ok">new</span>' : '',
+        ].join(''));
+      }
+      for (const [id, el] of Array.from(queueRows)) if (!keep.has(id)) { el.remove(); queueRows.delete(id); }
+    }
+    function renderState(step: Step) {
+      const s = step.state;
+      const vals: Record<string, string> = { status: s.status, received: String(s.received), rhash: `<code>H${s.received} = ${s.rhash}</code>`, acked: String(s.acked), next: String(s.next), anchorId: s.anchorId, manifestV: String(s.manifestV) };
+      // Fields changed by an earlier step of this bundle keep a small marker; a rejection resets everything.
+      const seen = new Set<string>();
+      if (step.verdict !== 'reject' && step.verdict !== 'pause') for (let j = 0; j <= i; j++) for (const k of steps[j].changed) seen.add(k);
+      for (const k of Object.keys(vals)) {
+        const el = field(k);
+        if (el.innerHTML !== vals[k]) el.innerHTML = vals[k];
+        const chg = step.changed.includes(k);
+        if (chg) { el.className = ''; void el.offsetWidth; }
+        el.className = `${chg ? 'chg' : seen.has(k) ? 'was' : ''} ${k === 'status' && s.status === 'PAUSED' ? 'bad' : ''}`.trim();
+        el.title = chg ? 'changed at this step' : seen.has(k) ? 'changed earlier in this bundle' : '';
+      }
+      const reverted = sc.verifierReverts && step.n !== '0';
+      field('sync').innerHTML = reverted ? '-' : `<code class="nw">received_message_id ${sc.sync.received}</code> · ${sc.sync.status} · <code class="nw">next_message_id ${sc.sync.next}</code>`;
+      field('anchorMsg').textContent = reverted ? '-' : String(sc.anchorId);
+      field('anchorHash').innerHTML = reverted ? '-' : `<code>H${sc.anchorId} = ${H!.anchor}</code>`;
+      field('newAnchor').textContent = reverted ? '-' : sc.rotate ? 'epoch 8 (with new_trust_anchor)' : '(empty)';
+      field('newManifest').textContent = reverted ? '-' : sc.manifest ? 'version 4' : '(empty)';
+      field('count').textContent = reverted ? '-' : `${sc.msgs.length} (ids ${sc.msgs.map((m) => m.id).join(', ')})`;
+    }
+    function renderCard(step: Step) {
+      const refs = step.refs.map(([k, label]) => `<a href="${links[k]}" rel="noopener">${label}</a>`).join(' · ');
+      card.innerHTML = `<div class="phase">${step.where} · step ${i} of ${canon.length - 1}</div><h4>${esc(step.title)}</h4><p>${step.plain}</p>${step.extra ?? ''}<p class="proto"><strong>In protocol terms.</strong> ${step.proto}</p><p class="small" style="margin:6px 0 0">Source: ${refs}</p>`;
+    }
+    /** The step list and the progress track are built once per scenario; render() only updates their state. */
+    function buildList() {
+      list.innerHTML = canon.map((c, j) => {
+        const done = j < steps.length;
+        return `<li data-i="${j}" class="${done ? '' : 'is-nr'}" ${done ? 'tabindex="0"' : 'title="not reached in this scenario"'}><span class="n">${c.n}</span><span>${esc(c.label)}</span><span class="ev"></span></li>`;
+      }).join('');
+      for (const li of Array.from(list.querySelectorAll<HTMLLIElement>('li[data-i]'))) {
+        const j = Number(li.dataset.i);
+        if (j >= steps.length) continue;
+        li.addEventListener('click', () => go(j));
+        li.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(j); } });
+      }
+      track.innerHTML = canon.map(() => '<i></i>').join('');
+    }
+    function renderList() {
+      const segs = Array.from(track.children) as HTMLElement[];
+      Array.from(list.querySelectorAll<HTMLLIElement>('li[data-i]')).forEach((li, j) => {
+        const done = j < steps.length;
+        const v = done ? steps[j].verdict : 'nr';
+        const tag = !done ? 'not reached' : j > i ? '' : v === 'info' ? '' : v === 'pause' ? 'PAUSED' : v === 'done' ? 'done' : v;
+        const ev = li.querySelector<HTMLElement>('.ev')!;
+        ev.className = `ev is-${done ? v : 'nr'}`;
+        if (ev.textContent !== tag) ev.textContent = tag;
+        if (j === i) li.setAttribute('aria-current', 'step'); else li.removeAttribute('aria-current');
+        const seg = segs[j];
+        if (seg) seg.className = !done || j > i ? '' : v === 'reject' || v === 'pause' ? 'now bad' : v === 'done' ? 'done' : j === i ? 'now' : v === 'skip' ? 'skip' : 'done';
+      });
+      const current = list.querySelector<HTMLElement>('li[aria-current="step"]');
+      if (current) scrollListTo(list, current);
+    }
+    function render() {
+      const step = steps[i];
+      renderState(step); renderBundle(step); renderQueue(step.state); renderCard(step); renderList();
+      log.innerHTML = step.log;
+      counter.textContent = `step ${i} of ${canon.length - 1}`;
+      const s = step.state;
+      let bad = false;
+      if (step.verdict === 'reject') { status.textContent = `rejected at step ${step.n}`; bad = true; }
+      else if (s.status === 'PAUSED') { status.textContent = 'PAUSED'; bad = true; }
+      else if (step.verdict === 'done') status.textContent = 'ACTIVE · bundle accepted';
+      else status.textContent = s.status;
+      status.className = `pill ${bad ? 'bad' : 'ok'}`;
+      if (bad && !wasBad) { void status.offsetWidth; status.classList.add('pulse'); }
+      wasBad = bad;
+      prev.disabled = i === 0;
+      next.disabled = i >= steps.length - 1;
+    }
+    function go(j: number) { i = Math.max(0, Math.min(steps.length - 1, j)); render(); }
+    async function load(key: string) {
+      const my = ++token;
+      sc = scenario(key, opts[0].checked, opts[1].checked);
+      const label = faultBtns.find((b) => b.dataset.fault === key)?.textContent ?? key;
+      faultPill.textContent = `${key === 'none' ? 'no fault' : `fault: ${label}`}${sc.rotate ? ' + rotation' : ''}${sc.manifest ? ' + manifest v4' : ''}`;
+      faultPill.className = `pill ${key === 'none' ? 'grey' : 'bad'}`;
+      H = await prepare(sc);
+      if (my !== token) return;
+      ({ steps, canon } = build(sc, H));
+      buildRows(); buildList();
+      i = 0; render();
+    }
+    status.addEventListener('animationend', () => status.classList.remove('pulse'));
+    for (const b of faultBtns) b.addEventListener('click', () => { for (const x of faultBtns) x.setAttribute('aria-pressed', String(x === b)); load(b.dataset.fault!); });
+    for (const o of opts) o.addEventListener('change', () => load(faultBtns.find((b) => b.getAttribute('aria-pressed') === 'true')!.dataset.fault!));
+    prev.addEventListener('click', () => go(i - 1));
+    next.addEventListener('click', () => go(i + 1));
+    $('[data-role="reset"]').addEventListener('click', () => go(0));
+    load('none');
+  }
+</script>

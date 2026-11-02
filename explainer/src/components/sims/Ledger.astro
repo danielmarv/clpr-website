@@ -1,0 +1,155 @@
+---
+/** Section 1: five ledgers agree on a new line. Consensus and finality in one picture. */
+const { id = 'ledger-sim' } = Astro.props as { id?: string };
+const nodes = [0, 1, 2, 3, 4];
+const centre = (i: number) => 40 + i * 145 + 55;
+---
+<div class="sim ledger" id={id}>
+  <div class="sim__head"><div><span class="kind">Simulation</span><h3>Five copies of one ledger</h3></div></div>
+  <div class="sim__body">
+    <div class="sim__scroll">
+    <svg viewBox="0 0 760 250" role="img" aria-label="Five ledgers held by five computers. A proposed line spreads to all of them, they agree, and the line is sealed.">
+      <path class="line dash" d={`M${centre(0)},198 H${centre(4)}`} />
+      {nodes.map((i) => <line x1={centre(i)} y1="180" x2={centre(i)} y2="198" class="line dash" />)}
+      {nodes.map((i) => {
+        const x = 40 + i * 145;
+        return (
+          <g data-nb={i}>
+            <title>node {i + 1}</title>
+            <rect x={x} y="30" width="110" height="150" rx="8" class="d-surface" data-role="card" />
+            <rect x={x} y="30" width="110" height="22" rx="8" class="d-grey" />
+            <text x={x + 55} y="46" class="t small center b">node {i + 1}</text>
+            <text x={x + 10} y="76" class="t small">1. Ann → Bo</text>
+            <text x={x + 100} y="76" class="t small amt">5</text>
+            <text x={x + 10} y="96" class="t small">2. Bo → Cy</text>
+            <text x={x + 100} y="96" class="t small amt">2</text>
+            <text x={x + 10} y="116" class="t small">3. Cy → Dee</text>
+            <text x={x + 100} y="116" class="t small amt">1</text>
+            <g data-role="pending">
+              <text x={x + 10} y="140" class="t small">4. Dee → Ann</text>
+              <text x={x + 100} y="140" class="t small amt" data-role="amt">3</text>
+            </g>
+            <g data-role="seal">
+              <circle cx={x + 92} cy="160" r="10" class="d-ok" />
+              <path d={`M${x + 87},160 l4,4 l7,-8`} fill="none" stroke="var(--ok)" stroke-width="2" />
+            </g>
+          </g>
+        );
+      })}
+      {nodes.map((i) => <circle data-role="dot" data-to={i} cx={centre(2)} cy="198" r="5" class="d-b" />)}
+      <text x="380" y="222" class="t center" data-role="caption">Every node keeps an identical copy. Nobody is in charge of it.</text>
+    </svg>
+    </div>
+    <p class="sim__scroll-note">Wider than a phone; scroll it sideways if you need to.</p>
+    <div class="sim__track seg" data-role="track" aria-hidden="true"><i></i><i></i><i></i></div>
+    <div class="phases" aria-hidden="true"><span>proposing</span><span>agreeing</span><span>sealed</span></div>
+  </div>
+  <div class="sim__controls">
+    <button class="btn primary" type="button" data-role="propose">Propose a new line</button>
+    <button class="btn" type="button" data-role="reset">Reset</button>
+    <span class="spacer"></span>
+    <label class="liar-toggle"><input type="checkbox" data-role="liar" /> one node tries to write a different line</label>
+  </div>
+  <div class="sim__log" data-role="log"><span class="line">ready</span>A ledger is a shared record that many computers keep in sync. Press the button to add a line and watch how they agree.</div>
+</div>
+<style is:global>
+  .sim.ledger .amt { text-anchor: end; font-variant-numeric: tabular-nums; }
+  .sim.ledger [data-role="pending"] { opacity: 0; transition: opacity 300ms; }
+  .sim.ledger [data-role="pending"].on { opacity: 1; }
+  .sim.ledger [data-role="pending"] text { fill: var(--b); }
+  .sim.ledger g.wrong [data-role="pending"] text { fill: var(--bad); }
+  .sim.ledger g.wrong [data-role="card"] { stroke: var(--bad); stroke-width: 2; }
+  .sim.ledger [data-role="seal"] { opacity: 0; transform: scale(0.6); transform-box: fill-box; transform-origin: center; transition: opacity 250ms, transform 250ms; }
+  .sim.ledger [data-role="seal"].on { opacity: 1; transform: none; }
+  .sim.ledger [data-role="dot"] { opacity: 0; transition: transform 240ms ease-in-out, opacity 200ms; }
+  .sim.ledger [data-role="dot"].on { opacity: 1; }
+  .sim.ledger g[data-nb]:hover [data-role="card"] { stroke: var(--text-3); }
+  .sim.ledger .fade { opacity: 0; }
+  .sim.ledger .sim__track { margin-top: 12px; }
+  .sim.ledger .phases { display: flex; justify-content: space-between; margin-top: 4px; font-family: var(--mono); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-3); }
+  .sim.ledger .liar-toggle { display: inline-flex; align-items: center; gap: 8px; font-size: 0.88rem; cursor: pointer; }
+  .sim.ledger .liar-toggle input { accent-color: var(--a); margin: 0; }
+  @media (min-width: 720px) { .sim.ledger .sim__log { min-height: 6.4em; } }
+</style>
+
+<script>
+  for (const root of Array.from(document.querySelectorAll<HTMLElement>('.sim.ledger'))) {
+    const $ = (s: string) => root.querySelector<HTMLElement>(s)!;
+    const groups = Array.from(root.querySelectorAll<SVGGElement>('g[data-nb]'));
+    const dots = Array.from(root.querySelectorAll<SVGCircleElement>('[data-role="dot"]'));
+    const segs = Array.from(root.querySelectorAll<HTMLElement>('[data-role="track"] > i'));
+    const log = $('[data-role="log"]');
+    const caption = $('[data-role="caption"]');
+    const liar = $('[data-role="liar"]') as HTMLInputElement;
+    const propose = $('[data-role="propose"]') as HTMLButtonElement;
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const IDLE_CAPTION = 'Every node keeps an identical copy. Nobody is in charge of it.';
+    const IDLE_LOG = '<span class="line">ready</span>A ledger is a shared record that many computers keep in sync. Press the button to add a line and watch how they agree.';
+    // Every run gets a number; Reset bumps it, and a run that notices its number is stale stops.
+    let runId = 0;
+    const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+    const motion = (ms: number) => wait(reduced ? 0 : ms);
+    const part = (g: SVGGElement, role: string) => g.querySelector<SVGElement>(`[data-role="${role}"]`)!;
+    function phase(n: number) {
+      segs.forEach((s, i) => { s.classList.toggle('done', i < n); s.classList.toggle('now', i === n); });
+    }
+    function setCaption(text: string) {
+      const my = runId;
+      caption.classList.add('fade');
+      motion(220).then(() => { if (my !== runId) return; caption.textContent = text; caption.classList.remove('fade'); });
+    }
+    function reset() {
+      runId++;
+      root.removeAttribute('aria-busy');
+      for (const g of groups) {
+        g.classList.remove('wrong');
+        part(g, 'pending').classList.remove('on');
+        part(g, 'seal').classList.remove('on');
+        part(g, 'amt').textContent = '3';
+      }
+      for (const d of dots) { d.classList.remove('on'); d.style.transform = ''; }
+      phase(-1);
+      caption.classList.remove('fade');
+      caption.textContent = IDLE_CAPTION;
+      log.innerHTML = IDLE_LOG;
+    }
+    async function run() {
+      reset();
+      const my = runId;
+      const alive = () => my === runId;
+      root.setAttribute('aria-busy', 'true');
+      const lying = liar.checked;
+      log.innerHTML = '<span class="line">proposing</span>Node 3 proposes a new line and tells the others.';
+      setCaption('proposing…');
+      phase(0);
+      for (const i of [2, 1, 3, 0, 4]) {
+        const g = groups[i];
+        if (lying && i === 4) { g.classList.add('wrong'); part(g, 'amt').textContent = '9'; }
+        dots[i].classList.add('on');
+        dots[i].style.transform = `translate(${(i - 2) * 145}px, 0)`;
+        await motion(240); if (!alive()) return;
+        part(g, 'pending').classList.add('on');
+        dots[i].classList.remove('on');
+        await wait(140); if (!alive()) return;
+      }
+      setCaption('agreeing…');
+      phase(1);
+      log.innerHTML = '<span class="line">agreeing</span>' + (lying
+        ? 'Node 5 wrote something different. The others compare notes: four copies say <strong>3</strong>, one says <strong>9</strong>. The majority wins and node 5 is overruled.'
+        : 'All five copies now show the same proposed line. They compare notes and agree.');
+      await wait(1300); if (!alive()) return;
+      phase(2);
+      for (const [i, g] of groups.entries()) {
+        if (lying && i === 4) { g.classList.remove('wrong'); part(g, 'amt').textContent = '3'; await wait(300); if (!alive()) return; }
+        part(g, 'seal').classList.add('on');
+        await wait(120); if (!alive()) return;
+      }
+      setCaption('sealed: this line can no longer be changed or removed');
+      phase(3);
+      log.innerHTML = '<span class="line">sealed</span>The line is <span class="ok">final</span>. Agreeing on it is called <strong>consensus</strong>; the fact that it can never be undone is called <strong>finality</strong>. Both matter later: CLPR only ever carries lines that a whole network has sealed.';
+      root.removeAttribute('aria-busy');
+    }
+    propose.addEventListener('click', () => { if (root.getAttribute('aria-busy') !== 'true') run(); });
+    $('[data-role="reset"]').addEventListener('click', reset);
+  }
+</script>

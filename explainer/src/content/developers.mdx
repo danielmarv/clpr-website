@@ -1,0 +1,852 @@
+import Section from '@kse/components/Section.astro';
+import Callout from '@kse/components/Callout.astro';
+import Check from '@kse/components/Check.astro';
+import SecRef from '@kse/components/SecRef.astro';
+import AdrTable from '../components/AdrTable.astro';
+import Cast from '../components/Cast.astro';
+import Journey from '../components/sims/Journey.astro';
+import RunningHash from '../components/sims/RunningHash.astro';
+import Money from '../components/sims/Money.astro';
+import Failures from '../components/sims/Failures.astro';
+import ChannelLife from '../components/sims/ChannelLife.astro';
+import CommitReveal from '../components/sims/CommitReveal.astro';
+import SyncCycle from '../components/sims/SyncCycle.astro';
+import BundleVerify from '../components/sims/BundleVerify.astro';
+import Ordering from '../components/sims/Ordering.astro';
+import TrustAnchor from '../components/sims/TrustAnchor.astro';
+import Extend from '../components/sims/Extend.astro';
+import Architecture from '../components/sims/Architecture.astro';
+import { design, spec, sol, pinned } from '../lib/sources';
+import AdrLifecycle from '../components/diagrams/developers/AdrLifecycle.astro';
+import PhantomMessage from '../components/diagrams/shared/PhantomMessage.astro';
+import CompoundPeerIdentity from '../components/diagrams/developers/CompoundPeerIdentity.astro';
+import ChannelVsSyncdata from '../components/diagrams/developers/ChannelVsSyncdata.astro';
+import TwoSidedClose from '../components/diagrams/developers/TwoSidedClose.astro';
+import TwoManifests from '../components/diagrams/developers/TwoManifests.astro';
+import QueueWindow from '../components/diagrams/developers/QueueWindow.astro';
+import BundlePrefixAnchor from '../components/diagrams/developers/BundlePrefixAnchor.astro';
+import VerifierVsService from '../components/diagrams/developers/VerifierVsService.astro';
+import TwoConfirmations from '../components/diagrams/developers/TwoConfirmations.astro';
+import BilateralConnector from '../components/diagrams/developers/BilateralConnector.astro';
+import VerifierIo from '../components/diagrams/developers/VerifierIo.astro';
+import SendAndTwoCallbacks from '../components/diagrams/developers/SendAndTwoCallbacks.astro';
+import NewChannelMigration from '../components/diagrams/developers/NewChannelMigration.astro';
+import ChecksEffectsDispatch from '../components/diagrams/developers/ChecksEffectsDispatch.astro';
+import EvmRouterModules from '../components/diagrams/developers/EvmRouterModules.astro';
+import EndpointTwoLanes from '../components/diagrams/developers/EndpointTwoLanes.astro';
+import SafetyVsLiveness from '../components/diagrams/developers/SafetyVsLiveness.astro';
+import FourLayerStack from '../components/diagrams/developers/FourLayerStack.astro';
+import CompleteChannelStores from '../components/diagrams/developers/CompleteChannelStores.astro';
+import TrustChainExposure from '../components/diagrams/developers/TrustChainExposure.astro';
+import PrivateNetworkDial from '../components/diagrams/developers/PrivateNetworkDial.astro';
+import TwoStateTrees from '../components/diagrams/developers/TwoStateTrees.astro';
+import RedactionHashCollision from '../components/diagrams/developers/RedactionHashCollision.astro';
+import CommitRevealRegistration from '../components/diagrams/developers/CommitRevealRegistration.astro';
+import EndpointLoop from '../components/diagrams/developers/EndpointLoop.astro';
+import ProvenManifest from '../components/diagrams/developers/ProvenManifest.astro';
+import PullNotPush from '../components/diagrams/developers/PullNotPush.astro';
+import SpecDocumentMap from '../components/diagrams/developers/SpecDocumentMap.astro';
+import VettingChain from '../components/diagrams/developers/VettingChain.astro';
+import Patterns from '../components/Patterns.astro';
+import Roles from '../components/Roles.astro';
+import LedgersTable from '../components/LedgersTable.astro';
+import Stories from '../components/sims/Stories.astro';
+
+<Callout kind="note" title="How to read this page">
+Each section carries a line of references under its heading: the **design document** (`clpr-service.md`, the why) and the **protocol specification** (`clpr-service-spec.md`, the what), plus repository files, all pinned to the commits in the table at the bottom. Quotation marks mark verbatim wording. Callouts labelled *In the EVM reference code* describe where the Solidity differs from the text; *Not settled yet* marks what the authors themselves leave open. The page builds up: what you can build and the mental model first, then one message through the API, then the machinery underneath, then trust and money, then operating and extending, then reference material.
+</Callout>
+
+<Section id="why" page="developers">
+
+CLPR is a transport primitive: reliable, asynchronous, in-order delivery of arbitrary byte payloads from an application on one ledger to an application on another, with exactly one response per data message. It is defined by what it refuses to introduce. No new token. No intermediary consensus layer. No federated signer set. No pooled liquidity. The destination ledger accepts a message only after verifying, in its own execution environment, a **state proof** produced by the source ledger's own consensus. When both ledgers provide asynchronous Byzantine fault tolerant finality, cross-ledger communication inherits those guarantees and "requires only a single honest endpoint node per ledger for correct operation".
+
+In one paragraph: an application calls `sendMessage`. The message is appended to an ordered, per-channel outbound queue and folded into a SHA-256 running hash. An off-chain endpoint fetches (or constructs) a proof that the queue state is committed on the source ledger, hands it to a peer endpoint over gRPC, and the peer submits it as a native transaction. The destination CLPR Service passes the opaque proof to the channel's verifier contract, then independently checks progress, size, sequence and the running hash, dispatches to the application, charges the connector for the gas used, and enqueues a response. The response travels back the same way. The simulation below is the same twenty-eight-step round trip as the general page's, with the protocol wording under each step and a source line per step.
+
+What people build on it falls into four patterns, each just messages with replies:
+
+<Patterns />
+
+Choosing a channel is part of the application's design, not the protocol's: several channels may join the same two ledgers with different verifiers, and the application names one on every send.
+
+<Callout kind="key">
+CLPR is a transport primitive: ordered, proven, paid-for bytes from an application on one ledger to an application on another, with exactly one reply per data message. Everything you build is a meaning you give to those bytes.
+</Callout>
+
+</Section>
+
+<Section id="model" page="developers">
+
+Removing the intermediary does not remove trust; it shortens the list. An application on Ledger A sending to Ledger B trusts, in order:
+
+<TrustChainExposure />
+
+1. **Its own ledger's consensus**: Ledger A orders and finalizes correctly.
+2. **The local CLPR Service**: the implementation on A executes the protocol faithfully.
+3. **The channel's verifier**: the contract that validates B's proofs. "A buggy or compromised verifier could accept fabricated proofs."
+4. **The remote ledger's consensus and CLPR Service.**
+5. **The remote application.**
+
+Two infrastructure roles sit outside the chain: the **CLPR Service Admin**, with purely protective powers (configure, close) and no economic incentive; and the **Endpoint Operator**, who moves bundles for every channel on a ledger without choosing among them.
+
+<Callout kind="gotcha">
+Channel creation is permissionless and there is no verifier allow-list. "A Channel existing on a ledger does not mean the peer is legitimate or the verifier is honest." Anyone can register a channel that claims to be Hedera mainnet with a verifier that accepts anything. Applications must evaluate the verifier contract behind a channel before using it, and connector operators, whose stake is at risk, are expected to do so most carefully.
+</Callout>
+
+**Endpoints are untrusted for safety, required for liveness.** "Even with dishonest endpoints, no fabricated messages can be accepted — but availability depends on at least one honest endpoint per side relaying bundles." A malicious connector, likewise, "cannot forge or tamper with messages" but can refuse to pay.
+
+<SafetyVsLiveness />
+
+<Callout kind="key">
+Removing the intermediary does not remove trust. An application trusts its own ledger, its CLPR Service, the channel's verifier, the remote ledger and its service, and the remote application, in that order.
+</Callout>
+
+</Section>
+
+<Section id="layers" page="developers">
+
+<div class="table-wrap">
+<table>
+<thead><tr><th>Layer</th><th class="wrap">Responsibility</th><th class="wrap">Key abstractions</th><th class="wrap">Capability gained</th></tr></thead>
+<tbody>
+<tr><td><strong>Network</strong></td><td class="wrap">Transport between ledger endpoints; channel establishment (permissionless, commit-reveal); trust anchor updates; throttle negotiation</td><td class="wrap">Channel, endpoint, verifier contract, gRPC stream, protobuf encoding</td><td class="wrap">Two ledgers can connect.</td></tr>
+<tr><td><strong>Messaging</strong></td><td class="wrap">Ordered, reliable, state-proven queuing and delivery</td><td class="wrap">Message queues, bundles, running hashes, state proofs</td><td class="wrap">Two ledgers can pass messages.</td></tr>
+<tr><td><strong>Payment &amp; Routing</strong></td><td class="wrap">Connector authorization and payment; dispatch to applications; response generation; slashing</td><td class="wrap">Connector contracts, application interfaces, slashing</td><td class="wrap">Messages are paid for, submitters reimbursed, misbehaving connectors punished.</td></tr>
+<tr><td><strong>Application</strong></td><td class="wrap">Cross-ledger applications</td><td class="wrap">Remote contract calls, asset movement, atomic swaps</td><td class="wrap">Applications address a destination ledger, application and connector.</td></tr>
+</tbody>
+</table>
+</div>
+
+<FourLayerStack />
+
+Network communication uses gRPC; every protocol type on the wire is protobuf. All cryptographic verification is delegated to **verifier contracts** registered per channel; the CLPR Service itself is proof-system-agnostic and never interprets proof bytes. That single decision is what makes the protocol extensible to ledgers with different consensus and data formats without changing the service on ledgers already connected.
+
+<Callout kind="key">
+The CLPR Service never interprets proof bytes; every cryptographic check belongs to the verifier contract registered for the channel.
+</Callout>
+
+</Section>
+
+<Section id="api" page="developers">
+
+The application surface is deliberately tiny: one call to send, two callbacks to receive.
+
+<SendAndTwoCallbacks />
+
+```text
+sendMessage([auth] caller, channel_id: bytes(32), connector_id: bytes(32),
+            target_application: bytes, message_data: bytes) → { message_id: uint64 }
+```
+
+```solidity
+interface IClprApplication {
+    /// Called when a cross-ledger Data Message arrives. Return bytes become the reply.
+    function onClprMessage(bytes32 channelId, bytes calldata sender, bytes calldata messageData)
+        external returns (bytes memory responseData);
+
+    /// Called, best-effort, when the response to a message this contract sent arrives.
+    function onClprResponse(bytes32 channelId, uint64 messageId, uint8 status, bytes calldata responseData)
+        external;
+}
+```
+
+Platform specifications define the gas budget, whether callbacks are synchronous, how success is signalled and what happens to externally owned senders: an EOA cannot receive a callback, so responses to it "SHOULD be recorded in the transaction receipt/record but no callback is made". In the EVM implementation the callback is synchronous within the bundle transaction, capped at `max_gas_per_message`, and a revert becomes `APPLICATION_ERROR` with the revert data as the reply.
+
+A minimal echo application, with the caller check that any real deployment needs:
+
+```solidity
+contract PingPong is IClprApplication {
+    address public immutable clprService;
+    event MessageReceived(bytes32 indexed channelId, bytes sender, bytes messageData);
+    event ResponseReceived(bytes32 indexed channelId, uint64 messageId, uint8 status, bytes responseData);
+
+    constructor(address _clprService) { clprService = _clprService; }
+
+    function serve(bytes32 channelId, bytes calldata connectorId, bytes calldata target, bytes calldata data)
+        external returns (uint64 messageId)
+    { return IClprService(clprService).sendMessage(channelId, connectorId, target, data); }
+
+    function onClprMessage(bytes32 channelId, bytes calldata sender, bytes calldata messageData)
+        external returns (bytes memory)
+    {
+        require(msg.sender == clprService, "only CLPR service");   // both callbacks are public
+        emit MessageReceived(channelId, sender, messageData);
+        return messageData;                                          // the returned bytes go in the reply
+    }
+
+    function onClprResponse(bytes32 channelId, uint64 messageId, uint8 status, bytes calldata responseData)
+        external
+    {
+        require(msg.sender == clprService, "only CLPR service");
+        emit ResponseReceived(channelId, messageId, status, responseData);
+    }
+}
+```
+
+<Callout kind="gotcha" title="Gotchas that cost people time">
+- **Guard both callbacks.** They are public functions. Without the `msg.sender` check, anyone can call your contract directly and bypass the relay entirely.
+- **`target_application` is raw address bytes.** On EVM that is exactly 20 bytes. ABI-encoding the address pads it to 32 and the message is dropped.
+- **Responses reach contracts, not EOAs.** Route sends through a contract if you need `onClprResponse`.
+- **`channel_id` and `connector_id` are configuration, not constants.** Ongoing obligations: monitor connector health and channel status, and be ready to migrate when a proof format changes.
+- **Every payload is untrusted input**, in both directions. CLPR proves origin and integrity, "not semantic correctness".
+- **Nothing is confidential.** Encrypt at the application layer if you must, knowing that timing, size and parties still leak.
+- **Choose the channel by finality need.** A price feed might accept a `latest`-level channel; a token bridge should not.
+</Callout>
+
+**Reply statuses.** There are four: `SUCCESS`, `APPLICATION_ERROR`, `CONNECTOR_NOT_FOUND` and `CONNECTOR_UNDERFUNDED`. The last two are connector-attributable and slash, and so does a connector charge that fails after the call. The EVM `ClprTypes.ReplyStatus` adds `REDACTED`, `CHANNEL_CLOSED` (a Data Message arriving on a closing channel) and `NOT_HANDLED`; treat any value beyond the four as implementation-specific.
+
+<Callout kind="key">
+sendMessage returns a message_id; that id is what correlates the eventual response with the message you sent.
+</Callout>
+
+</Section>
+
+<Section id="journey" page="developers">
+
+One message, end to end, in protocol terms: twenty-eight steps, two state proofs, one reply, between a Hiero ledger on the left and a QBFT ledger on the right. Each step names the algorithm or structure it runs through; the plain narration sits above the protocol narration. The switch runs the trip the other way, where the proofs change and the rules do not.
+
+<Journey mode="both" />
+
+Keep two things from it for the sections that follow. Steps 12 to 19 are one transaction on the receiving ledger: `submitBundle`, the verification algorithm, acknowledgement, the connector charge, dispatch and the queued response succeed or fail together. And steps 7 to 11 and 20 to 21 are the endpoints' own work, re-checked the moment it comes back on chain.
+
+<Callout kind="key">
+Everything between the two ledgers is re-verified on arrival; the on-chain half of each hop is one transaction that either lands whole or not at all.
+</Callout>
+
+</Section>
+
+<Section id="queue" page="developers">
+
+One ordered queue per channel per direction carries three message classes in a single intermixed stream, sharing one running hash chain, one proof mechanism and one transport:
+
+```protobuf
+message ClprMessagePayload {
+  oneof payload {
+    ClprMessage        message       = 1;  // DATA: application content
+    ClprMessageReply   message_reply = 2;  // RESPONSE: outcome of a Data Message
+    ClprControlMessage control       = 3;  // CONTROL: protocol housekeeping (ConfigUpdate)
+  }
+}
+message ClprMessage {
+  bytes connector_id       = 1;  // keccak256(channel_id ‖ public_key ‖ salt); same on both ledgers
+  bytes target_application = 2;  // destination application address
+  bytes sender             = 3;  // stamped by the service from the caller; not caller-supplied
+  bytes message_data       = 4;  // opaque
+}
+message ClprMessageReply {
+  uint64                 message_id         = 1;  // the Data Message this answers
+  ClprMessageReplyStatus status             = 2;  // SUCCESS | APPLICATION_ERROR | CONNECTOR_NOT_FOUND | CONNECTOR_UNDERFUNDED
+  bytes                  message_reply_data = 3;
+}
+message ClprMessageValue {
+  ClprMessagePayload payload                       = 1;
+  bytes              running_hash_after_processing = 2;
+}
+```
+
+Queue entries are stored separately from the channel, keyed by `(channel_id, message_id)`, because they are read by id range during bundle construction and deleted after acknowledgement. On Hiero they live in a Merkle state map (directly provable); on EVM ledgers in contract storage, where gas cost makes aggressive deletion important.
+
+<QueueWindow />
+
+### The running hash
+
+```text
+running_hash = SHA-256( previous_running_hash ‖ serialized_payload )     H0 = 0x00 × 32
+```
+
+`serialized_payload` is the canonical protobuf encoding of the `ClprMessagePayload`. SHA-256 was chosen for universal availability (EVM precompile, Hiero native, Solana syscall) and retains 128-bit preimage resistance under Grover's algorithm; the fields are opaque bytes, so an upgrade needs only a protocol version bump.
+
+<RunningHash id="running-hash-dev" detail />
+
+### Enqueue (`sendMessage`)
+
+1. Look up the channel; reject unless ACTIVE. *1a.* If `last_config_timestamp` is behind the current configuration's consensus timestamp, enqueue a `ConfigUpdate` control message first and update the timestamp.
+2. Look up the connector by `(channel_id, connector_id)`; reject if absent.
+3. Call the connector's authorization contract; reject if not authorized.
+4. Check `len(message_data) ≤ peer_config.throttles.max_message_payload_bytes`. A stricter local limit is allowed; exceeding the peer's is not.
+5. Check `next_message_id − acked_message_id < max_queue_depth`.
+6. Build the `ClprMessage`, stamping `sender` from the transaction caller.
+7. Compute the running hash. 8. Store under `(channel_id, next_message_id)`. 9. Set `sent_running_hash`; increment `next_message_id`.
+
+The sender pays only the native transaction fee; there is no protocol fee on the sending side. If anything fails, "the whole thing reverts and the user pays only for the failed attempt".
+
+<Callout kind="note" title="Lazy config propagation">
+ When the admin changes the local configuration, nothing is enqueued anywhere; the change is O(1). Each channel picks up a `ConfigUpdate` the next time it enqueues a message or processes a bundle, at a consensus-determined point in its stream. Messages before the update were valid under the old limits and MUST be accepted; messages after it comply with the new ones. Dead channels never pay for updates. A receiver that meets a control message variant it does not recognize MUST reject the entire bundle: skipping it would let the two sides' state diverge.
+</Callout>
+
+<Callout kind="impl">
+The EVM implementation folds the hash as `sha256(prev ‖ sha256(payload))` and checks outbound payload size against its *own* throttles rather than the peer's; its `docs/bundle-flow.md` lists both as known divergences (items C-2, C-3). Its `sendMessage` stamps `msg.sender` exactly as required; destination applications may rely on that field but "MUST NOT trust any in-band 'from' claim embedded inside `messageData` itself".
+</Callout>
+
+<Callout kind="key">
+Three message classes, one id sequence, one hash chain. A receiver that cannot interpret a control message rejects the whole bundle, because skipping it would let the two sides diverge.
+</Callout>
+
+</Section>
+
+<Section id="bundles" page="developers">
+
+Messages never travel individually. A **bundle** is an ordered batch of payloads plus one state proof over the last of them, the **anchor**. The proof covers the running hash at the anchor, so the receiver can verify that the whole batch exists in the sender's state, in order, with nothing omitted, by recomputing the chain. The endpoint reads unacknowledged messages starting after the peer's `current_received_message_id`; if `received + 1 ≥ next_message_id` the bundle carries no messages. A bundle may be a proper prefix of the backlog, so a queue larger than `max_messages_per_bundle` or `max_sync_bytes` can still drain in slices.
+
+<BundlePrefixAnchor />
+
+### Progress criteria
+
+The service rejects any bundle that satisfies none of these (**NoProgress**), and endpoints MUST NOT submit one:
+
+<div class="table-wrap">
+<table>
+<thead><tr><th>#</th><th>Criterion</th><th class="wrap">Holds when…</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>New messages</td><td class="wrap">anchor message id is greater than this side's stored <code>received_message_id</code></td></tr>
+<tr><td>2</td><td>Trust anchor advancement</td><td class="wrap">verifier returns <code>new_trust_anchor_id ≠ Channel.trust_anchor_id</code></td></tr>
+<tr><td>3</td><td>Endpoint manifest advancement</td><td class="wrap"><code>new_endpoint_manifest.version &gt; Channel.endpoint_manifest.version</code></td></tr>
+<tr><td>4</td><td>Acknowledgement progress</td><td class="wrap"><code>sync_data.received_message_id &gt; Channel.acked_message_id</code></td></tr>
+<tr><td>5</td><td>Channel state transition</td><td class="wrap">(a) peer status CLOSING/DRAINED/CLOSED while ours is ACTIVE/PAUSED → CLOSING; (b) ours is CLOSING and no unacked Data Messages remain → DRAINED; (c) ours is DRAINED, peer DRAINED/CLOSED and all our responses acknowledged → CLOSED</td></tr>
+</tbody>
+</table>
+</div>
+
+Endpoints evaluate these against their cached view before building a bundle (the pre-check); the service re-evaluates against on-chain values after the verifier returns (step 1a). A rotation-only or manifest-only bundle with no messages is valid.
+
+**Sizing.** On a ledger with a 30M-gas block the worked example is ten messages per bundle at 2M gas each, leaving room for the service's own logic. On Hiero, limits are expressed as operations-per-second so that oversized bundles are rejected at ingest: "once a bundle starts execution, it must be able to finish". `max_message_payload_bytes` is enforced on both ends, the destination's check being authoritative.
+
+<Callout kind="key">
+One proof per bundle, over the anchor only; the running hash extends that proof backwards over every earlier message in the slice.
+</Callout>
+
+</Section>
+
+<Section id="verify" page="developers">
+
+This is the heart of the protocol: what a CLPR Service does, post-consensus, when `submitBundle(channel_id, bundle_payload)` lands. Step through it on a concrete bundle, then inject faults and watch which step rejects.
+
+<VerifierVsService />
+
+<BundleVerify />
+
+The division of labour matters. The **verifier** answers one question: is this payload authentically the peer's state under the current trust anchor, and if so, what sync data, messages, anchor id and anchor hash does it contain? Everything else, progress, size, contiguity, the running hash, acknowledgements, status transitions and dispatch, is the **service's own logic** and runs identically regardless of proof system. What this buys is precise: the service's checks "catch verifier bugs but not a compromised verifier, which would return fabricated data with matching hashes".
+
+Two ordering rules inside the algorithm are easy to miss. The manifest update (1b) and trust anchor update (1c) are applied *before* any message is processed, so every message in a bundle is attributed to the authority that produced it, with no window in which two anchors apply. And the lazy `ConfigUpdate` (5c) is enqueued after the acknowledgement update and before any response generated by this bundle's dispatch, pinning it to a deterministic point in the stream.
+
+A rejected bundle changes no state and costs the submitter its fee. "Critically, a failure on one message does not stop processing of the remaining messages in the bundle."
+
+<Callout kind="key">
+The verifier answers one question, whether this is authentically the peer's state under the current anchor; every other check belongs to the service and runs the same way for every proof system.
+</Callout>
+
+<Callout kind="impl">
+Where the EVM contracts differ from the specification wording in this section: a bundle may repeat messages the ledger already has at its front, which are skipped (it is rejected only if it jumps ahead or carries nothing new); the running hash folds `sha256(previous ‖ sha256(payload))`, the Hiero node does the same; the application is called first and the connector is charged afterwards, on the gas used, using one service-wide margin; an out-of-order response pauses an ACTIVE channel without reverting, and the verified acknowledgement is kept; only data messages get replies, and a malformed control message or an unknown wire field rejects the whole bundle; and closing transitions to DRAINED and CLOSED are evaluated after dispatch and also need every data message answered.
+</Callout>
+
+</Section>
+
+<Section id="ordering" page="developers">
+
+CLPR distinguishes two confirmations. An **acknowledgement** is transport-level: the peer's `received_message_id`, reported on every sync, becomes the sender's `acked_message_id`. A **response** is application-level: the `ClprMessageReply` generated when the destination processed a Data Message. Because the destination processes each inbound message sequentially, responses are generated in exactly the order the Data Messages arrived, "regardless of whether each individual response indicates success or failure".
+
+<TwoConfirmations />
+
+That ordering guarantee is what lets the source verify correlation without a separate counter. It walks its retained Data Messages in order and matches each incoming response to the next expected one. Hence the lifecycle rules: Response and Control messages in the outbound queue are deleted as soon as they are acknowledged; **Data Messages are retained past acknowledgement** and deleted only when their response has arrived and matched.
+
+<Ordering />
+
+A mismatch is a protocol violation by the peer ledger. The service sets the channel to **PAUSED**, rejects the bundle outright (nothing dispatched, no acks, no hash advance), and blocks new `sendMessage` calls; syncs continue, and the channel auto-resumes when a correctly ordered bundle arrives. It does not slash: "you cannot slash a peer ledger, only individual endpoints", and the out-of-order responses are already committed in the peer's queue. PAUSED is reserved exclusively for this case; bundles that fail hashing, replay or size checks are simply rejected with no state change.
+
+<Callout kind="key">
+Acknowledged means delivered; answered means processed. A Data Message leaves the queue only when it has been answered, in order.
+</Callout>
+
+</Section>
+
+<Section id="identity" page="developers">
+
+Each ledger publishes one `ClprLedgerConfiguration`: its identity and the limits it will enforce on peers.
+
+```protobuf
+message ClprLedgerConfiguration {
+  uint32        protocol_version        = 1;  // both sides MUST agree; unknown → reject
+  string        chain_id                = 2;  // CAIP-2, e.g. "hedera:mainnet", "eip155:1"
+  bytes         service_address         = 3;  // this ledger's CLPR Service (contract addr / well-known constant)
+  Timestamp     timestamp               = 4;  // consensus time of the last change; monotonic
+  ClprThrottles throttles               = 5;
+  bytes         initial_trust_anchor    = 6;  // e.g. Hiero ledger_id; empty if derived from a separate proof
+  bytes         initial_trust_anchor_id = 7;  // non-empty iff initial_trust_anchor is non-empty
+}
+```
+
+**Identity is a compound key.** `chain_id` is a CAIP-2 string, but it does not uniquely identify a CLPR Service: two competing service contracts on Ethereum can both claim `eip155:1`. A peer is therefore identified by `(ChainID, ClprServiceAddress)`. Private networks may self-assign an unregistered namespace such as `hashsphere:acme-prod`.
+
+<CompoundPeerIdentity />
+
+**Protocol version** is bumped on any backward-incompatible change: new control message variants, running hash algorithm, signature schemes, wire format. Cross-version messaging is not supported; a peer that receives a ConfigUpdate with an unrecognized version rejects it, halting the channel until it upgrades.
+
+**Throttles** are ledger-wide values advertised to all peers and enforced per channel:
+
+<div class="table-wrap">
+<table>
+<thead><tr><th>Field</th><th class="wrap">Meaning</th><th class="wrap">Enforced by</th></tr></thead>
+<tbody>
+<tr><td><code>max_messages_per_bundle</code></td><td class="wrap">Hard cap on messages in one bundle, sized to this ledger's per-transaction execution budget</td><td class="wrap">Sending endpoints must respect it; destination rejects the whole bundle at verification step 2</td></tr>
+<tr><td><code>max_message_payload_bytes</code></td><td class="wrap">Largest single payload this ledger will accept</td><td class="wrap">Source at enqueue (against the peer's advertised value); destination at bundle processing (authoritative)</td></tr>
+<tr><td><code>max_gas_per_message</code></td><td class="wrap">Compute budget for one message; bounds worst-case execution time</td><td class="wrap">Destination, as the gas cap on the application callback</td></tr>
+<tr><td><code>max_queue_depth</code></td><td class="wrap">Maximum unacknowledged messages in the outbound queue per channel: natural backpressure</td><td class="wrap">Source at enqueue</td></tr>
+<tr><td><code>max_sync_bytes</code></td><td class="wrap">Largest serialized <code>ClprSyncPayload</code> accepted at the gRPC level</td><td class="wrap">Endpoints; must exceed one payload plus proof overhead or the channel deadlocks</td></tr>
+<tr><td><code>max_local_endpoints</code></td><td class="wrap">Cap on this service's live endpoint manifest</td><td class="wrap">Service, at admission</td></tr>
+<tr><td><code>max_peer_endpoints</code></td><td class="wrap">How many of a peer's endpoints to cache per channel; the first N in manifest order are kept</td><td class="wrap">Service, when storing a peer manifest</td></tr>
+</tbody>
+</table>
+</div>
+
+<Callout kind="gotcha">
+The deadlock is real: `max_sync_bytes` "MUST be greater than `max_message_payload_bytes` plus the protocol overhead" of a single message. "If `max_sync_bytes` is set too low, the Channel can deadlock — the next message to send may be larger than the bundle payload can carry, halting progress indefinitely." The suggested rule of thumb is `max_sync_bytes ≥ max_message_payload_bytes × max_messages_per_bundle + proof_overhead`.
+</Callout>
+
+**Strictness.** Every limit is published, so exceeding one is "a measurable, attributable violation". Implementations MUST reject unrecognized fields, unknown message types and malformed metadata outright rather than skipping them. Defaults for the throttle values are still to be fixed; `clprEnabled` defaults to `false` and is checked dynamically on every call, giving each deployment a runtime kill switch.
+
+<Callout kind="key">
+A peer is (ChainID, ClprServiceAddress): the chain id names a ledger, the address names which service on it.
+</Callout>
+
+</Section>
+
+<Section id="channels" page="developers">
+
+A channel is the on-ledger record of one peer relationship. Its state is presented as a single structure, while allowing implementations to split it for efficient state proofs:
+
+```text
+Channel {
+  channel_id             : bytes(32)   // primary key; same value on both ledgers
+  chain_id               : string      // CAIP-2 id of the peer
+  peer_config_timestamp  : Timestamp   // last known peer configuration
+  verifier_contract      : bytes       // immutable after registration
+  verifier_fingerprint   : bytes       // code hash at registration (informational)
+  trust_anchor           : bytes       // peer signing authority; only verifyBundle may change it
+  trust_anchor_id        : bytes       // opaque id for trust_anchor
+  channel_context        : ChannelContext { channel_id, service_address }   // immutable
+  endpoint_manifest      : ClprEndpointManifest   // cached peer endpoints (+ version)
+  last_config_timestamp  : Timestamp   // for lazy ConfigUpdate propagation
+  acked_message_id       : uint64      // highest own message confirmed received by peer
+  sent_running_hash      : bytes(32)
+  received_running_hash  : bytes(32)
+}
+```
+
+Three fields are deliberately *not* on the Channel: `status`, `received_message_id` and `next_message_id`. Each side keeps them in its own **`ChannelSyncData`**, the only part of the channel that is state-proven and exchanged on every bundle. Wherever a rule says `Channel.status`, read it as this side's own `ChannelSyncData.status`. An ADR moved these fields out so that proofs carry the minimum, not the whole record.
+
+<ChannelVsSyncdata />
+
+**Initial values.** `acked_message_id` = 0; both running hashes are 32 zero bytes; `received_message_id` = 0; `next_message_id` = 1. The first Data Message ever enqueued has ID 1 and the first Response Message received must reference it.
+
+### Registration: commit, then reveal
+
+Because the same `channel_id` must be claimed on both ledgers, an attacker who watches a registration on A could race to claim the id on B. The commit-reveal scheme hides both the id and the key until both claims exist. The ownership commitment is `keccak256(channel_id ‖ public_key)`; keccak-256 is fixed cross-platform, while the signature scheme and key encoding are platform-specific (ECDSA secp256k1 or Ed25519 today; "extensible for post-quantum"). Different keypairs may be used on each ledger; the channel id, not the key, ties the two sides together.
+
+<CommitRevealRegistration />
+
+<CommitReveal />
+
+At the reveal (`completeChannel`) the service verifies the commitment preimage and a signature over `keccak256(channel_id)`, then calls the verifier's `verifyConfig(config_proof_bytes, channel_id, endpoint_manifest_proof_bytes)`. The verifier returns the peer's verified `chain_id`, config timestamp and throttles, the immutable `ChannelContext`, the `initial_trust_anchor` and its id, and the peer's initial endpoint manifest (version ≥ 1; an empty endpoint list is valid). All of it is stored and the channel becomes ACTIVE. The registrant has no privileges afterwards; "the keypair used for registration exists solely to coordinate cross-ledger registration".
+
+<CompleteChannelStores />
+
+The simulation's "reference implementation" note lists where the EVM contracts bind these rules to the platform (a derived channel id, 64-byte keys, an EIP-191 signature domain).
+
+### Lifecycle
+
+<ChannelLife detail />
+
+The subtleties are in the closing states. From ACTIVE or PAUSED, `closeChannel` (admin only) moves to CLOSING: `sendMessage` is rejected, but inbound Data Messages are still dispatched and answered, and inbound responses are still delivered. CLOSING becomes DRAINED when no Data Message with an id above `acked_message_id` remains in the outbound queue; responses generated during CLOSING may still be in flight and drain through DRAINED. DRAINED becomes CLOSED when an inbound bundle carries the peer's status DRAINED or CLOSED *and* `acked_message_id ≥ next_message_id − 1`. The peer's status travels in `ChannelSyncData.status` on every sync, which is how one side's close propagates to the other. PAUSED is different in kind: it is entered automatically on a response-ordering violation and exits automatically when a correctly ordered bundle arrives; the admin cannot resume it, only close it.
+
+<TwoSidedClose />
+
+**Verifier immutability.** Fixed for the channel's lifetime so that "applications can evaluate a Channel's verifier once and know it will not change underneath them". If a source ledger upgrades its proof format, a new channel is registered with a new verifier and applications migrate. One caveat: the verifier *address* being fixed does not stop the verifier being an upgradeable proxy: check who holds the upgrade key.
+
+**Multiple channels per pair.** Channels are keyed by id, not by peer, so several can target the same service: for instance one per Ethereum commitment level (`latest`, `safe`, `finalized`), each with its own verifier and its own independent queue. Applications choose at send time.
+
+<Callout kind="key">
+Wherever a rule says Channel.status, read this side's ChannelSyncData.status: it is the only part of a channel that is state-proven and crosses the gap.
+</Callout>
+
+</Section>
+
+<Section id="endpoints" page="developers">
+
+An endpoint is an off-chain node that runs the sync protocol, obtains proofs, pre-verifies and submits bundles. Two manifests describe them.
+
+The **local manifest** (`ClprEndpointManifest`) is service-level state: an ordered list of `ClprEndpoint` entries, a version counter starting at 1 and incremented on every change to the set, and the `service_address` it belongs to. An entry holds an optional `ServiceEndpoint` (numeric IP and port; omitted by private networks that only dial out) and a `tls_certificate`: a DER-encoded, self-signed **ECDSA P-384 CA certificate**, minimized (single-RDN DN, minimal serial, only basicConstraints and keyUsage) and **at most 512 bytes**, rejected at admission otherwise. That CA is never presented on the wire; each endpoint mints an in-memory **Ed25519 leaf** signed by it at process start, presents the leaf at every mTLS handshake, and regenerates it on restart or after `leaf_certificate_validity_seconds` (default 86 400).
+
+How endpoints get into the local manifest depends on the platform:
+
+- **Hiero:** every consensus node is automatically an endpoint. The manifest mirrors the roster; a node joining, leaving or rotating its identity bumps the version, stake-weight-only changes do not. No manual administration is required or permitted.
+- **Permissionless ledgers (EVM):** two steps. Anyone calls `registerEndpoint(endpoint_data, bond)` and enters `pending`; the admin calls `addEndpoint` to admit it to the live manifest (or `updateEndpointManifest` for a batch, one version bump for the whole batch). `removeEndpoint` by the endpoint or the admin returns the bond in full. **Endpoint bonds are never slashed**; misbehavior means eviction with a refund. Slashing applies only to connectors.
+
+The **peer manifest** is stored per channel as `Channel.endpoint_manifest`: the authoritative directory of remote endpoints to dial. It is populated at `completeChannel` from the manifest proof passed to `verifyConfig`, truncated to `max_peer_endpoints`, and refreshed whenever `verifyBundle` returns a `new_endpoint_manifest` with a higher version, replacing the whole manifest atomically (verification step 1b).
+
+<Callout kind="note" title="Manifest updates bypass the queue">
+Manifest updates deliberately do **not** travel through the message queue. Before <a href={pinned('clpr-spec', 'ADR/2026-07-03-clpr-endpoint-manifests.md')}>ADR 2026-07-03</a>, the endpoint list rode inside `ConfigUpdate` control messages, which deadlocked on complete endpoint turnover: the update that named the new endpoints could only be delivered by contacting the old ones. Now anyone can call `getEndpointManifest()` on the remote service, wrap it in a state proof, and submit it as an ordinary transaction on the local ledger; a bundle carrying only a manifest update satisfies progress criterion 3. This is recovery scenario R1.
+</Callout>
+
+<TwoManifests />
+
+<ProvenManifest />
+
+**Bundle submission is permissionless** and orthogonal to manifest membership: anyone may submit a bundle that makes progress, whether or not they registered, and the bond plays no role in reimbursement. Sybil resistance on permissionless ledgers is "provided primarily by admin curation"; the bond is "commitment friction", not a threshold calibrated against attack cost. Endpoints SHOULD randomize peer selection and SHOULD prefer peers that reciprocate with messages of their own, which "cannot be faked — providing a valid bundle with messages requires having actual messages to send".
+
+Seen from the endpoint's side, the whole job is a loop: watch the home queue and the peer manifest, open a connection per channel, ask for what is missing, dry-run what arrives, submit only what would pass.
+
+<PullNotPush />
+
+<EndpointLoop />
+
+<Callout kind="key">
+The bond buys a seat on a curated list and nothing else: it is never slashed, and anyone may submit a bundle without one.
+</Callout>
+
+</Section>
+
+<Section id="sync" page="developers">
+
+Every endpoint exposes one gRPC service with one method:
+
+```protobuf
+service ClprEndpointService {
+  rpc sync(stream ClprSyncPayload) returns (stream ClprSyncPayload);
+}
+
+message ClprSyncPayload {
+  bytes          channel_id      = 1;  // exactly 32 bytes
+  BundleRequest  bundle_request  = 2;  // absent when nothing more to request
+  BundleResponse bundle_response = 3;  // absent when carrying no bundle
+}
+message BundleRequest {                // UNPROVEN: shapes the peer's bundle, never changes state
+  uint64            current_received_message_id       = 1;
+  ClprChannelStatus current_status                    = 2;
+  bytes             current_trust_anchor_id           = 3;
+  uint64            current_endpoint_manifest_version = 4;
+}
+message BundleResponse { bytes bundle_payload = 1; }   // opaque; for the verifier
+```
+
+A sync cycle is one bidirectional stream scoped to a single channel. Each side sends a `BundleRequest` describing its own state; the responder builds a minimal bundle starting at `current_received_message_id + 1`; a payload with both fields absent closes the stream. The connection and its TLS session may persist across cycles.
+
+<SyncCycle />
+
+Three properties to internalize. The request is **unproven** and "MUST NOT cause a state change": a stale or under-claiming request at worst produces duplicates that the replay defence rejects, costing bandwidth and a fee, never correctness. Delivery is **pull-shaped**: the receiver drives, which is what makes the counters meaningful. And endpoints **MUST pre-verify** by executing the verifier locally before submitting, "otherwise the endpoint will have to pay for invalid payloads that fail verification post-consensus".
+
+The reason: the earlier single-call `sync` computed bundles from a cached view of the peer's acknowledgements one cycle stale, so in steady state every message was sent twice. Sync cadence is intentionally unspecified: "an empirical tuning question, not a protocol-level constant".
+
+**Private networks** simply omit `service_endpoint` from their manifest entries; their endpoints are then the only ones that can initiate. **Close-notification:** when a channel reaches CLOSED locally, the endpoint's terminal obligation is to keep submitting one final bundle carrying `status = CLOSED` to the remote until it is accepted or rejected as already closed.
+
+<PrivateNetworkDial />
+
+<Callout kind="key">
+The request is a hint; the bundle is the proof. Nothing a BundleRequest says can change state on any ledger.
+</Callout>
+
+</Section>
+
+<Section id="verifiers" page="developers">
+
+A verifier implements two read-only methods. It holds no per-channel state: mutable trust material comes in and goes out through the `trust_anchor` parameters, and constant identity through `ChannelContext`.
+
+```text
+struct ChannelContext { bytes channel_id; bytes service_address }   // immutable per channel
+
+interface IClprVerifier {
+  function verifyConfig(bytes config_proof_bytes, bytes channel_id, bytes endpoint_manifest_proof_bytes)
+    returns (ChannelContext ctx, string chain_id, uint96 peer_config_nanos, ClprThrottles throttles,
+             bytes initial_trust_anchor, bytes initial_trust_anchor_id, ClprEndpointManifest endpoint_manifest)
+
+  function verifyBundle(bytes bundle_payload, bytes trust_anchor, ChannelContext ctx)
+    returns (ChannelSyncData sync_data, ClprMessagePayload[] messages,
+             uint64 anchor_message_id, bytes anchor_running_hash,
+             bytes new_trust_anchor, bytes new_trust_anchor_id, ClprEndpointManifest new_endpoint_manifest)
+}
+```
+
+`verifyConfig` runs once, at `completeChannel`; it MUST revert if any proof fails, if the manifest's `service_address` does not match, or if the manifest version is 0, and MUST NOT revert merely because the endpoint list is empty. `verifyBundle` runs on every submission and "is responsible for validating that the bundle data belongs to the (trust_anchor, ctx.service_address, ctx.channel_id) triple"; hash chain, ordering and replay are the service's job. EVM verifiers SHOULD fail fast on malformed input before expensive cryptography. `ChannelContext` exists because channel identity must not live in a field designed to rotate: <a href={pinned('clpr-spec', 'ADR/2026-07-02-channel-context-verifier-interface.md')}>ADR 2026-07-02</a> also documents a narrow cross-channel substitution window this closed.
+
+<VerifierIo />
+
+### Trust anchors and rotation
+
+The trust anchor is opaque to the service: "it stores, passes, and replaces the anchor, but never inspects its contents." It is initialized from `verifyConfig` and changes through exactly one path, a non-empty `new_trust_anchor` returned by `verifyBundle`, applied atomically before any message in that bundle. No admin key, governance call or `ConfigUpdate` can touch it. A verifier that returns a new anchor without a state-proven commitment in the same proof MUST revert; that requirement is what prevents anchor injection by a compromised endpoint.
+
+<TrustAnchor />
+
+The endpoint carries the obligation to keep the remote anchor current. Every sync payload reports the peer's `trust_anchor_id`; the endpoint keeps a local ordered record of authorities it has seen and, when it cannot produce proofs the remote would accept, submits **transition bundles** until it can. Whether timing is tight depends on the anchor's encoding: a *single-authority* anchor must be advanced exactly at the boundary, while a *window* anchor (`current, next`) decouples submission from the rotation and is recommended for proof systems with frequent, predictable rotations such as Ethereum's roughly 27-hour sync committee. A proof system that cannot produce a proof verifiable by the old authority *and* committing to the new one "cannot support the CLPR trust anchor model".
+
+### The two production verifiers
+
+<div class="table-wrap">
+<table>
+<thead><tr><th></th><th class="wrap">Hiero (TSS / hinTS)</th><th class="wrap">QBFT (Besu)</th></tr></thead>
+<tbody>
+<tr><td>Trust anchor</td><td class="wrap"><code>ledger_id</code>: the genesis-rooted identity of the network's threshold signing key. No secondary id.</td><td class="wrap"><code>abi.encode(validatorSetHash, codeHash, epochLength, epochNumber)</code>, 128 bytes; id = big-endian epoch number</td></tr>
+<tr><td>Proof bytes</td><td class="wrap">A <code>StateProof</code> protobuf: <code>BlockStateProof</code> (ledger_id, BLS12-381 aggregate TSS signature over a 48-byte SHA-384 block root) plus one <code>MerkleLeafProof</code> per proven leaf</td><td class="wrap">RLP 5-tuple: current block header with QBFT committed seals in <code>extraData</code>, epoch-boundary headers for rotation, EIP-1186 account proof for the CLPR Service, storage proofs, serialized bundle content</td></tr>
+<tr><td>What is proven</td><td class="wrap">The Channel leaf (tag 482) and one <code>ClprMessageValue</code> leaf (tag 498) per message; a <code>ClprLedgerConfiguration</code> leaf for <code>verifyConfig</code></td><td class="wrap">Five storage slots: status + nextMessageId, ackedMessageId + receivedMessageId, sentRunningHash, receivedRunningHash, and the anchor message's running hash</td></tr>
+<tr><td>Verification</td><td class="wrap">Recompute SHA-384 Merkle roots with domain prefixes (leaf 0x00, unary 0x01, binary 0x02), extend to the block root, verify the TSS signature against the <em>stored</em> ledger_id (not the one inside the proof), extract and sanity-check leaves. The Solidity <code>HieroVerifier</code> + <code>TSSVerifier</code> do this with the EIP-2537 BLS12-381 precompiles; a native path exists at <code>0x16e</code> on Hiero.</td><td class="wrap">Recover ECDSA signers from the committed seals and require a threshold to match the validator set hash; keccak the header; walk the account proof to <code>stateRoot</code>, then each storage proof; process epoch headers in sequence to advance the validator set</td></tr>
+<tr><td>Who builds proofs</td><td class="wrap">The Hiero node itself; the relay fetches the finished proof and only parses it</td><td class="wrap">The relay, from <code>eth_getBlockByNumber</code> and <code>eth_getProof</code></td></tr>
+<tr><td>Rotation</td><td class="wrap">Not yet implemented; <code>verifyBundle</code> returns an empty <code>newTrustAnchor</code>. The planned path is a WRAPS recursive proof binding the new verification key to the same ledger_id.</td><td class="wrap">Epoch-driven; each epoch header must be sealed by the previous set, so history cannot be skipped; catch-up bounded per bundle by a relay setting</td></tr>
+</tbody>
+</table>
+</div>
+
+Both are documented under <a href={pinned('clpr-spec', 'verifiers')}>`verifiers/`</a> in the specification repository, which also prescribes the three files (`state_proof.md`, `verifier_contract.md`, `trust_anchor.md`) any new chain must add. The contracts repository additionally carries verifier code for other proof families (Ethereum beacon BLS, Sei/CometBFT, an Avalanche mock) whose status is not documented.
+
+<TwoStateTrees />
+
+<Callout kind="gotcha">
+**Commitment level is the verifier's choice, and CLPR does not inspect it.** On ledgers without instant finality a verifier that accepts `latest` blocks can admit a "phantom message" that a reorg later erases; for token bridges that is a double-spend. For high-value or irreversible operations use only verifiers that enforce `finalized` or equivalent. Ledgers with ABFT finality do not have this concern.
+</Callout>
+
+<PhantomMessage />
+
+<Callout kind="key">
+The service stores, passes and replaces the trust anchor and never reads it; only a proof the current anchor already accepts can replace it.
+</Callout>
+
+</Section>
+
+<Section id="connectors" page="developers">
+
+The messaging layer moves bytes; the payment layer decides who pays. A **connector** is a contract registered on a specific channel with a counterpart on the peer ledger under the same derived identity:
+
+```text
+connector_id = keccak256( channel_id ‖ public_key ‖ salt )      // salt defaults to 32 zero bytes
+
+Connector {
+  connector_id       : bytes(32)   // primary key with channel_id
+  channel_id         : bytes(32)
+  connector_contract : bytes       // authorization contract on this ledger
+  admin              : bytes       // can top up, adjust, remove
+  balance            : uint        // pays for inbound execution
+  locked_stake       : uint        // slashable
+}
+```
+
+Registration mirrors channels: commit `keccak256(connector_id ‖ public_key)`, then reveal `(public_key, salt, signature over keccak256(connector_id ‖ service_address), connector_contract, initial_balance, stake)`; the service re-derives the id and checks the commitment. On Hiero, `service_address` is the system contract `0x…016e`. Storage is keyed by `(channel_id, connector_id)`, so a squatter on some third ledger affects only channels there. The relationship is many-to-many, and the requirement is **bilateral**: a connector registered only on the source side authorizes messages that then fail on the destination with `CONNECTOR_NOT_FOUND`.
+
+<BilateralConnector />
+
+### Authorizing
+
+```text
+interface IClprConnectorAuth {
+  function authorizeMessage(bytes sender, bytes target_application,
+                            uint64 message_size, bytes message_data) returns (bool authorized)
+}
+```
+
+Returning `true` is a commitment: "it asserts that its counterpart on the destination ledger has sufficient funds to pay for execution, and that it itself can cover the cost of handling the response. This commitment is the contractual basis for slashing." A pass-through connector accepts everything; a sophisticated one enforces allow-lists, rate limits or payment from the application. The call MUST NOT modify service state.
+
+### Paying
+
+On the destination, each Data Message's `connector_id` is resolved to the local connector. If it exists and can pay, it is charged `actual_gas_used × (1 + margin_percent / 100)`, and the entire amount goes to the account that submitted the bundle: no treasury, no owner cut, nothing to the sending side. Response Messages are charged the same way on their way home. Then the application is called.
+
+<Money id="money-dev" detail />
+
+### Slashing
+
+<div class="table-wrap">
+<table>
+<thead><tr><th>Outcome on the destination</th><th class="wrap">Destination-side action</th><th class="wrap">Source-side action when the reply arrives</th></tr></thead>
+<tbody>
+<tr><td><code>SUCCESS</code></td><td class="wrap">Charge connector; pay submitter</td><td class="wrap">Deliver response; no penalty</td></tr>
+<tr><td><code>APPLICATION_ERROR</code></td><td class="wrap">Charge connector; pay submitter</td><td class="wrap">Deliver error; no penalty (the connector paid; the app reverted)</td></tr>
+<tr><td><code>CONNECTOR_NOT_FOUND</code></td><td class="wrap">No connector to slash; submitter absorbs the cost</td><td class="wrap">Slash source connector's <code>locked_stake</code>; reimburse the source submitter</td></tr>
+<tr><td><code>CONNECTOR_UNDERFUNDED</code></td><td class="wrap">Slash destination connector's stake; reimburse submitter</td><td class="wrap">Slash source connector's stake; reimburse the source submitter</td></tr>
+</tbody>
+</table>
+</div>
+
+Penalties escalate from a fine to a ban with forfeited stake; the schedule is left to platform specifications. Two acknowledged gaps: the destination submitter is uncompensated when no connector exists at all, and endpoints are paid only on the receiving side, so pure senders face a free-rider problem mitigated by peer preference rather than payment.
+
+<Callout kind="open">
+**Stake-to-exposure invariant.** "Each side's Connector bond MUST be sufficient to cover the worst-case endpoint losses on that ledger." Otherwise a connector with minimal stake can authorize a burst and drain endpoints of more execution cost than the slash reimburses. Minimum bonds are "an unresolved economic design parameter that must be quantified before production deployment". **Queue monopolization** (one connector filling the queue to `max_queue_depth`) is likewise open, with per-connector quotas, send-time escrow and priority pricing as candidates.
+</Callout>
+
+<Callout kind="impl">
+The EVM connector surface is `IClprConnector` with three callbacks: `authorizeOutboundMessage(channelId, targetApplication, sender, messageData)`, `payForExecution(amount)` (the connector must transfer exactly `amount` to the caller or be marked underfunded and slashed), and a best-effort `onInboundMessage` notification under a bounded gas stipend. The implementation charges a configured `messageExecutionCost × (1 + margin)` rather than actual gas used, enforces a per-connector queue quota (`connectorQueueQuotaPct × maxQueueDepth / 100`), and applies geometric slashing `basePenalty × penaltyMultiplier^slashCount` capped at the locked stake, with auto-ban at a threshold or when stake reaches zero. Its authors flag the slashing formula as a candidate for the platform-neutral spec. See <a href={pinned('clpr-smart-contracts', 'docs/evm-platform-spec.md')}>docs/evm-platform-spec.md</a> and <a href={sol('src/interfaces/IClprConnector.sol')}>IClprConnector.sol</a>.
+</Callout>
+
+<Callout kind="key">
+A connector authorizes on the sending ledger and pays on the receiving one; locked stake on both sides backs that promise.
+</Callout>
+
+</Section>
+
+<Section id="recovery" page="developers">
+
+<Failures id="failures-dev" />
+
+<div class="table-wrap">
+<table>
+<thead><tr><th>#</th><th class="wrap">Scenario</th><th class="wrap">Recovery path</th><th>Status</th></tr></thead>
+<tbody>
+<tr><td>R1</td><td class="wrap">Endpoints rotated during a partition; none of the new ones known</td><td class="wrap">Anyone proves the remote manifest and submits it as a bundle on-chain; no gRPC needed</td><td>Works</td></tr>
+<tr><td>R2</td><td class="wrap">Source upgrades its proof format</td><td class="wrap">New channel with a new verifier; applications migrate; admin closes the old channel</td><td>Works (new channel)</td></tr>
+<tr><td>R3</td><td class="wrap">Endpoints rotated, proof format unchanged</td><td class="wrap">Manifest-update bundle as R1</td><td>Works</td></tr>
+<tr><td>R4</td><td class="wrap">Endpoints rotated and proof format changed</td><td class="wrap">R2 then R1 on the new channel</td><td>Works (new channel)</td></tr>
+<tr><td>R5</td><td class="wrap">Verifier compromised or broken</td><td class="wrap">Admin closes; new channel with a correct verifier</td><td>Works; in-flight messages may be unresolved</td></tr>
+<tr><td>R6</td><td class="wrap">Peer queue state corrupted; cannot order responses</td><td class="wrap">Channel PAUSED; auto-resumes if the peer fixes it; admin may close</td><td>Works (requires peer fix)</td></tr>
+<tr><td>R7</td><td class="wrap">Network partition, endpoints unchanged</td><td class="wrap">Syncs resume; ids and hashes verify integrity</td><td>Works</td></tr>
+<tr><td>R8</td><td class="wrap">Peer ledger down</td><td class="wrap">Queue fills to <code>max_queue_depth</code>, then backpressure; resumes where it stopped</td><td>Works</td></tr>
+<tr><td>R9</td><td class="wrap">Both sides' endpoints change at once</td><td class="wrap">Either side submits a manifest-update bundle directly</td><td>Works</td></tr>
+</tbody>
+</table>
+</div>
+
+R1, R3 and R9 share one mechanism, the proven manifest submitted directly as a bundle, which the figure in <SecRef id="endpoints" /> draws as the third refresh path. R5 and R6 may leave in-flight messages `UNRESOLVED`, requiring application-level, out-of-band reconciliation; tooling for that is one of the items in the <a href={pinned('clpr-spec', 'clpr-options-to-consider.md')}>options to consider</a>.
+
+<Callout kind="key">
+Endpoints can be replaced by a transaction; a verifier's address is fixed for a channel, so a different verifier means a new channel (a verifier behind an upgradeable proxy can still change its implementation).
+</Callout>
+
+</Section>
+
+<Section id="security" page="developers">
+
+- **Strictness (8.1).** Published limits make violations attributable; unrecognized data in a bundle is rejected (unknown wire fields, truncated or malformed control data), though a malformed data message gets an error reply.
+- **Trust model (8.2).** Verifier, peer consensus, both services. No verifier allow-list exists.
+- **Reorg risk (8.3).** Commitment level is the verifier's property; use `finalized` for anything irreversible.
+- **Sybil resistance (8.4).** Admin curation of the endpoint manifest; the bond is friction, not a threshold; no reputation system for endpoints; the admin is fully trusted not to empty the manifest.
+- **Reentrancy (8.5).** Dispatching hands control to arbitrary code. Implementations MUST use reentrancy guards and checks-effects-interactions: all channel state updated before the application is called.
+
+<ChecksEffectsDispatch />
+
+<Callout kind="impl">
+The EVM contracts rely on a guard on `submitBundle` instead (<a href={sol('src/ClprService.sol')}>ClprService.sol</a>, <a href={sol('src/libraries/service/BundleLib.sol')}>BundleLib.sol</a>): the application is called first, the connector is charged after, and the channel cursors are written after the whole loop.
+</Callout>
+
+- **Untrusted payloads (8.6)** and **no confidentiality (8.7).**
+- **Upgradeable verifiers (8.8)** are valid but shift trust to whoever holds the upgrade key.
+- **Upgradeable services (8.9).** Endpoint proof construction depends on storage layout; uncoordinated upgrades halt all syncs. The EVM repository snapshots its storage layout in CI for exactly this reason.
+- **Endpoint pre-funding (8.10).** Out-of-funds endpoints are effectively offline.
+- **Queue monopolization (8.11).** Open; platform specs SHOULD define quotas, escrow or pricing.
+
+Misbehavior detection is strictly local: "there is no cross-ledger misbehavior reporting protocol".
+
+<Callout kind="key">
+CLPR guarantees authenticity and integrity, not semantic correctness and not confidentiality.
+</Callout>
+
+</Section>
+
+<Section id="operate" page="developers">
+
+<Roles />
+
+<VettingChain />
+
+Operational rules worth pinning above your desk: `removeConnector` MUST NOT succeed while in-flight messages exist; endpoint signing accounts must be pre-funded because reimbursement is post-consensus; a compromised verifier is handled by advisory, admin close, patched verifier, new channel, migration, and "the window of vulnerability is between discovery and close"; a proof format upgrade follows the same new-channel path while the source keeps the old format alive long enough to migrate.
+
+<NewChannelMigration />
+
+<Callout kind="key">
+At every layer, the party with economic exposure performs the vetting; the admin, with none, has the weakest incentive to monitor.
+</Callout>
+
+The four cross-role scenarios, as step-throughs; each step lights the roles that act:
+
+<Stories id="stories-dev" />
+
+</Section>
+
+<Section id="extend" page="developers">
+
+Four steps: deploy a CLPR Service on the new ledger; build a verifier for its proofs, including defining the trust anchor and its rotation; publish it for peers to evaluate; and let anyone deploy it and register a channel. No protocol change is needed on existing ledgers. Expanded into the eight operational steps below.
+
+<Extend id="extend-dev" />
+
+Each kind of ledger needs three short documents (`state_proof.md`, `verifier_contract.md`, `trust_anchor.md`) saying how its proofs are built, checked and kept current, plus a verifier that implements `IClprVerifier`. The verifiers that exist today, documented or as code only:
+
+<LedgersTable />
+
+The verifier developer is an off-chain role with no protocol identity: ledger implementers, connector operators, application developers with high-value flows and auditors all have reasons to write one. A proof format change needs a new verifier and a new channel; an upgrade key on a proxy verifier is a single point of compromise; and the protocol pays nothing for maintenance.
+
+<Callout kind="key">
+A new ledger brings its own CLPR Service, endpoints that build its proofs, and a verifier each way; the ledgers already connected need no protocol change.
+</Callout>
+
+</Section>
+
+<Section id="implementations" page="developers">
+
+<Architecture id="architecture-dev" detail />
+
+### EVM: `clpr-smart-contracts`
+
+A Foundry project. `ClprService.sol` is an immutable router holding all state and dispatching by DELEGATECALL to five logic modules (`ChannelLogic`, `MessagingLogic`, `BundleLogic`, `ConnectorLogic`, `AdminLogic`) that share one storage layout (`ClprServiceStorage.sol`); state-mutating helpers (`BundleLib`, `ConnectorLib`, `ManifestLib`) take storage references, and pure helpers (`ClprProtobuf*`, `ClprTypes`) hold types, events and errors. Two consequences to know before you integrate: read functions are not annotated `view` (call them via `eth_call`), and `storage-layout.json` is a committed snapshot that CI regenerates and diffs, because endpoints derive proof slots from it. Deployment goes through a viem CLI; `clprEnabled` is `false` after deploy until an explicit enable, and when the owner is a multisig the script stops and prints the admin calls. Verifiers live under `src/verifiers/`: `hiero/HieroVerifier.sol`, which decodes the `StateProof`, derives the SHA-384 block root, has `TSSVerifier.sol` check the hinTS aggregate signature with the EIP-2537 precompiles and walks the leaf paths, with `wraps/` helpers (WRAPS verification key, Poseidon, BN254); `evm/qbft/QBFTVerifier.sol`; and beacon-chain BLS (`EthMainnetVerifier`), Sei/CometBFT and a mock Avalanche verifier. Interfaces the protocol calls outward are <a href={sol('src/interfaces/IClprApplication.sol')}>IClprApplication</a>, <a href={sol('src/interfaces/IClprConnector.sol')}>IClprConnector</a> and <a href={sol('src/interfaces/IClprVerifier.sol')}>IClprVerifier</a>; the public ABI is <a href={sol('src/interfaces/IClprService.sol')}>IClprService</a>.
+
+<EvmRouterModules />
+
+The repository records its non-obvious design choices and pipeline mapping (`docs/bundle-flow.md`, `docs/quirks.md`, `docs/evm-platform-spec.md`). Items include: outbound payload size checked against local rather than peer throttles; `Channel.peerThrottles` never populated; cross-bundle response ordering not validated; per-message decode failures unwinding the bundle; the hash folded as `sha256(prev ‖ sha256(payload))`; a `REDACTED` message type still present although <a href={pinned('clpr-spec', 'ADR/2026-08-01-remove-message-redaction.md')}>ADR 2026-08-01</a> removed redaction from the spec; and the platform bindings described under connectors above. Some of the docs are themselves behind the code (for example `bundle-flow.md` still describes `submitBundle` as gated to registered endpoints, while the pinned code is permissionless). When in doubt, the Solidity is the reference.
+
+### Hiero: the native service
+
+On Hiero the CLPR Service is a native service inside the consensus node, reachable from the EVM at the system address `0x…016e`. Its state is part of the node's Merkle tree, which is why its queue can be proven directly. Verifiers on Hiero are system contracts or native callbacks rather than user-deployed EVM contracts; the native `VerifyConfigCall`/`VerifyBundleCall` path is documented alongside the verifiers. At the pinned organization profile the implementation lives on a feature branch of `hiero-ledger/hiero-consensus-node`, approved by the Hedera Governing Council and pending approval by the Hiero Technical Steering Committee, "will not be merged until all requirements and standards for code hygiene, organization, testing, and documentation have been met".
+
+### The endpoint: `clpr-endpoint`
+
+A standalone Java 25 relay for EVM ledgers, built with Gradle from seven modules: protobuf/PBJ types, core domain types, a Helidon gRPC server, an outbound gRPC client, EVM interaction over JSON-RPC, sync orchestration and peer management, and the application entry point. It serves two listeners: an always-plaintext *info* port (default 9546) for chain-verifiable public data, and the *sync* data plane (default 9545), plaintext by default and mandatory mTLS when enabled, minting the Ed25519 leaf from the operator's P-384 CA key exactly as specified. Local networks are declared with a proof type (QBFT, or CometBFT for Sei); Hiero appears only as a channel's peer proof type. The `maxMessageSize` default is 1 MiB, and the config comments warn that the PBJ default of 10 KiB "is too small for production payloads". Its `QbftBundleConstructor` builds the RLP 5-tuple, `EvmBundlePreVerifier` simulates `submitBundle` with `eth_call` before paying, and `HieroProofCodec` parses proofs the Hiero node produced. The repository's `docs/` folder is the map: `architecture.md` (the seven modules, the `app → sync/grpc/evm → core → proto` dependency direction, the core abstractions `TransactionSubmitter`, `ContractStateReader`, `BundlePayloadCodec`, `BundleConstructor`, `PeerSyncClient`, `PeerEndpointCache`, `CommitmentLevel`), `sync-protocol.md`, `evm-integration.md` (the contract surface it calls, EIP-1559 submission, nonce handling, and why it polls `getChannel` instead of subscribing to events), `multi-chain-design-changes.md` (the three-tier local-network → service → channel hierarchy and the checklist for adding a chain type) and `configuration.md`. Some of those documents describe work in flight, for instance a stub bundle constructor, so read them against the pinned code. Outbound: a per-channel state-change poller notices `nextMessageId` advancing, the channel's sync task reads the new messages and builds a payload, a peer is picked (never-failed, then recently-successful, then round-robin), and the peer's `sync` RPC is invoked. Inbound: the peer's bundle is decoded, messages the local ledger already accepted are trimmed so a duplicate cannot sink the bundle as a replay, and the submitter signs and sends `submitBundle` client-side, polling for the receipt.
+
+<EndpointTwoLanes />
+
+<Callout kind="key">
+The two CLPR Services share no code; they agree only because both follow the same specification. When the repository's own docs and the Solidity disagree, the Solidity is the reference.
+</Callout>
+
+</Section>
+
+<Section id="evolution" page="developers">
+
+The text comes in two parts. The **design document** (`clpr-service.md`) explains the reasoning: the problem, the layers, the participants, the trust model, and what happens in each failure. The **protocol specification** (`clpr-service-spec.md`) is the normative part every implementation is measured against: the exact bytes on the wire, the on-ledger state, the step-by-step algorithms, and a language-independent description of every operation a service offers. Next to them sit one folder per proof system under `verifiers/`, the decision records under `ADR/`, and the list of options under consideration.
+
+<SpecDocumentMap />
+
+Three rules govern change. Any change to the bytes that travel between ledgers raises the protocol version, and two ledgers must agree on it or stop talking. Data an implementation does not recognize is rejected, never skipped. And the reference implementations keep their own written list of where they still differ from the text.
+
+Changes to the specification are made through **Architecture Decision Records**, named `YYYY-MM-DD-short-title.md`, with a fixed final form: an abstract ending in an enumerated "Changes in this ADR", a problem description per discrete problem, the options considered and non-goals, the complete solution, and the exact edits to each specification file.
+
+<AdrLifecycle />
+Only final-form ADRs are merged to `main`. Five exist:
+
+<AdrTable detail />
+
+<RedactionHashCollision />
+
+A separate document lists thirteen **options to consider**, not yet decided: application-level clawback, migrating messages between channels (three approaches compared), graceful connector wind-down, reconciliation tooling for `UNRESOLVED` messages, multiple proof formats per channel, the admin incentive gap, verifier developer sustainability, channel-creation anti-griefing, connector deregistration on PAUSED channels, indefinitely PAUSED channels, post-quantum endpoint signing keys, SHA-384 for the running hash, and cross-ledger propagation of endpoint signing keys. If you are looking for somewhere to contribute, that list is the map.
+
+<Callout kind="key">
+Only a final-form ADR, one that enumerates the exact edits to each specification file, is merged to main.
+</Callout>
+
+</Section>
+
+<Section id="governance" page="developers">
+
+CLPR is incubated as a lab of **LF Decentralized Trust**, a Linux Foundation project. The signed Labs charter, kept in the lab's governance repository, fixes the rules every lab operates under:
+
+
+- **Oversight** by the foundation's Technical Advisory Council, which approves proposals, organizes sub-projects, sets contribution processes and can graduate or archive labs. 
+- **Licensing.** Inbound and outbound code under Apache License 2.0; every contribution carrying a Developer Certificate of Origin sign-off; specifications under the Community Specification License 1.0; documentation under CC BY 4.0. Exceptions need a two-thirds TAC vote. Files should carry SPDX identifiers.
+- **Copyright** stays with contributors; nothing is assigned. Project trademarks are held by LF Projects, LLC, which is why the Hedera Governing Council's donation includes the CLPR brand.
+- **Openness.** Participation cannot be refused on any basis that is not reasonable and non-discriminatory, and "the output of all Project discussions, proposals, timelines, decisions, and status should be made open and easily visible to all".
+
+A lab supports the development of very early open projects; it says nothing about maturity.
+
+
+The organization's `teams.yml` records a `clpr-maintainers` team with maintain rights on every repository and an `lfdt-staff` team with admin rights on `.github` and `governance`. The scope of the lab, in its own words: collaboration on the specification, the reference implementations of service, verifiers and endpoints, application development, and native integrations into other ledger types.
+
+
+
+</Section>
+
+<Section id="glossary" page="developers">
+
+<Cast detail />
+
+Plus a few terms that only appear on this page: **anchor message**, the last message in a bundle, whose running hash the state proof covers; **acknowledgement**, the peer's `received_message_id` as reported in `ChannelSyncData`, distinct from a response; **close-notification**, the final bundle an endpoint owes the remote once its side reaches CLOSED; **transition bundle**, a bundle whose proof advances the trust anchor, possibly carrying no messages; **NoProgress**, the rejection of a bundle satisfying none of the five progress criteria; **HashSphere**, a private or permissioned network running Hiero; **CAIP-2**, the `namespace:reference` chain identifier standard used for `chain_id`.
+
+</Section>

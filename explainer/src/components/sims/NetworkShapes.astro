@@ -1,0 +1,170 @@
+---
+/**
+ * Shapes built from pairs: a pair, a star, a mesh, and a private network talking to a public one.
+ * Pick a shape, then a sender and a receiver, and the log says whether a channel joins them
+ * directly. The site's own illustration of what pairwise channels allow: a channel is an on-ledger
+ * entity for one specific peer (design §2.1), CLPR does no routing, and a private network's
+ * endpoints carry no dialable address and dial out (design §3.1.2). General page section 12.
+ */
+import Refs from '@kse/components/Refs.astro';
+const { id = 'shapes-sim' } = Astro.props as { id?: string };
+const nodes = [
+  { k: 'A', x: 380, y: 150, cls: 'd-a' },
+  { k: 'B', x: 120, y: 66, cls: 'd-b' },
+  { k: 'C', x: 640, y: 66, cls: 'd-c' },
+  { k: 'D', x: 120, y: 234, cls: 'd-money' },
+  { k: 'E', x: 640, y: 234, cls: 'd-ok' },
+];
+const refs = [
+  { doc: 'design', anchor: '21-common-terminology', label: 'design §2.1' },
+  { doc: 'design', anchor: '312-endpoint-manifest', label: 'design §3.1.2' },
+] as const;
+---
+<div class="sim shapes" id={id}>
+  <div class="sim__head"><div><span class="kind">Simulation · an illustration</span><h3>Shapes you can build from pairs</h3></div><span class="pill grey" data-role="status">a star</span></div>
+  <div class="sim__body">
+    <div class="choices" role="group" aria-label="Pick a shape">
+      <span class="kicker">Shape:</span>
+      <div class="seg">
+        <button class="btn" type="button" data-shape="pair" aria-pressed="false">A pair</button>
+        <button class="btn" type="button" data-shape="star" aria-pressed="true">A star</button>
+        <button class="btn" type="button" data-shape="mesh" aria-pressed="false">A mesh</button>
+        <button class="btn" type="button" data-shape="private" aria-pressed="false">Private to public</button>
+      </div>
+    </div>
+    <div class="sim__scroll">
+      <svg viewBox="0 0 760 300" role="img" aria-label="Up to five ledgers and the channels between them; the shape changes with the buttons.">
+        <g data-role="frame" hidden>
+          <rect x="30" y="20" width="180" height="92" rx="12" class="d-surface" stroke-dasharray="6 5" />
+          <text x="120" y="104" class="t small center muted">private: no public address</text>
+        </g>
+        <g data-role="links"></g>
+        {nodes.map((n) => (
+          <g data-node={n.k}>
+            <rect x={n.x - 56} y={n.y - 22} width="112" height="44" rx="10" class={n.cls} />
+            <text x={n.x} y={n.y - 2} class="t b center">Ledger {n.k}</text>
+            <text x={n.x} y={n.y + 14} class="t small center" data-role={`note-${n.k}`}></text>
+          </g>
+        ))}
+        <g data-role="msg" hidden>
+          <rect x="-17" y="-11" width="34" height="22" rx="4" fill="var(--surface)" stroke="var(--text)" stroke-width="1.5" />
+          <path d="M-17,-11 L0,2 L17,-11" fill="none" stroke="var(--text)" stroke-width="1.5" />
+        </g>
+        <text x="380" y="288" class="t take center" data-role="take">Five channels, each between two ledgers; the hub holds four of them.</text>
+      </svg>
+    </div>
+    <p class="sim__scroll-note">Wider than a phone; scroll it sideways if you need to.</p>
+    <div class="pick" role="group" aria-label="Send a message">
+      <span class="kicker">From:</span>
+      <div class="seg">{nodes.map((n) => <button class="btn" type="button" data-from={n.k} aria-pressed={n.k === 'B' ? 'true' : 'false'}>{n.k}</button>)}</div>
+      <span class="kicker">To:</span>
+      <div class="seg">{nodes.map((n) => <button class="btn" type="button" data-to={n.k} aria-pressed={n.k === 'C' ? 'true' : 'false'}>{n.k}</button>)}</div>
+      <button class="btn primary" type="button" data-role="send">Send</button>
+    </div>
+    <Refs refs={[...refs]} />
+  </div>
+  <div class="sim__log" data-role="log">Pick a shape, then send a message between two ledgers. The question is always: is there a channel between exactly these two?</div>
+</div>
+<style is:global>
+  .sim.shapes .choices, .sim.shapes .pick { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; margin-bottom: 10px; }
+  .sim.shapes .pick { margin: 10px 0 0; }
+  .sim.shapes .kicker { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-3); font-weight: 700; }
+  .sim.shapes .seg { display: flex; flex-wrap: wrap; gap: 6px; }
+  .sim.shapes .pick .seg .btn { min-width: 2.4em; padding-inline: 8px; }
+  .sim.shapes g[data-node] { transition: opacity 250ms; }
+  .sim.shapes g[data-node].off { display: none; }
+  .sim.shapes g[data-node].hot rect { stroke-width: 2.5; }
+  .sim.shapes [data-role="links"] line { stroke: var(--c); stroke-width: 2; }
+  .sim.shapes [data-role="links"] line.dial { marker-end: none; stroke-dasharray: 6 4; }
+  .sim.shapes [data-role="links"] line.lit { stroke: var(--ok); stroke-width: 3; }
+  .sim.shapes [data-role="links"] line.no { stroke: var(--bad); stroke-dasharray: 5 4; }
+  .sim.shapes [data-role="msg"] { transition: transform 700ms ease-in-out; }
+  @media (min-width: 720px) { .sim.shapes .sim__log { min-height: 5.2em; } }
+</style>
+<script>
+  type Shape = 'pair' | 'star' | 'mesh' | 'private';
+  const POS: Record<string, [number, number]> = { A: [380, 150], B: [120, 66], C: [640, 66], D: [120, 234], E: [640, 234] };
+  const SHAPES: Record<Shape, { nodes: string[]; links: [string, string][]; take: string; status: string; dial?: [string, string] }> = {
+    pair: { nodes: ['B', 'C'], links: [['B', 'C']], take: 'One channel: the simplest shape, and the only one CLPR itself knows.', status: 'a pair' },
+    star: { nodes: ['A', 'B', 'C', 'D', 'E'], links: [['A', 'B'], ['A', 'C'], ['A', 'D'], ['A', 'E']], take: 'Four channels, each between two ledgers; the hub holds all four.', status: 'a star' },
+    mesh: { nodes: ['B', 'C', 'D', 'E'], links: [['B', 'C'], ['B', 'D'], ['B', 'E'], ['C', 'D'], ['C', 'E'], ['D', 'E']], take: 'Six channels: every pair agrees on its own; nothing sits in the middle.', status: 'a mesh' },
+    private: { nodes: ['B', 'C'], links: [['B', 'C']], dial: ['B', 'C'], take: "B's endpoints dial out to C's; messages then flow both ways. B is never reachable from outside.", status: 'private to public' },
+  };
+  for (const root of Array.from(document.querySelectorAll<HTMLElement>('.sim.shapes'))) {
+    const $ = (s: string) => root.querySelector<HTMLElement>(s)!;
+    const log = $('[data-role="log"]');
+    const status = $('[data-role="status"]');
+    const links = $('[data-role="links"]');
+    const take = $('[data-role="take"]');
+    const frame = $('[data-role="frame"]');
+    const msg = $('[data-role="msg"]');
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let shape: Shape = 'star';
+    let from = 'B';
+    let to = 'C';
+    let runId = 0;
+    const pressed = (sel: string, key: string, attr: string) => { for (const b of Array.from(root.querySelectorAll<HTMLButtonElement>(sel))) b.setAttribute('aria-pressed', String(b.dataset[attr] === key)); };
+    function draw() {
+      const s = SHAPES[shape];
+      links.innerHTML = '';
+      for (const [a, b] of s.links) {
+        const l = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        l.setAttribute('x1', String(POS[a][0])); l.setAttribute('y1', String(POS[a][1])); l.setAttribute('x2', String(POS[b][0])); l.setAttribute('y2', String(POS[b][1]));
+        l.dataset.pair = `${a}${b}`;
+        links.appendChild(l);
+      }
+      for (const g of Array.from(root.querySelectorAll<SVGGElement>('g[data-node]'))) {
+        const k = g.dataset.node!;
+        g.classList.toggle('off', !s.nodes.includes(k));
+        g.classList.remove('hot');
+        const note = g.querySelector<SVGTextElement>(`[data-role="note-${k}"]`)!;
+        const n = s.links.filter((p) => p.includes(k)).length;
+        note.textContent = s.nodes.includes(k) ? (shape === 'private' ? (k === 'B' ? 'private, dials out' : 'public, listed') : `${n} channel${n === 1 ? '' : 's'}`) : '';
+      }
+      frame.toggleAttribute('hidden', shape !== 'private');
+      take.textContent = s.take;
+      status.textContent = s.status;
+      status.className = 'pill grey';
+      msg.setAttribute('hidden', '');
+      if (!s.nodes.includes(from)) from = s.nodes[0];
+      if (!s.nodes.includes(to) || to === from) to = s.nodes.find((n) => n !== from)!;
+      pressed('button[data-from]', from, 'from');
+      pressed('button[data-to]', to, 'to');
+      for (const b of Array.from(root.querySelectorAll<HTMLButtonElement>('button[data-from], button[data-to]'))) b.disabled = !s.nodes.includes(b.dataset.from ?? b.dataset.to!);
+    }
+    const wait = (ms: number) => new Promise((r) => setTimeout(r, reduced ? 0 : ms));
+    async function send() {
+      const id = ++runId;
+      const s = SHAPES[shape];
+      const direct = s.links.find((p) => (p[0] === from && p[1] === to) || (p[0] === to && p[1] === from));
+      for (const l of Array.from(links.querySelectorAll('line'))) l.classList.remove('lit', 'no');
+      for (const g of Array.from(root.querySelectorAll<SVGGElement>('g[data-node]'))) g.classList.toggle('hot', g.dataset.node === from || g.dataset.node === to);
+      if (from === to) { log.innerHTML = `<span class="line">${from} → ${to}</span>A message to yourself needs no channel.`; return; }
+      if (direct) {
+        const line = links.querySelector<SVGLineElement>(`line[data-pair="${direct[0]}${direct[1]}"]`)!;
+        line.classList.add('lit');
+        msg.removeAttribute('hidden');
+        msg.style.transition = 'none';
+        msg.style.transform = `translate(${POS[from][0]}px, ${POS[from][1] - 34}px)`;
+        await wait(30); if (id !== runId) return;
+        msg.style.transition = '';
+        msg.style.transform = `translate(${POS[to][0]}px, ${POS[to][1] - 34}px)`;
+        status.textContent = 'delivered'; status.className = 'pill ok';
+        const dial = shape === 'private' ? ` ${from === 'B' ? 'B dialled out' : 'B had dialled out'}, so the connection already exists.` : '';
+        log.innerHTML = `<span class="line">${from} → ${to} · direct channel</span><span class="ok">Delivered.</span> A channel joins ${from} and ${to} directly, so ${to} checks ${from}'s own proof and nothing in between is trusted.${dial}`;
+      } else {
+        const hub = s.nodes.find((n) => n !== from && n !== to && s.links.some((p) => p.includes(from) && p.includes(n)) && s.links.some((p) => p.includes(to) && p.includes(n)));
+        status.textContent = 'no channel'; status.className = 'pill bad';
+        const l = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        l.setAttribute('x1', String(POS[from][0])); l.setAttribute('y1', String(POS[from][1])); l.setAttribute('x2', String(POS[to][0])); l.setAttribute('y2', String(POS[to][1]));
+        l.classList.add('no'); links.appendChild(l);
+        log.innerHTML = `<span class="line">${from} → ${to} · no channel</span><span class="bad">No path.</span> CLPR knows pairs and routes nothing. ${hub ? `Ledger ${hub} has a channel to each of them, but a message only crosses if an application on ${hub} receives it and sends a new message of its own to ${to}; that is the application's choice, under its own connector and verifier.` : `Open a channel between ${from} and ${to}, or build the forwarding into an application on a ledger that has both.`}`;
+      }
+    }
+    for (const b of Array.from(root.querySelectorAll<HTMLButtonElement>('button[data-shape]'))) b.addEventListener('click', () => { shape = b.dataset.shape as Shape; pressed('button[data-shape]', shape, 'shape'); draw(); log.innerHTML = `<span class="line">shape: ${shape}</span>${SHAPES[shape].take}`; });
+    for (const b of Array.from(root.querySelectorAll<HTMLButtonElement>('button[data-from]'))) b.addEventListener('click', () => { from = b.dataset.from!; pressed('button[data-from]', from, 'from'); });
+    for (const b of Array.from(root.querySelectorAll<HTMLButtonElement>('button[data-to]'))) b.addEventListener('click', () => { to = b.dataset.to!; pressed('button[data-to]', to, 'to'); });
+    $('[data-role="send"]').addEventListener('click', () => { void send(); });
+    draw();
+  }
+</script>

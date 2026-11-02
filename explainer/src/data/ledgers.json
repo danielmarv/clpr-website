@@ -1,0 +1,76 @@
+{
+  "$comment": "The kinds of ledger CLPR can connect, one row per verifier upstream. status: documented = the specification describes the verifier (clpr-spec/verifiers/<specDir>); code = verifier code exists in clpr-smart-contracts without a specification document; mock = a stand-in. check-data.mjs fails when a verifier directory upstream has no row here.",
+  "ledgers": [
+    {
+      "id": "hiero",
+      "name": "Hiero networks: Hedera and private HashSpheres",
+      "proof": "A joint threshold signature by the network's validators over a summary of its state, plus the path down to one piece of data",
+      "status": "documented",
+      "specDir": "verifiers/hiero",
+      "codeDir": "src/verifiers/hiero",
+      "service": "Built into the consensus node",
+      "endpoint": "Every consensus node is one",
+      "refs": [
+        { "doc": "repo", "id": "clpr-spec", "path": "verifiers/hiero/state_proof.md", "label": "Hiero state proof" },
+        { "doc": "repo", "id": "clpr-spec", "path": "verifiers/hiero/verifier_contract.md", "label": "Hiero verifier" },
+        { "doc": "repo", "id": "clpr-smart-contracts", "path": "src/verifiers/hiero/HieroVerifier.sol", "label": "HieroVerifier.sol" }
+      ]
+    },
+    {
+      "id": "qbft",
+      "name": "Besu networks running QBFT",
+      "proof": "A block header carrying the validators' seals, plus a proof of the storage slots that hold the data",
+      "status": "documented",
+      "specDir": "verifiers/qbft",
+      "codeDir": "src/verifiers/evm/qbft",
+      "service": "Solidity contracts",
+      "endpoint": "The endpoint program",
+      "refs": [
+        { "doc": "repo", "id": "clpr-spec", "path": "verifiers/qbft/state_proof.md", "label": "QBFT state proof" },
+        { "doc": "repo", "id": "clpr-spec", "path": "verifiers/qbft/verifier_contract.md", "label": "QBFT verifier" },
+        { "doc": "repo", "id": "clpr-smart-contracts", "path": "src/verifiers/evm/qbft/QBFTVerifier.sol", "label": "QBFTVerifier.sol" }
+      ]
+    },
+    {
+      "id": "ethereum",
+      "name": "Ethereum mainnet",
+      "proof": "Sync-committee signatures checked by a light client",
+      "status": "code",
+      "specDir": null,
+      "codeDir": "src/verifiers/evm/ethereum",
+      "service": "Solidity contracts",
+      "endpoint": "The endpoint program",
+      "refs": [
+        { "doc": "repo", "id": "clpr-smart-contracts", "path": "src/verifiers/evm/ethereum/EthMainnetVerifier.sol", "label": "EthMainnetVerifier.sol" },
+        { "doc": "repo", "id": "clpr-smart-contracts", "path": "src/verifiers/evm/ethereum/README.md", "label": "verifier README" }
+      ]
+    },
+    {
+      "id": "sei",
+      "name": "Sei, a CometBFT network",
+      "proof": "CometBFT validator signatures (Ed25519)",
+      "status": "code",
+      "specDir": null,
+      "codeDir": "src/verifiers/evm/sei",
+      "service": "Solidity contracts",
+      "endpoint": "The endpoint program",
+      "refs": [
+        { "doc": "repo", "id": "clpr-smart-contracts", "path": "src/verifiers/evm/sei/SeiCometBftVerifier.sol", "label": "SeiCometBftVerifier.sol" },
+        { "doc": "repo", "id": "clpr-smart-contracts", "path": "src/verifiers/evm/sei/README.md", "label": "verifier README" }
+      ]
+    },
+    {
+      "id": "avalanche",
+      "name": "Avalanche",
+      "proof": "Not implemented; a mock verifier stands in",
+      "status": "mock",
+      "specDir": null,
+      "codeDir": "src/verifiers/evm/avalanche",
+      "service": "Solidity contracts",
+      "endpoint": "The endpoint program",
+      "refs": [
+        { "doc": "repo", "id": "clpr-smart-contracts", "path": "src/verifiers/evm/avalanche/MockAvalancheVerifier.sol", "label": "MockAvalancheVerifier.sol" }
+      ]
+    }
+  ]
+}

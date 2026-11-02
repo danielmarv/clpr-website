@@ -1,0 +1,52 @@
+---
+/** Two ledgers as two islands: a program on each wants to know something about the other, and both lookups stop at the water. Page-level framing of the cross-ledger problem (general section 2); design §1 frames the same problem. Replaces the inline two-islands SVG in section 2. */
+import Figure from '@kse/components/Figure.astro';
+import { design } from '../../../lib/sources';
+---
+<Figure
+  lead="Two islands, by design."
+  caption="Each ledger only writes what its own validators can check. A program on A cannot read B's ledger, and a line on B says nothing to A. Every cross-ledger idea needs a way across this water that the receiving side can rely on."
+  source={[{ label: 'design §1', href: design('1-executive-summary') }]}
+  kind="plain"
+  minWidth={700}
+>
+  <svg viewBox="0 0 700 306" role="img" aria-label="Two islands separated by water. On the left island, Ledger A, a program wants to know whether Bo's payment on B is done; its dashed lookup toward Ledger B stops at the water with a cross. On the right island, Ledger B, a program wants to know whether A really locked those tokens; its lookup toward A stops the same way. A box between them says there is no window: nothing on A can read B and nothing on B can read A.">
+    <rect x="12" y="12" width="676" height="266" rx="12" fill="var(--bg-2)" />
+
+    <!-- Island A -->
+    <ellipse cx="175" cy="132" rx="140" ry="84" class="d-a" />
+    <text x="175" y="76" class="t b center">Ledger A</text>
+    <text x="175" y="94" class="t small center">its own validators, its own ledger</text>
+    <rect x="105" y="100" width="140" height="48" rx="8" class="d-surface" />
+    <text x="175" y="128" class="t center">program on A</text>
+    <text x="175" y="172" class="t small center">"is Bo's payment on B done yet?"</text>
+
+    <!-- Island B -->
+    <ellipse cx="525" cy="132" rx="140" ry="84" class="d-b" />
+    <text x="525" y="76" class="t b center">Ledger B</text>
+    <text x="525" y="94" class="t small center">its own validators, its own ledger</text>
+    <rect x="455" y="100" width="140" height="48" rx="8" class="d-surface" />
+    <text x="525" y="128" class="t center">program on B</text>
+    <text x="525" y="172" class="t small center">"did A really lock those tokens?"</text>
+
+    <!-- A's lookup, blocked at the water -->
+    <line x1="245" y1="112" x2="336" y2="112" class="line bad dash" />
+    <line x1="338" y1="106" x2="350" y2="118" class="line bad" />
+    <line x1="338" y1="118" x2="350" y2="106" class="line bad" />
+    <text x="300" y="104" class="t small center bad">look up a balance on B</text>
+
+    <!-- B's lookup, blocked at the water -->
+    <line x1="455" y1="140" x2="364" y2="140" class="line bad dash" />
+    <line x1="350" y1="134" x2="362" y2="146" class="line bad" />
+    <line x1="350" y1="146" x2="362" y2="134" class="line bad" />
+    <text x="400" y="160" class="t small center bad">check a line on A</text>
+
+    <!-- No window -->
+    <rect x="210" y="226" width="280" height="42" rx="8" class="d-bad" />
+    <text x="350" y="244" class="t b center">no window</text>
+    <text x="350" y="260" class="t small center">nothing on A can read B; nothing on B can read A</text>
+
+    <!-- takeaway -->
+    <text x="350" y="294" class="t take center">Reachable over the internet is not the same as checkable by every validator.</text>
+  </svg>
+</Figure>

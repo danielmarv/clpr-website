@@ -1,0 +1,169 @@
+---
+/**
+ * The journey in twelve seconds, without words: a message is sealed on Ledger A, handed over by
+ * A's endpoint (on a Hiero network that is part of the consensus node), submitted to Ledger B by
+ * B's endpoint (on an EVM network a separate program), checked on Ledger B against the trust
+ * anchor, delivered, and answered the same way back. Sits in the hero so the shape of CLPR is the
+ * first thing a reader sees; the 28-step simulation further down is the real thing. Pure CSS
+ * animation (no timers): it pauses on tap, on hover, when scrolled off screen, and shows its final
+ * frame under prefers-reduced-motion. Backing: design §2.2 (message flow), §4.5 (every Hiero
+ * consensus node is an endpoint), the organization profile (the EVM endpoint is a separate program).
+ * The viewBox stays 560 wide: at a 400px screen the hero is 368px wide, so 16px text renders at
+ * 10.5px, the floor check-sims.mjs enforces.
+ */
+interface Props { mode?: 'plain' | 'protocol'; href: string; }
+const { mode = 'plain', href } = Astro.props;
+const L = mode === 'plain'
+  ? { a: 'Ledger A', b: 'Ledger B', ep: 'endpoint', epA: 'in the node', epB: 'a program', app: 'application', ver: 'verifier', card: 'trust anchor',
+      phases: ['Ledger A seals the message', 'its endpoint, part of the node, hands it over', "Ledger B's endpoint program submits it", 'Ledger B checks the seal', 'delivered; the reply comes back the same way'],
+      link: 'Watch all 28 steps' }
+  : { a: 'Ledger A', b: 'Ledger B', ep: 'endpoint', epA: 'in the node', epB: 'a relay', app: 'application', ver: 'verifier', card: 'trust anchor',
+      phases: ['queued, hashed, state-proven', "the node's endpoint serves the bundle", 'the relay dry-runs and submits it', 'verifyBundle against the trust anchor', 'dispatched; the response travels back'],
+      link: 'Step through all 28 steps' };
+---
+<div class="trailer" data-paused="false">
+  <svg viewBox="0 0 560 196" role="img" aria-label="A message sealed on Ledger A is handed over by A's endpoint, which is part of its node, to Ledger B's endpoint, a separate program, which submits it to Ledger B. Ledger B checks the seal against the trust anchor on file and delivers it to the application; a reply travels back the same way.">
+    <!-- Ledger A -->
+    <rect x="12" y="20" width="150" height="160" rx="12" class="d-a"/>
+    <text x="87" y="44" class="t b center tr-l">{L.a}</text>
+    <rect x="26" y="56" width="92" height="32" rx="8" class="d-surface"/>
+    <text x="72" y="77" class="t center tr-l">{L.app}</text>
+    <rect x="26" y="128" width="122" height="40" rx="8" class="d-ok tr-glow tr-glowA"/>
+    <text x="87" y="145" class="t center tr-l">{L.ver}</text>
+    <text x="87" y="161" class="t small center tr-s">{L.card}</text>
+    <!-- Ledger B -->
+    <rect x="398" y="20" width="150" height="160" rx="12" class="d-b"/>
+    <text x="473" y="44" class="t b center tr-l">{L.b}</text>
+    <rect x="442" y="56" width="92" height="32" rx="8" class="d-surface"/>
+    <text x="488" y="77" class="t center tr-l">{L.app}</text>
+    <rect x="412" y="128" width="122" height="40" rx="8" class="d-ok tr-glow tr-glowB"/>
+    <text x="473" y="145" class="t center tr-l">{L.ver}</text>
+    <text x="473" y="161" class="t small center tr-s">{L.card}</text>
+    <!-- Ledger A's endpoint: part of the node, so it straddles the frame edge -->
+    <rect x="130" y="88" width="96" height="40" rx="8" class="d-c"/>
+    <text x="178" y="105" class="t center tr-l">{L.ep}</text>
+    <text x="178" y="121" class="t small center tr-s">{L.epA}</text>
+    <!-- Ledger B's endpoint: a separate program, joined to its ledger -->
+    <line x1="226" y1="108" x2="258" y2="108" class="line c"/>
+    <rect x="258" y="84" width="94" height="48" rx="10" class="d-c"/>
+    <text x="305" y="105" class="t center tr-l">{L.ep}</text>
+    <text x="305" y="122" class="t small center tr-s">{L.epB}</text>
+    <line x1="352" y1="108" x2="398" y2="108" class="line c tr-dash"/>
+    <!-- check marks that pop when a verifier accepts -->
+    <g class="tr-check tr-checkB"><circle cx="520" cy="134" r="9" class="d-ok"/><path d="M515,134 l3.5,3.5 l6.5,-7" fill="none" stroke="var(--ok)" stroke-width="2"/></g>
+    <g class="tr-check tr-checkA"><circle cx="40" cy="134" r="9" class="d-ok"/><path d="M35,134 l3.5,3.5 l6.5,-7" fill="none" stroke="var(--ok)" stroke-width="2"/></g>
+    <!-- the message, with the seal it picks up on Ledger A -->
+    <g class="tr-env">
+      <rect x="-17" y="-11" width="34" height="22" rx="4" fill="var(--surface)" stroke="var(--text)" stroke-width="1.5"/>
+      <path d="M-17,-11 L0,2 L17,-11" fill="none" stroke="var(--text)" stroke-width="1.5"/>
+      <g class="tr-seal"><circle cx="13" cy="-11" r="6" class="d-ok"/><circle cx="13" cy="-11" r="2" fill="var(--ok)"/></g>
+    </g>
+    <!-- the reply -->
+    <g class="tr-reply">
+      <rect x="-17" y="-11" width="34" height="22" rx="4" fill="var(--b-soft)" stroke="var(--b)" stroke-width="1.5"/>
+      <path d="M-17,-11 L0,2 L17,-11" fill="none" stroke="var(--b)" stroke-width="1.5"/>
+      <g class="tr-seal"><circle cx="13" cy="-11" r="6" class="d-ok"/><circle cx="13" cy="-11" r="2" fill="var(--ok)"/></g>
+    </g>
+  </svg>
+  <p class="trailer__phases" aria-hidden="true">
+    {L.phases.map((p, i) => <span class={`tr-phase tr-phase-${i + 1}`}>{p}</span>)}
+  </p>
+  <p class="trailer__foot">
+    <a href={href}>{L.link} →</a>
+    <button class="btn" type="button" data-role="toggle" aria-pressed="false">Pause</button>
+  </p>
+</div>
+
+<style is:global>
+  .trailer { margin: 22px 0 6px; max-width: 560px; }
+  .trailer svg { display: block; width: 100%; height: auto; cursor: pointer; }
+  .trailer .tr-l { font-size: 16px; }
+  .trailer .tr-s { font-size: 16px; }
+  .trailer .tr-dash { stroke-dasharray: 5 4; }
+  .trailer__phases { position: relative; height: 1.6em; margin: 8px 0 0; font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.04em; color: var(--text-2); }
+  .trailer .tr-phase { position: absolute; left: 0; top: 0; opacity: 0; }
+  .trailer__foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 4px 0 0; font-family: var(--mono); font-size: 0.78rem; }
+  .trailer__foot .btn { font-size: 0.66rem; padding: 4px 9px; }
+
+  /* Base state, shown under prefers-reduced-motion and while the stylesheet decides: the last frame. */
+  .trailer .tr-env { transform: translate(488px, 100px); }
+  .trailer .tr-reply { transform: translate(72px, 100px); }
+  .trailer .tr-check { transform-box: fill-box; transform-origin: center; }
+  .trailer .tr-glow { stroke-width: 1.5; }
+  .trailer .tr-phase-5 { opacity: 1; }
+
+  /* The loop: 12 seconds, linear between waypoints. */
+  @keyframes tr-env {
+    0%, 3%   { transform: translate(140px, 72px); opacity: 0; }
+    6%, 18%  { transform: translate(140px, 72px); opacity: 1; }
+    22%, 30% { transform: translate(178px, 82px); }
+    36%, 42% { transform: translate(305px, 78px); }
+    48%, 54% { transform: translate(473px, 118px); opacity: 1; }
+    58%, 60% { transform: translate(488px, 100px); opacity: 1; }
+    62%, 100% { transform: translate(488px, 100px); opacity: 0; }
+  }
+  @keyframes tr-seal { 0%, 11% { opacity: 0; } 14%, 100% { opacity: 1; } }
+  @keyframes tr-reply {
+    0%, 63%  { transform: translate(488px, 100px); opacity: 0; }
+    66%, 68% { transform: translate(488px, 100px); opacity: 1; }
+    72%, 78% { transform: translate(305px, 78px); }
+    82%, 86% { transform: translate(178px, 82px); }
+    89%, 93% { transform: translate(87px, 118px); opacity: 1; }
+    97%, 98% { transform: translate(72px, 100px); opacity: 1; }
+    100%     { transform: translate(72px, 100px); opacity: 0; }
+  }
+  @keyframes tr-checkB { 0%, 48% { opacity: 0; transform: scale(0.5); } 52%, 100% { opacity: 1; transform: scale(1); } }
+  @keyframes tr-checkA { 0%, 90% { opacity: 0; transform: scale(0.5); } 94%, 100% { opacity: 1; transform: scale(1); } }
+  @keyframes tr-glowB { 0%, 46% { stroke-width: 1.5; } 49%, 55% { stroke-width: 4; } 58%, 100% { stroke-width: 1.5; } }
+  @keyframes tr-glowA { 0%, 88% { stroke-width: 1.5; } 90%, 95% { stroke-width: 4; } 98%, 100% { stroke-width: 1.5; } }
+  @keyframes tr-p1 { 0%, 2% { opacity: 0; } 5%, 19% { opacity: 1; } 21%, 100% { opacity: 0; } }
+  @keyframes tr-p2 { 0%, 21% { opacity: 0; } 23%, 33% { opacity: 1; } 35%, 100% { opacity: 0; } }
+  @keyframes tr-p3 { 0%, 35% { opacity: 0; } 37%, 45% { opacity: 1; } 46%, 100% { opacity: 0; } }
+  @keyframes tr-p4 { 0%, 46% { opacity: 0; } 47%, 56% { opacity: 1; } 57%, 100% { opacity: 0; } }
+  @keyframes tr-p5 { 0%, 57% { opacity: 0; } 59%, 97% { opacity: 1; } 99%, 100% { opacity: 0; } }
+
+  .trailer .tr-env { animation: tr-env 12s linear infinite; }
+  .trailer .tr-env .tr-seal { animation: tr-seal 12s linear infinite; }
+  .trailer .tr-reply { animation: tr-reply 12s linear infinite; }
+  .trailer .tr-checkB { animation: tr-checkB 12s linear infinite; }
+  .trailer .tr-checkA { animation: tr-checkA 12s linear infinite; }
+  .trailer .tr-glowB { animation: tr-glowB 12s linear infinite; }
+  .trailer .tr-glowA { animation: tr-glowA 12s linear infinite; }
+  .trailer .tr-phase-1 { animation: tr-p1 12s linear infinite; }
+  .trailer .tr-phase-2 { animation: tr-p2 12s linear infinite; }
+  .trailer .tr-phase-3 { animation: tr-p3 12s linear infinite; }
+  .trailer .tr-phase-4 { animation: tr-p4 12s linear infinite; }
+  .trailer .tr-phase-5 { animation: tr-p5 12s linear infinite; }
+
+  .trailer[data-paused="true"] .tr-env, .trailer[data-paused="true"] .tr-seal, .trailer[data-paused="true"] .tr-reply,
+  .trailer[data-paused="true"] .tr-check, .trailer[data-paused="true"] .tr-glow, .trailer[data-paused="true"] .tr-phase { animation-play-state: paused; }
+  @media (hover: hover) {
+    .trailer:hover .tr-env, .trailer:hover .tr-seal, .trailer:hover .tr-reply, .trailer:hover .tr-check, .trailer:hover .tr-glow, .trailer:hover .tr-phase { animation-play-state: paused; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .trailer .tr-env, .trailer .tr-seal, .trailer .tr-reply, .trailer .tr-check, .trailer .tr-glow, .trailer .tr-phase { animation: none !important; }
+    .trailer .tr-env, .trailer .tr-reply { opacity: 1; }
+    .trailer .tr-check { opacity: 1; transform: none; }
+    .trailer__foot .btn { display: none; }
+  }
+</style>
+
+<script>
+  for (const root of Array.from(document.querySelectorAll<HTMLElement>('.trailer'))) {
+    const btn = root.querySelector<HTMLButtonElement>('[data-role="toggle"]')!;
+    const svg = root.querySelector<SVGSVGElement>('svg')!;
+    let byUser = false;
+    const set = (paused: boolean) => {
+      root.dataset.paused = String(paused);
+      btn.textContent = paused ? 'Play' : 'Pause';
+      btn.setAttribute('aria-pressed', String(paused));
+    };
+    const toggle = () => { byUser = root.dataset.paused !== 'true'; set(byUser); };
+    btn.addEventListener('click', toggle);
+    svg.addEventListener('click', toggle);
+    // Off screen, the loop stops; it resumes when the hero is back in view unless the reader paused it.
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(([e]) => { if (!byUser) set(!e.isIntersecting); }, { threshold: 0.2 }).observe(root);
+    }
+  }
+</script>

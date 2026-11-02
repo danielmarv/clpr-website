@@ -1,0 +1,14 @@
+---
+/** The lab's repositories from src/data/sources.json: name, what it holds (the source's role), pinned to the commit the site was written against. */
+import { SOURCES } from '../lib/sources';
+---
+<div class="table-wrap">
+<table>
+<thead><tr><th>Repository</th><th class="wrap">What it holds</th></tr></thead>
+<tbody>
+  {SOURCES.sources.map((s) => (
+    <tr><td><a href={`${s.repo}/tree/${s.commit}`}>{s.repo.replace('https://github.com/', '')}</a></td><td class="wrap">{s.role}</td></tr>
+  ))}
+</tbody>
+</table>
+</div>

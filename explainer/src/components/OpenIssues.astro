@@ -1,0 +1,18 @@
+---
+/** What is not settled yet, from src/data/open.json: the design document's flagged passages and the gaps it states in prose, plus the separate list of options under consideration. */
+import data from '../data/open.json';
+import Refs from '@kse/components/Refs.astro';
+import { refHref, type Ref } from '../lib/sources';
+const refs = [...data.open.flatMap((o) => o.refs), data.optionsDoc] as Ref[];
+---
+<ul class="open-list">
+  {data.open.map((o) => (
+    <li><strong>{o.title}.</strong> {o.plain}</li>
+  ))}
+</ul>
+<p>Beyond these, the authors keep a separate <a href={refHref(data.optionsDoc as Ref)}>list of possible changes</a> they have considered and not decided.</p>
+<Refs refs={refs} />
+<style>
+  .open-list { padding-left: 20px; }
+  .open-list li { margin: 8px 0; }
+</style>

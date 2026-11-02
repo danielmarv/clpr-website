@@ -1,0 +1,76 @@
+---
+/** A buggy verifier is caught by the running hash check; a lying verifier that fabricates matching running hashes is not: design §2.3 (trust model) and spec §8.2 (no verifier allow-list). */
+import Figure from '@kse/components/Figure.astro';
+import { design, spec } from '../../../lib/sources';
+---
+<Figure
+  lead="Buggy versus lying."
+  caption="A verifier that makes mistakes is caught: its garbled messages do not match the running hashes and the bundle is rejected. A verifier that lies produces running hashes that match its own lies, and nothing in the protocol can tell. Anyone can create a channel with any verifier, so vetting verifiers is human work."
+  source={[{ label: 'design §2.3', href: design('23-trust-model') }, { label: 'spec §8.2', href: spec('82-trust-model') }]}
+  kind="spec"
+  minWidth={760}
+>
+  <svg viewBox="0 0 760 300" role="img" aria-label="Two rows. Top: a buggy verifier returns garbled messages, the running hash check finds expected not equal to computed, the bundle is rejected, and the protocol is who catches it. Bottom: a lying verifier fabricates messages with matching running hashes, the check passes, the bundle is accepted, and only a human vetting the verifier can catch it.">
+    <defs>
+      <marker id="bl-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--text-3)"/></marker>
+      <marker id="bl-arrow-ok" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--ok)"/></marker>
+      <marker id="bl-arrow-bad" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--bad)"/></marker>
+    </defs>
+
+    <text x="117" y="30" class="t small center muted">the verifier</text>
+    <text x="338" y="30" class="t small center muted">running hash check</text>
+    <text x="514" y="30" class="t small center muted">outcome</text>
+    <text x="679" y="30" class="t small center muted">who catches it</text>
+
+    <!-- row 1: a buggy verifier -->
+    <rect x="12" y="50" width="210" height="76" rx="8" class="d-grey"/>
+    <text x="117" y="80" class="t b center">Buggy verifier</text>
+    <text x="117" y="100" class="t small center">returns garbled messages</text>
+
+    <rect x="258" y="50" width="160" height="76" rx="8" class="d-bad"/>
+    <text x="338" y="76" class="t b center">Running hash check</text>
+    <text x="338" y="96" class="t mono center">expected ≠ computed</text>
+    <text x="338" y="114" class="t small center muted">does not match</text>
+
+    <rect x="454" y="50" width="120" height="76" rx="8" class="d-ok"/>
+    <text x="514" y="80" class="t b center">Rejected</text>
+    <text x="514" y="100" class="t small center">bundle refused</text>
+
+    <rect x="610" y="50" width="138" height="76" rx="8" class="d-surface"/>
+    <text x="679" y="84" class="t b center">The protocol</text>
+    <text x="679" y="104" class="t small center">its own checks</text>
+
+    <line x1="222" y1="88" x2="258" y2="88" class="line" marker-end="url(#bl-arrow)"/>
+    <line x1="418" y1="88" x2="454" y2="88" class="line bad" marker-end="url(#bl-arrow-bad)"/>
+    <line x1="574" y1="88" x2="610" y2="88" class="line ok" marker-end="url(#bl-arrow-ok)"/>
+
+    <line x1="12" y1="148" x2="748" y2="148" class="line dash"/>
+
+    <!-- row 2: a lying verifier -->
+    <rect x="12" y="170" width="210" height="76" rx="8" class="d-bad"/>
+    <text x="117" y="194" class="t b center">Lying verifier</text>
+    <text x="117" y="214" class="t small center">fabricates messages and</text>
+    <text x="117" y="228" class="t small center">matching running hashes</text>
+
+    <rect x="258" y="170" width="160" height="76" rx="8" class="d-ok"/>
+    <text x="338" y="194" class="t b center">Running hash check</text>
+    <text x="338" y="214" class="t mono center">expected = computed</text>
+    <text x="338" y="232" class="t small center muted">passes, on a lie</text>
+
+    <rect x="454" y="170" width="120" height="76" rx="8" class="d-bad"/>
+    <text x="514" y="194" class="t b center">Accepted</text>
+    <text x="514" y="214" class="t small center">the protocol</text>
+    <text x="514" y="228" class="t small center">cannot tell</text>
+
+    <rect x="610" y="170" width="138" height="76" rx="8" class="d-surface"/>
+    <text x="679" y="194" class="t b center">A human</text>
+    <text x="679" y="214" class="t small center">vetting the verifier</text>
+    <text x="679" y="228" class="t small center">before trusting it</text>
+
+    <line x1="222" y1="208" x2="258" y2="208" class="line bad" marker-end="url(#bl-arrow-bad)"/>
+    <line x1="418" y1="208" x2="454" y2="208" class="line bad" marker-end="url(#bl-arrow-bad)"/>
+    <line x1="574" y1="208" x2="610" y2="208" class="line bad dash" marker-end="url(#bl-arrow-bad)"/>
+
+    <text x="380" y="284" class="t take center">The running hash chain catches mistakes; only people catch liars. A channel is only as good as its verifier.</text>
+  </svg>
+</Figure>

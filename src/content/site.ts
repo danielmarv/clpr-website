@@ -21,6 +21,7 @@ export const nav = [
   { label: "Why bridgeless", href: "#protocol" },
   { label: "Architecture", href: "#architecture" },
   { label: "Code", href: "#code" },
+  { label: "Explainer", href: "/plumbing/" },
 ] as const;
 
 export const headerCta = { label: "Get involved", href: "#get-involved" } as const;
@@ -131,6 +132,7 @@ export const walkthrough = {
   eyebrow: "How it works",
   title: "Follow one message across a Channel.",
   lead: "Seven steps from one ledger to the other and back. Let it play, or step through at your own pace.",
+  explainer: { lead: "Want the whole story, step by step?", label: "Read the full explainer: the plumbing of CLPR", href: "/plumbing/" },
 } as const;
 
 export const demo = {
@@ -599,6 +601,7 @@ export const footer = {
         { label: "Architecture", href: "/#architecture" },
         { label: "Code", href: "/#code" },
         { label: "Terminology", href: "/#terminology" },
+        { label: "The plumbing of CLPR", href: "/plumbing/" },
       ],
     },
     {

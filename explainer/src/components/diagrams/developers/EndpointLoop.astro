@@ -1,0 +1,85 @@
+---
+/** An endpoint's loop with the dry run drawn in: watch the home outbound queue, fetch or build the proof, sync with a peer over mutual TLS, each sync one stream for one channel, dry-run what arrives against the ledger's own check, submit only what would pass. From design §3.1.4 and spec §1.5. Replaces the inline endpoint's-day SVG in the general page's section 11. */
+import Figure from '@kse/components/Figure.astro';
+import { design, spec } from '../../../lib/sources';
+---
+<Figure
+  lead="The endpoint's loop."
+  caption="Watch the outbound queue, fetch or build the proof, sync with a peer, dry-run what arrives, submit only what would pass. The dry run is why a forged bundle costs the forger and not the honest endpoint."
+  source={[{ label: 'design §3.1.4', href: design('314-endpoint-communication-protocol') }, { label: 'spec §1.5', href: spec('15-sync-protocol') }]}
+  kind="spec"
+  minWidth={760}
+>
+  <svg viewBox="0 0 760 324" role="img" aria-label="An endpoint reads its home ledger's outbound queue and endpoint manifest, talks to a peer endpoint over mutual TLS, each sync one stream for one channel, where each side says how far it got, and receives the missing messages plus the proof. What arrives goes into a dry run, the ledger's own check run locally. Bundles that pass are submitted to the home ledger as an ordinary transaction; bundles that would be rejected are dropped with nothing paid. The peer endpoint does the same five things with its own ledger on the right.">
+    <defs>
+      <marker id="cl-arrow-a" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9 Z" fill="var(--a)"/></marker>
+      <marker id="cl-arrow-b" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9 Z" fill="var(--b)"/></marker>
+      <marker id="cl-arrow-c" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9 Z" fill="var(--c)"/></marker>
+      <marker id="cl-arrow-ok" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9 Z" fill="var(--ok)"/></marker>
+    </defs>
+
+    <text x="420" y="22" class="t small center muted">mutual TLS; each sync is one stream for one channel; each side says how far it got</text>
+
+    <!-- Home ledger -->
+    <rect x="20" y="64" width="150" height="100" rx="12" class="d-a" />
+    <text x="95" y="90" class="t b center">Home ledger</text>
+    <text x="95" y="110" class="t small center">outbound queue, and the</text>
+    <text x="95" y="126" class="t small center">peer's endpoint manifest</text>
+
+    <!-- Endpoint -->
+    <rect x="220" y="34" width="170" height="130" rx="12" class="d-c" />
+    <text x="305" y="58" class="t b center">Endpoint</text>
+    <text x="305" y="80" class="t small center">1 watch the outbound queue</text>
+    <text x="305" y="96" class="t small center">2 fetch or build the proof</text>
+    <text x="305" y="112" class="t small center">3 sync with a peer</text>
+    <text x="305" y="128" class="t small center">4 dry-run what arrives</text>
+    <text x="305" y="144" class="t small center">5 submit the good ones</text>
+
+    <!-- Peer endpoint -->
+    <rect x="450" y="34" width="150" height="130" rx="12" class="d-c" />
+    <text x="525" y="58" class="t b center">Peer endpoint</text>
+    <text x="525" y="94" class="t small center">the same five things,</text>
+    <text x="525" y="110" class="t small center">from the other side</text>
+
+    <!-- Peer ledger -->
+    <rect x="650" y="64" width="90" height="100" rx="12" class="d-b" />
+    <text x="695" y="108" class="t b center">Peer</text>
+    <text x="695" y="126" class="t small center">ledger</text>
+
+    <!-- Home ledger -> endpoint -->
+    <line x1="170" y1="100" x2="218" y2="100" class="line a" marker-end="url(#cl-arrow-a)" />
+    <text x="194" y="92" class="t small center muted">read</text>
+
+    <!-- Endpoint <-> peer endpoint -->
+    <line x1="390" y1="84" x2="448" y2="84" class="line c" marker-end="url(#cl-arrow-c)" />
+    <line x1="448" y1="120" x2="392" y2="120" class="line c" marker-end="url(#cl-arrow-c)" />
+    <text x="420" y="180" class="t small center muted">the missing messages, plus the proof</text>
+
+    <!-- Peer endpoint -> peer ledger -->
+    <line x1="600" y1="100" x2="648" y2="100" class="line b" marker-end="url(#cl-arrow-b)" />
+    <text x="624" y="92" class="t small center muted">read · submit</text>
+
+    <!-- Dry run -->
+    <line x1="305" y1="164" x2="305" y2="204" class="line c" marker-end="url(#cl-arrow-c)" />
+    <text x="296" y="206" class="t small muted end">what arrived</text>
+    <rect x="220" y="206" width="170" height="70" rx="8" class="d-ok" />
+    <text x="305" y="228" class="t b center">dry run</text>
+    <text x="305" y="246" class="t small center">the ledger's own check,</text>
+    <text x="305" y="262" class="t small center">run locally, before any fee</text>
+
+    <!-- Passed: submit as an ordinary transaction -->
+    <path d="M220,250 L95,250 L95,166" class="line ok" marker-end="url(#cl-arrow-ok)" />
+    <text x="150" y="232" class="t small center ok">submit as an</text>
+    <text x="150" y="246" class="t small center ok">ordinary transaction</text>
+
+    <!-- Would be rejected: dropped -->
+    <line x1="390" y1="250" x2="446" y2="250" class="line bad dash" />
+    <line x1="448" y1="244" x2="460" y2="256" class="line bad" />
+    <line x1="448" y1="256" x2="460" y2="244" class="line bad" />
+    <text x="470" y="246" class="t small bad">would be rejected:</text>
+    <text x="470" y="260" class="t small bad">dropped, nothing paid</text>
+
+    <!-- takeaway -->
+    <text x="380" y="312" class="t take center">No endpoint holds a key a ledger trusts: it can delay, cannot forge, and a forgery costs the forger.</text>
+  </svg>
+</Figure>

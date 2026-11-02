@@ -1,0 +1,104 @@
+---
+/**
+ * Four stories in which the roles work together, from design §4.7, as step-throughs: setting up a
+ * new route, a proof format upgrade, responding to a compromised verifier, and a connector
+ * withdrawing under load. The steps come from src/data/roles.json (scenarios); the roles that act
+ * in a step are lit. General page section 13; the developer page uses it with `detail`.
+ */
+import data from '../../data/roles.json';
+import Refs from '@kse/components/Refs.astro';
+import type { Ref } from '../../lib/sources';
+const { id = 'stories-sim' } = Astro.props as { id?: string };
+const roles = data.roles;
+const scenarios = data.scenarios;
+const refs = [...roles.flatMap((r) => r.refs), ...scenarios.flatMap((s) => s.refs)] as Ref[];
+const cls: Record<string, string> = { 'end-user': 'd-grey', 'application-developer': 'd-a', 'connector-operator': 'd-money', 'verifier-developer': 'd-ok', 'endpoint-operator': 'd-c', 'service-admin': 'd-grey' };
+const pos: Record<string, [number, number]> = { 'end-user': [120, 60], 'application-developer': [380, 60], 'connector-operator': [640, 60], 'verifier-developer': [120, 150], 'endpoint-operator': [380, 150], 'service-admin': [640, 150] };
+// Words that identify a role inside a step sentence, lower-cased.
+const keys: Record<string, string[]> = { 'end-user': ['end user', 'users use'], 'application-developer': ['application developer'], 'connector-operator': ['connector operator', 'the operator'], 'verifier-developer': ['verifier developer'], 'endpoint-operator': ['endpoint operator'], 'service-admin': ['service admin'] };
+const actors = scenarios.map((s) => s.steps.map((st) => roles.filter((r) => keys[r.id].some((k) => st.toLowerCase().includes(k))).map((r) => r.id)));
+---
+<div class="sim stories" id={id} data-actors={JSON.stringify(actors)}>
+  <div class="sim__head"><div><span class="kind">Step-through</span><h3>Four stories: the roles working together</h3></div><span class="pill grey" data-role="clock">step 0</span></div>
+  <div class="sim__body">
+    <div class="choices" role="group" aria-label="Pick a story">
+      <span class="kicker">Story:</span>
+      <div class="seg">{scenarios.map((s, i) => <button class="btn" type="button" data-story={i} aria-pressed={i === 0 ? 'true' : 'false'}>{s.name}</button>)}</div>
+    </div>
+    <div class="sim__scroll">
+      <svg viewBox="0 0 760 200" role="img" aria-label="Six role boxes in two rows; the ones acting in the current step are highlighted.">
+        {roles.map((r) => (
+          <g data-actor={r.id}>
+            <rect x={pos[r.id][0] - 100} y={pos[r.id][1] - 26} width="200" height="52" rx="10" class={cls[r.id]} />
+            <text x={pos[r.id][0]} y={pos[r.id][1] - 4} class="t b center">{r.name}</text>
+            <text x={pos[r.id][0]} y={pos[r.id][1] + 14} class="t small center" data-role="say"></text>
+          </g>
+        ))}
+      </svg>
+    </div>
+    <p class="sim__scroll-note">Wider than a phone; scroll it sideways if you need to.</p>
+    <div class="step-card" data-role="card" style="--card-min: 120px">
+      {scenarios.map((s, i) => (
+        <div data-story-card={i} hidden={i !== 0}>
+          <div data-step="0"><div class="phase">{s.name}</div><h4>Before anything happens</h4><p>Press Next to walk through the {s.steps.length} steps. The roles that act in each step light up above.</p></div>
+          {s.steps.map((st, j) => <div data-step={j + 1} hidden><div class="phase">{s.name} · step {j + 1} of {s.steps.length}</div><p>{st}</p></div>)}
+        </div>
+      ))}
+    </div>
+    <Refs refs={refs} />
+  </div>
+  <div class="sim__controls">
+    <button class="btn" type="button" data-role="prev">◀ Prev</button>
+    <button class="btn primary" type="button" data-role="next">Next ▶</button>
+    <span class="spacer"></span>
+    <button class="btn" type="button" data-role="reset">Reset</button>
+  </div>
+  <div class="sim__log" data-role="log"><span class="line" data-role="line">story 1 · step 0</span>Four stories, six roles. Each step names who acts; nobody acts alone for long.</div>
+</div>
+<style is:global>
+  .sim.stories .choices { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; margin-bottom: 10px; }
+  .sim.stories .kicker { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-3); font-weight: 700; }
+  .sim.stories .seg { display: flex; flex-wrap: wrap; gap: 6px; }
+  .sim.stories g[data-actor] { opacity: 0.35; transition: opacity 250ms; }
+  .sim.stories g[data-actor].on { opacity: 1; }
+  .sim.stories g[data-actor].on rect { stroke-width: 2.5; }
+  .sim.stories .step-card { margin-top: 10px; }
+</style>
+<script>
+  for (const root of Array.from(document.querySelectorAll<HTMLElement>('.sim.stories'))) {
+    const $ = (s: string) => root.querySelector<HTMLElement>(s)!;
+    const actors: string[][][] = JSON.parse(root.dataset.actors!);
+    const cards = Array.from(root.querySelectorAll<HTMLElement>('[data-story-card]'));
+    const prev = $('[data-role="prev"]') as HTMLButtonElement;
+    const next = $('[data-role="next"]') as HTMLButtonElement;
+    const clock = $('[data-role="clock"]');
+    const line = $('[data-role="line"]');
+    let story = 0;
+    let step = 0;
+    function render() {
+      const n = actors[story].length;
+      cards.forEach((c, i) => { c.hidden = i !== story; });
+      for (const s of Array.from(cards[story].querySelectorAll<HTMLElement>('[data-step]'))) s.hidden = Number(s.dataset.step) !== step;
+      const acting = step === 0 ? [] : actors[story][step - 1];
+      for (const g of Array.from(root.querySelectorAll<SVGGElement>('g[data-actor]'))) {
+        const on = step === 0 || acting.includes(g.dataset.actor!);
+        g.classList.toggle('on', on);
+        g.querySelector<SVGTextElement>('[data-role="say"]')!.textContent = step > 0 && acting.includes(g.dataset.actor!) ? 'acts in this step' : '';
+      }
+      clock.textContent = `step ${step} / ${n}`;
+      clock.className = 'pill ' + (step === n ? 'ok' : 'grey');
+      line.textContent = `story ${story + 1} · step ${step} / ${n}`;
+      prev.disabled = step === 0;
+      next.disabled = step === n;
+    }
+    for (const b of Array.from(root.querySelectorAll<HTMLButtonElement>('button[data-story]'))) b.addEventListener('click', () => {
+      story = Number(b.dataset.story); step = 0;
+      for (const o of Array.from(root.querySelectorAll<HTMLButtonElement>('button[data-story]'))) o.setAttribute('aria-pressed', String(o === b));
+      render();
+    });
+    next.addEventListener('click', () => { step = Math.min(actors[story].length, step + 1); render(); });
+    prev.addEventListener('click', () => { step = Math.max(0, step - 1); render(); });
+    $('[data-role="reset"]').addEventListener('click', () => { step = 0; render(); });
+    render();
+  }
+</script>

@@ -17,6 +17,16 @@ export function Walkthrough() {
           <MessageJourney />
         </div>
       </div>
+
+      <p className="mt-8 text-[1.0625rem] leading-[1.7] text-muted-foreground">
+        {walkthrough.explainer.lead}{" "}
+        <a
+          href={walkthrough.explainer.href}
+          className="text-white underline decoration-signal-glow/70 decoration-1 underline-offset-[5px] transition-colors hover:decoration-signal-glow"
+        >
+          {walkthrough.explainer.label}
+        </a>
+      </p>
     </section>
   );
 }

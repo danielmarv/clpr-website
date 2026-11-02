@@ -1,0 +1,80 @@
+---
+/** The endpoint carries Ledger A's sealed proof; Ledger B's verifier checks the seal against the signing identity it already holds for A (the trust anchor), then walks the path. The endpoint's own key appears nowhere in that check. Draws from design §2.3 (dishonest endpoints cannot get fabricated messages accepted) and spec §3.1 (the verifier checks a proof against the channel's trust anchor). Replaces the inline endpoint SVG in the general page's section 4. */
+import Figure from '@kse/components/Figure.astro';
+import { design, spec } from '../../../lib/sources';
+---
+<Figure
+  lead="Check the seal, not the messenger."
+  caption="Ledger B compares the signature on the proof with the signing identity it already holds for Ledger A, then follows the path to the line. Who carried the proof does not enter into it."
+  source={[{ label: 'design §2.3', href: design('23-trust-model') }, { label: 'spec §3.1', href: spec('31-verifier-contract-interface') }]}
+  kind="spec"
+  minWidth={760}
+>
+  <svg viewBox="0 0 760 300" role="img" aria-label="Ledger A's validators sign a summary of their ledger, which contains line 4,231. An endpoint picks up the sealed proof and hands it to Ledger B as an ordinary transaction. Inside Ledger B, a verifier checks the seal against the trust anchor on file for A, then accepts the message. A crossed-out dashed arrow shows the endpoint's own key is not looked at.">
+    <defs>
+      <marker id="ccp-arrow-c" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9 Z" fill="var(--c)"/></marker>
+      <marker id="ccp-arrow-ok" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9 Z" fill="var(--ok)"/></marker>
+      <marker id="ccp-arrow-grey" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9 Z" fill="var(--text-3)"/></marker>
+    </defs>
+
+    <!-- Ledger A -->
+    <rect x="20" y="28" width="210" height="234" rx="12" class="d-a"/>
+    <text x="125" y="54" class="t b center">Ledger A</text>
+    <text x="125" y="74" class="t small center">validators jointly sign</text>
+    <text x="125" y="90" class="t small center">a summary of their ledger</text>
+    <rect x="50" y="110" width="150" height="56" rx="8" class="d-surface"/>
+    <text x="125" y="132" class="t small center b">line 4,231</text>
+    <text x="125" y="152" class="t mono center">"send 5 to Bo on B"</text>
+    <text x="125" y="196" class="t small center muted">the seal is the validators'</text>
+    <text x="125" y="212" class="t small center muted">signature, not the endpoint's</text>
+
+    <!-- Endpoint -->
+    <rect x="292" y="70" width="176" height="110" rx="10" class="d-c"/>
+    <text x="380" y="96" class="t b center">Endpoint</text>
+    <text x="380" y="116" class="t small center">carries the proof; hands it in</text>
+    <text x="380" y="132" class="t small center">as an ordinary transaction.</text>
+    <text x="380" y="152" class="t small center">Holds no key B cares about.</text>
+
+    <!-- Ledger B -->
+    <rect x="530" y="28" width="210" height="234" rx="12" class="d-b"/>
+    <text x="635" y="54" class="t b center">Ledger B</text>
+    <rect x="550" y="66" width="170" height="58" rx="8" class="d-surface"/>
+    <text x="635" y="84" class="t small center b">trust anchor</text>
+    <text x="635" y="100" class="t small center">on file: A's signing identity</text>
+    <rect x="550" y="144" width="170" height="58" rx="8" class="d-ok"/>
+    <text x="635" y="164" class="t b center">verifier</text>
+    <text x="635" y="180" class="t small center">checks the seal against it,</text>
+    <text x="635" y="195" class="t small center">then walks the path</text>
+    <rect x="550" y="216" width="170" height="36" rx="8" class="d-ok"/>
+    <text x="635" y="232" class="t small center b">message accepted</text>
+    <text x="635" y="246" class="t small center">a new line on B</text>
+
+    <!-- Proof tokens -->
+    <rect x="232" y="92" width="58" height="24" rx="6" class="d-ok"/>
+    <circle cx="244" cy="104" r="5" class="d-ok"/>
+    <text x="268" y="108" class="t mono center">proof</text>
+    <rect x="472" y="112" width="58" height="24" rx="6" class="d-ok"/>
+    <circle cx="484" cy="124" r="5" class="d-ok"/>
+    <text x="508" y="128" class="t mono center">proof</text>
+
+    <!-- Arrows -->
+    <!-- A -> endpoint: picked up -->
+    <line x1="230" y1="124" x2="290" y2="124" class="line c" marker-end="url(#ccp-arrow-c)"/>
+    <!-- endpoint -> verifier: handed in -->
+    <path d="M468,144 C500,144 520,172 548,172" class="line c" marker-end="url(#ccp-arrow-c)"/>
+    <!-- card -> verifier: compared against -->
+    <line x1="572" y1="124" x2="572" y2="142" class="line ok" marker-end="url(#ccp-arrow-ok)"/>
+    <text x="582" y="138" class="t small muted">compared against</text>
+    <!-- verifier -> accepted -->
+    <line x1="635" y1="202" x2="635" y2="214" class="line ok" marker-end="url(#ccp-arrow-ok)"/>
+    <!-- endpoint's own key: not looked at (dashed, crossed out) -->
+    <path d="M440,180 C470,196 520,194 548,192" class="line dash" marker-end="url(#ccp-arrow-grey)"/>
+    <line x1="487" y1="186" x2="499" y2="198" class="line bad"/>
+    <line x1="487" y1="198" x2="499" y2="186" class="line bad"/>
+    <text x="440" y="222" class="t small center bad">endpoint's own key:</text>
+    <text x="440" y="236" class="t small center bad">not looked at</text>
+
+    <!-- takeaway -->
+    <text x="380" y="286" class="t take center">The endpoint's own key is never part of the check. Only A's validators' signature is.</text>
+  </svg>
+</Figure>
