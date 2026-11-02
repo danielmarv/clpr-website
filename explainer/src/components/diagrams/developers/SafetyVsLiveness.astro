@@ -1,0 +1,67 @@
+---
+/** Who owns safety and who owns liveness, and what a dishonest endpoint, connector or verifier can still do; design §2.3, spec §8.2. */
+import Figure from '@kse/components/Figure.astro';
+import { design, spec } from '../../../lib/sources';
+---
+<Figure
+  lead="Two different failures."
+  caption="Safety (nothing false is ever accepted) rests on the two ledgers, their CLPR Services and the channel's verifier, the piece a channel adds and an application chooses. Liveness (things keep moving) rests on at least one honest endpoint per side. An endpoint can only stall; it cannot forge."
+  source={[{ label: 'design §2.3', href: design('23-trust-model') }, { label: 'spec §8.2', href: spec('82-trust-model') }]}
+  kind="spec"
+  minWidth={720}
+>
+  <svg viewBox="0 0 720 336" role="img" aria-label="Two frames. Safety rests on Ledger A's consensus and CLPR Service, Ledger B's consensus and CLPR Service, and the channel's verifier; even with dishonest endpoints no fabricated message can be accepted, and a dishonest connector cannot forge either. Liveness rests on endpoints: at least one honest endpoint per side must relay bundles; a dishonest endpoint can withhold bundles and a dishonest connector can refuse to pay. Below, a warning: a buggy or compromised verifier could accept fabricated proofs, so evaluate the verifier contract behind a channel before using it.">
+    <defs>
+      <marker id="svl-arrow-bad" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--bad)" /></marker>
+    </defs>
+
+    <!-- safety frame -->
+    <rect x="16" y="16" width="430" height="176" rx="12" class="d-surface" />
+    <text x="28" y="38" class="t b ok">Safety</text>
+    <text x="84" y="38" class="t small">nothing false is ever accepted</text>
+
+    <rect x="28" y="52" width="130" height="62" rx="8" class="d-a" />
+    <text x="93" y="74" class="t b center">Ledger A</text>
+    <text x="93" y="90" class="t small center">consensus and</text>
+    <text x="93" y="104" class="t small center">CLPR Service A</text>
+
+    <rect x="166" y="52" width="130" height="62" rx="8" class="d-b" />
+    <text x="231" y="74" class="t b center">Ledger B</text>
+    <text x="231" y="90" class="t small center">consensus and</text>
+    <text x="231" y="104" class="t small center">CLPR Service B</text>
+
+    <rect x="304" y="52" width="130" height="62" rx="8" class="d-ok" />
+    <text x="369" y="74" class="t b center">Verifier</text>
+    <text x="369" y="90" class="t small center">chosen per channel;</text>
+    <text x="369" y="104" class="t small center">vet before use</text>
+
+    <text x="28" y="134" class="t small">Even with dishonest endpoints, no fabricated</text>
+    <text x="28" y="148" class="t small">messages can be accepted; a dishonest connector</text>
+    <text x="28" y="162" class="t small">cannot forge or tamper either.</text>
+
+    <!-- liveness frame -->
+    <rect x="462" y="16" width="242" height="176" rx="12" class="d-surface" />
+    <text x="474" y="38" class="t b c">Liveness</text>
+    <text x="538" y="38" class="t small">things keep moving</text>
+
+    <rect x="474" y="52" width="218" height="62" rx="8" class="d-c" />
+    <text x="583" y="74" class="t b center">Endpoints</text>
+    <text x="583" y="90" class="t small center">at least one honest per side</text>
+    <text x="583" y="104" class="t small center">must relay bundles</text>
+
+    <text x="474" y="134" class="t small">A dishonest endpoint can withhold</text>
+    <text x="474" y="148" class="t small">bundles; a dishonest connector</text>
+    <text x="474" y="162" class="t small">can refuse to pay. Neither forges.</text>
+
+    <!-- the verifier's failure mode -->
+    <line x1="369" y1="114" x2="369" y2="210" class="line bad" marker-end="url(#svl-arrow-bad)" />
+
+    <rect x="16" y="212" width="688" height="64" rx="8" class="d-bad" />
+    <text x="28" y="234" class="t b">Buggy or compromised verifier</text>
+    <text x="28" y="252" class="t small">"could accept fabricated proofs": the safety piece a channel adds and an application chooses.</text>
+    <text x="28" y="266" class="t small">There is no verifier allow-list; evaluate the verifier contract behind a channel before using it.</text>
+
+    <text x="360" y="304" class="t take center">Safety lives on the ledgers and the verifier the channel chose.</text>
+    <text x="360" y="320" class="t take center">Liveness depends on one honest endpoint per side.</text>
+  </svg>
+</Figure>

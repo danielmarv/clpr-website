@@ -1,0 +1,93 @@
+---
+/** Commit-reveal channel registration across two ledgers: a hash of the name and key is committed on both, then revealed on both and the channel becomes ACTIVE (spec §5.1.1-§5.1.3; design §3.1.3). */
+import Figure from '@kse/components/Figure.astro';
+import { design, spec } from '../../../lib/sources';
+---
+<Figure
+  lead="Claim on both, then open on both."
+  caption="The commit is a hash that reveals neither the name nor the key. Only after both ledgers hold a commit do you reveal, prove you hold the key, and name the verifier."
+  source={[
+    { label: 'spec §5.1.1', href: spec('511-anti-squatting-rationale') },
+    { label: 'spec §5.1.2', href: spec('512-phase-1--claim-registerchannel') },
+    { label: 'spec §5.1.3', href: spec('513-phase-2--reveal-completechannel') },
+    { label: 'design §3.1.3', href: design('313-establishing-and-updating-channels') },
+  ]}
+  kind="spec"
+  minWidth={720}
+>
+  <svg viewBox="0 0 720 396" role="img" aria-label="Two phases across two ledgers. Phase 1: you post the same hash of the channel name and key on Ledger A and on Ledger B; a watcher of Ledger A sees only the hash and cannot claim a name it never saw on Ledger B. Phase 2: you reveal on both ledgers with the name, key and signature, naming the verifier and handing over proofs about the other side. Both reveals lead to a channel that is ACTIVE on both ledgers with its verifier fixed for life.">
+    <defs>
+      <marker id="cre-arrow-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--a)" /></marker>
+      <marker id="cre-arrow-b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--b)" /></marker>
+      <marker id="cre-arrow-ok" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--ok)" /></marker>
+      <marker id="cre-arrow-bad" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--bad)" /></marker>
+    </defs>
+
+    <!-- You -->
+    <rect x="290" y="14" width="140" height="48" rx="8" class="d-surface" />
+    <text x="360" y="34" class="t b center">You</text>
+    <text x="360" y="51" class="t small center">hold a channel name and a key</text>
+
+    <!-- Phase labels -->
+    <circle cx="26" cy="118" r="9" class="d-grey" /><text x="26" y="122" class="t small center b">1</text>
+    <text x="42" y="122" class="t small muted">claim</text>
+    <circle cx="26" cy="257" r="9" class="d-grey" /><text x="26" y="261" class="t small center b">2</text>
+    <text x="42" y="261" class="t small muted">reveal</text>
+
+    <!-- Phase 1 claims -->
+    <rect x="80" y="92" width="200" height="60" rx="8" class="d-a" />
+    <text x="180" y="114" class="t b center">Ledger A: claim</text>
+    <text x="180" y="131" class="t small center mono">hash(name + key)</text>
+    <text x="180" y="146" class="t small center">nothing readable</text>
+
+    <rect x="440" y="92" width="200" height="60" rx="8" class="d-b" />
+    <text x="540" y="114" class="t b center">Ledger B: claim</text>
+    <text x="540" y="131" class="t small center mono">the same hash</text>
+    <text x="540" y="146" class="t small center">nothing readable</text>
+
+    <!-- You -> claims -->
+    <path d="M330,62 L180,89" class="line a" marker-end="url(#cre-arrow-a)" />
+    <text x="240" y="68" class="t small center">post the hash</text>
+    <path d="M390,62 L540,89" class="line b" marker-end="url(#cre-arrow-b)" />
+    <text x="482" y="68" class="t small center">post the hash</text>
+
+    <!-- Watcher -->
+    <rect x="290" y="170" width="140" height="48" rx="8" class="d-bad" />
+    <text x="360" y="190" class="t b center">Watcher of Ledger A</text>
+    <text x="360" y="207" class="t small center">sees only the hash</text>
+    <path d="M430,182 L500,152" class="line bad dash" marker-end="url(#cre-arrow-bad)" />
+    <line x1="458" y1="160" x2="472" y2="174" class="line bad" />
+    <line x1="472" y1="160" x2="458" y2="174" class="line bad" />
+    <text x="446" y="196" class="t small bad">cannot claim a name</text>
+    <text x="446" y="210" class="t small bad">it never saw</text>
+
+    <!-- Phase 2 reveals -->
+    <rect x="80" y="222" width="200" height="78" rx="8" class="d-a" />
+    <text x="180" y="244" class="t b center">Ledger A: reveal</text>
+    <text x="180" y="261" class="t small center">name + key + signature</text>
+    <text x="180" y="276" class="t small center">names the verifier</text>
+    <text x="180" y="291" class="t small center">proofs about B</text>
+
+    <rect x="440" y="222" width="200" height="78" rx="8" class="d-b" />
+    <text x="540" y="244" class="t b center">Ledger B: reveal</text>
+    <text x="540" y="261" class="t small center">name + key + signature</text>
+    <text x="540" y="276" class="t small center">names the verifier</text>
+    <text x="540" y="291" class="t small center">proofs about A</text>
+
+    <!-- claim -> reveal -->
+    <line x1="120" y1="152" x2="120" y2="219" class="line a" marker-end="url(#cre-arrow-a)" />
+    <text x="128" y="182" class="t small">reveal the name and key,</text>
+    <text x="128" y="196" class="t small">prove you hold the key</text>
+    <line x1="600" y1="152" x2="600" y2="219" class="line b" marker-end="url(#cre-arrow-b)" />
+
+    <!-- ACTIVE -->
+    <rect x="260" y="318" width="200" height="48" rx="8" class="d-ok" />
+    <text x="360" y="338" class="t b center">Channel ACTIVE</text>
+    <text x="360" y="355" class="t small center">same name on both · verifier fixed for life</text>
+    <path d="M250,300 L300,316" class="line ok" marker-end="url(#cre-arrow-ok)" />
+    <path d="M470,300 L420,316" class="line ok" marker-end="url(#cre-arrow-ok)" />
+
+    <!-- takeaway -->
+    <text x="360" y="386" class="t take center">Both claims go in before either is opened, so nobody can race you on the second ledger.</text>
+  </svg>
+</Figure>

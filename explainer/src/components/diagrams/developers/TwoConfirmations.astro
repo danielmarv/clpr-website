@@ -1,0 +1,92 @@
+---
+/** Two confirmations for one Data Message: the acknowledgement rides in every sync, the response is a message of its own; design §3.2.8, spec §4.4. */
+import Figure from '@kse/components/Figure.astro';
+import { design, spec } from '../../../lib/sources';
+---
+<Figure
+  lead="Delivered is not answered."
+  caption="The acknowledgement rides in every sync payload and says the peer has the message; the response is a message of its own, generated after the destination application ran. The source keeps a Data Message past acknowledgement and deletes it only when its response arrives and matches."
+  source={[{ label: 'design §3.2.8', href: design('328-response-ordering-and-correlation') }, { label: 'spec §4.4', href: spec('44-message-lifecycle') }]}
+  kind="spec"
+  minWidth={740}
+>
+  <svg viewBox="0 0 740 330" role="img" aria-label="An application on ledger A sends Data Message Ma1 into CLPR Service A's outbound queue. Endpoints carry it in a bundle to CLPR Service B, which delivers it to the application on B and gets reply Rb1. The acknowledgement, received_message_id equal to one, comes back in every sync; the response Rb1 comes back in a bundle of its own. Only when Rb1 is delivered and matches is Ma1 deleted on A.">
+    <defs>
+      <marker id="twoc-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--text-3)" /></marker>
+      <marker id="twoc-arrow-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--a)" /></marker>
+      <marker id="twoc-arrow-b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--b)" /></marker>
+    </defs>
+
+    <!-- applications -->
+    <rect x="16" y="30" width="190" height="56" rx="8" class="d-a" />
+    <text x="111" y="52" class="t b center">Application on A</text>
+    <text x="111" y="70" class="t mono center">sendMessage → Ma1</text>
+
+    <rect x="534" y="30" width="190" height="56" rx="8" class="d-b" />
+    <text x="629" y="52" class="t b center">Application on B</text>
+    <text x="629" y="70" class="t mono center">Ma1 processed → reply Rb1</text>
+
+    <!-- services -->
+    <rect x="16" y="150" width="190" height="130" rx="8" class="d-a" />
+    <text x="111" y="172" class="t b center">CLPR Service A</text>
+    <text x="111" y="188" class="t small center">outbound queue</text>
+    <text x="111" y="208" class="t mono center">Ma1 kept until Rb1</text>
+    <text x="111" y="222" class="t mono center">matches, then deleted</text>
+    <text x="111" y="248" class="t mono center">acked_message_id = 1</text>
+
+    <rect x="534" y="150" width="190" height="130" rx="8" class="d-b" />
+    <text x="629" y="172" class="t b center">CLPR Service B</text>
+    <text x="629" y="188" class="t small center">processes inbound</text>
+    <text x="629" y="202" class="t small center">one at a time</text>
+    <text x="629" y="226" class="t mono center">received_message_id = 1</text>
+    <text x="629" y="248" class="t mono center">Rb1 in outbound queue</text>
+
+    <!-- endpoints band -->
+    <rect x="330" y="150" width="80" height="130" rx="8" class="d-c" />
+    <text x="370" y="172" class="t b center">Endpoints</text>
+    <text x="370" y="188" class="t small center">bundles</text>
+    <text x="370" y="202" class="t small center">both ways</text>
+
+    <!-- A side: 1 send, 6 response delivered -->
+    <line x1="66" y1="86" x2="66" y2="148" class="line a" marker-end="url(#twoc-arrow-a)" />
+    <circle cx="44" cy="118" r="9" class="d-grey" /><text x="44" y="122" class="t small center b">1</text>
+    <text x="74" y="122" class="t mono">Ma1</text>
+
+    <line x1="156" y1="150" x2="156" y2="88" class="line b" marker-end="url(#twoc-arrow-b)" />
+    <circle cx="134" cy="118" r="9" class="d-grey" /><text x="134" y="122" class="t small center b">6</text>
+    <text x="164" y="116" class="t mono">Rb1</text>
+    <text x="164" y="132" class="t small">Ma1 deleted</text>
+
+    <!-- B side: 3 deliver, reply -->
+    <line x1="574" y1="150" x2="574" y2="88" class="line a" marker-end="url(#twoc-arrow-a)" />
+    <circle cx="552" cy="118" r="9" class="d-grey" /><text x="552" y="122" class="t small center b">3</text>
+    <text x="582" y="122" class="t mono">Ma1</text>
+
+    <line x1="664" y1="86" x2="664" y2="148" class="line b" marker-end="url(#twoc-arrow-b)" />
+    <text x="672" y="108" class="t small">reply</text>
+    <text x="672" y="124" class="t mono">Rb1</text>
+
+    <!-- lane 2: Ma1 travels A to B -->
+    <circle cx="217" cy="216" r="9" class="d-grey" /><text x="217" y="220" class="t small center b">2</text>
+    <line x1="228" y1="216" x2="328" y2="216" class="line a" />
+    <line x1="410" y1="216" x2="532" y2="216" class="line a" marker-end="url(#twoc-arrow-a)" />
+    <text x="278" y="208" class="t mono center">bundle: Ma1</text>
+    <text x="471" y="208" class="t small center">Data Message</text>
+
+    <!-- lane 4: acknowledgement B to A -->
+    <circle cx="523" cy="240" r="9" class="d-grey" /><text x="523" y="244" class="t small center b">4</text>
+    <line x1="512" y1="240" x2="410" y2="240" class="line dash" />
+    <line x1="328" y1="240" x2="208" y2="240" class="line dash" marker-end="url(#twoc-arrow)" />
+    <text x="268" y="232" class="t small center">acknowledgement</text>
+    <text x="461" y="232" class="t small center">in every sync</text>
+
+    <!-- lane 5: response B to A -->
+    <circle cx="523" cy="264" r="9" class="d-grey" /><text x="523" y="268" class="t small center b">5</text>
+    <line x1="512" y1="264" x2="410" y2="264" class="line b" />
+    <line x1="328" y1="264" x2="208" y2="264" class="line b" marker-end="url(#twoc-arrow-b)" />
+    <text x="268" y="256" class="t mono center">bundle: Rb1</text>
+    <text x="461" y="256" class="t small center">Response Message</text>
+
+    <text x="370" y="312" class="t take center">The ack frees Response and Control Messages; only the matched response frees a Data Message.</text>
+  </svg>
+</Figure>

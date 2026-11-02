@@ -1,0 +1,67 @@
+---
+/** The four kinds of thing the lab publishes (design §3, organization profile): one specification, a CLPR Service built twice, verifiers that plug into a service, and an endpoint that runs off the ledger. */
+import Figure from '@kse/components/Figure.astro';
+import { design, pinned } from '../../../lib/sources';
+---
+<Figure
+  lead="The four kinds of thing."
+  caption="The specification is text. The CLPR Service is built twice, once inside Hiero nodes and once as EVM contracts. Verifiers plug into a service. The endpoint is the one piece that is not on a ledger. Tap the map below for where each lives in code."
+  source={[{ label: 'design §3', href: design('3-architecture') }, { label: 'organization profile', href: pinned('org-profile', 'profile/README.md') }]}
+  kind="plain"
+  minWidth={720}
+>
+  <svg viewBox="0 0 720 304" role="img" aria-label="The specification sits across the top with three arrows down labelled must follow. Below, a dashed region labelled on a ledger holds the verifiers and the CLPR Service, which is split into a Hiero half and an EVM half; a second dashed region labelled off-ledger holds the endpoint. The verifiers plug into the service; the endpoint submits ordinary transactions to it.">
+    <defs>
+      <marker id="fk-arrow-ok" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--ok)"/></marker>
+      <marker id="fk-arrow-c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--c)"/></marker>
+    </defs>
+
+    <!-- the specification -->
+    <rect x="60" y="22" width="600" height="42" rx="8" class="d-ok"/>
+    <text x="360" y="41" class="t b center">The specification</text>
+    <text x="360" y="56" class="t small center">text: it says what must happen</text>
+
+    <line x1="76" y1="64" x2="76" y2="150" class="line ok" marker-end="url(#fk-arrow-ok)"/>
+    <line x1="310" y1="64" x2="310" y2="150" class="line ok" marker-end="url(#fk-arrow-ok)"/>
+    <line x1="626" y1="64" x2="626" y2="150" class="line ok" marker-end="url(#fk-arrow-ok)"/>
+    <text x="84" y="92" class="t small muted">must follow</text>
+    <text x="318" y="92" class="t small muted">must follow</text>
+    <text x="634" y="92" class="t small muted">must follow</text>
+
+    <!-- on a ledger -->
+    <rect x="12" y="112" width="428" height="152" rx="10" class="d-surface" stroke-dasharray="5 4"/>
+    <text x="24" y="250" class="t small muted">On a ledger</text>
+
+    <rect x="26" y="150" width="100" height="72" rx="8" class="d-ok"/>
+    <text x="76" y="178" class="t b center">Verifiers</text>
+    <text x="76" y="196" class="t small center">a pair per kind</text>
+    <text x="76" y="210" class="t small center">of ledger</text>
+
+    <rect x="198" y="150" width="224" height="72" rx="10" class="d-surface"/>
+    <text x="310" y="170" class="t b center">CLPR Service</text>
+    <text x="310" y="184" class="t small center">the CLPR Service, built twice</text>
+    <rect x="208" y="192" width="100" height="22" rx="6" class="d-a"/>
+    <text x="258" y="207" class="t mono center">Hiero nodes</text>
+    <rect x="312" y="192" width="100" height="22" rx="6" class="d-b"/>
+    <text x="362" y="207" class="t mono center">EVM contracts</text>
+
+    <line x1="126" y1="186" x2="198" y2="186" class="line ok" marker-end="url(#fk-arrow-ok)"/>
+    <text x="162" y="176" class="t small center muted">plugs into</text>
+
+    <!-- off-ledger -->
+    <rect x="544" y="112" width="164" height="152" rx="10" class="d-surface" stroke-dasharray="5 4"/>
+    <text x="556" y="236" class="t small muted">Off-ledger: a server</text>
+    <text x="556" y="250" class="t small muted">someone operates</text>
+
+    <rect x="556" y="150" width="140" height="72" rx="8" class="d-c"/>
+    <text x="626" y="178" class="t b center">Endpoint</text>
+    <text x="626" y="196" class="t small center">the endpoint program</text>
+    <text x="626" y="210" class="t small center">runs off a ledger</text>
+
+    <line x1="556" y1="186" x2="422" y2="186" class="line c" marker-end="url(#fk-arrow-c)"/>
+    <text x="489" y="176" class="t small center muted">submits ordinary</text>
+    <text x="489" y="200" class="t small center muted">transactions</text>
+
+    <text x="360" y="292" class="t take center">One text; one CLPR Service built twice; verifiers that plug in; an endpoint that runs off the ledger.</text>
+  </svg>
+</Figure>

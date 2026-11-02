@@ -1,0 +1,149 @@
+---
+/**
+ * The N-ledger atomic swap pattern (design §3.4.3): several ledgers make state changes tied
+ * together by two-phase commit; all enter a ready-or-roll-back state, and if any one fails, all
+ * roll back. The three sentences upstream are the whole specification of the pattern; the
+ * mechanics drawn here (an application on A coordinating, prepare and commit as ordinary messages,
+ * each with its reply) are the site's illustration of how such an application would use CLPR.
+ * General page section 11.
+ */
+import Refs from '@kse/components/Refs.astro';
+const { id = 'swap-sim' } = Astro.props as { id?: string };
+const refs = [{ doc: 'design', anchor: '343-n-ledger-atomic-swap-2pc', label: 'design §3.4.3' }] as const;
+---
+<div class="sim swap" id={id}>
+  <div class="sim__head"><div><span class="kind">Simulation · an illustration</span><h3>Three ledgers change together, or not at all</h3></div><span class="pill grey" data-role="status">idle</span></div>
+  <div class="sim__body">
+    <div class="sim__scroll">
+      <svg viewBox="0 0 760 262" role="img" aria-label="Three ledgers side by side. An application on Ledger A sends prepare messages to B and C over two channels, collects their replies, then sends commit or roll back.">
+        <rect x="20" y="30" width="200" height="170" rx="12" class="d-a" />
+        <text x="120" y="56" class="t b center">Ledger A</text>
+        <rect x="40" y="70" width="160" height="40" rx="8" class="d-surface" />
+        <text x="120" y="88" class="t center">the swap application</text>
+        <text x="120" y="103" class="t small center">starts it, keeps the tally</text>
+        <rect x="40" y="130" width="160" height="40" rx="8" class="d-surface" data-role="lockA" />
+        <text x="120" y="148" class="t center">its own change</text>
+        <text x="120" y="163" class="t small center" data-role="stateA">waiting</text>
+        <rect x="280" y="30" width="200" height="170" rx="12" class="d-b" />
+        <text x="380" y="56" class="t b center">Ledger B</text>
+        <rect x="300" y="70" width="160" height="40" rx="8" class="d-surface" />
+        <text x="380" y="88" class="t center">its application</text>
+        <text x="380" y="103" class="t small center">answers prepare and commit</text>
+        <rect x="300" y="130" width="160" height="40" rx="8" class="d-surface" data-role="lockB" />
+        <text x="380" y="148" class="t center">its change</text>
+        <text x="380" y="163" class="t small center" data-role="stateB">waiting</text>
+        <rect x="540" y="30" width="200" height="170" rx="12" class="d-c" />
+        <text x="640" y="56" class="t b center">Ledger C</text>
+        <rect x="560" y="70" width="160" height="40" rx="8" class="d-surface" />
+        <text x="640" y="88" class="t center">its application</text>
+        <text x="640" y="103" class="t small center">answers prepare and commit</text>
+        <rect x="560" y="130" width="160" height="40" rx="8" class="d-surface" data-role="lockC" />
+        <text x="640" y="148" class="t center">its change</text>
+        <text x="640" y="163" class="t small center" data-role="stateC">waiting</text>
+        <line x1="220" y1="90" x2="300" y2="90" class="line c" />
+        <text x="260" y="82" class="t small center">channel A–B</text>
+        <path d="M220,90 C 250,300 510,300 540,90" class="line c" fill="none" />
+        <text x="380" y="256" class="t small center">channel A–C</text>
+        <g data-role="env" hidden>
+          <rect x="-28" y="-11" width="56" height="22" rx="4" fill="var(--surface)" stroke="var(--text)" stroke-width="1.5" />
+          <text x="0" y="4" class="t mono center" data-role="envlabel">prepare</text>
+        </g>
+      </svg>
+    </div>
+    <p class="sim__scroll-note">Wider than a phone; scroll it sideways if you need to.</p>
+    <Refs refs={[...refs]} />
+  </div>
+  <div class="sim__controls">
+    <button class="btn primary" type="button" data-run="ok">Run: everyone is ready</button>
+    <button class="btn danger" type="button" data-run="fail">Run: C cannot</button>
+    <span class="spacer"></span>
+    <button class="btn" type="button" data-role="reset">Reset</button>
+  </div>
+  <div class="sim__log" data-role="log">Two-phase commit, carried as ordinary CLPR messages: first "get ready", then "commit" or "roll back". Every message gets exactly one reply, which is what the tally relies on.</div>
+</div>
+<style is:global>
+  .sim.swap [data-role^="lock"] { transition: fill 250ms, stroke 250ms; }
+  .sim.swap [data-role^="lock"].ready { fill: var(--b-soft); stroke: var(--b); }
+  .sim.swap [data-role^="lock"].done { fill: var(--ok-soft); stroke: var(--ok); }
+  .sim.swap [data-role^="lock"].undone { fill: var(--bad-soft); stroke: var(--bad); }
+  .sim.swap [data-role="env"] { transition: transform 600ms ease-in-out; }
+  @media (min-width: 720px) { .sim.swap .sim__log { min-height: 6.4em; } }
+</style>
+<script>
+  const AT: Record<string, [number, number]> = { A: [120, 120], B: [380, 120], C: [640, 120] };
+  for (const root of Array.from(document.querySelectorAll<HTMLElement>('.sim.swap'))) {
+    const $ = (s: string) => root.querySelector<HTMLElement>(s)!;
+    const log = $('[data-role="log"]');
+    const status = $('[data-role="status"]');
+    const env = $('[data-role="env"]');
+    const envLabel = $('[data-role="envlabel"]');
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const wait = (ms: number) => new Promise((r) => setTimeout(r, reduced ? 0 : ms));
+    let runId = 0;
+    const IDLE = 'Two-phase commit, carried as ordinary CLPR messages: first "get ready", then "commit" or "roll back". Every message gets exactly one reply, which is what the tally relies on.';
+    function setState(k: string, cls: string, text: string) {
+      const lock = $(`[data-role="lock${k}"]`); lock.classList.remove('ready', 'done', 'undone'); if (cls) lock.classList.add(cls);
+      $(`[data-role="state${k}"]`).textContent = text;
+    }
+    async function carry(id: number, from: string, to: string, label: string) {
+      envLabel.textContent = label;
+      env.removeAttribute('hidden');
+      env.style.transition = 'none';
+      env.style.transform = `translate(${AT[from][0]}px, ${AT[from][1] - 100}px)`;
+      await wait(30); if (id !== runId) return false;
+      env.style.transition = '';
+      env.style.transform = `translate(${AT[to][0]}px, ${AT[to][1] - 100}px)`;
+      await wait(700); if (id !== runId) return false;
+      return true;
+    }
+    function reset() {
+      runId++;
+      for (const k of ['A', 'B', 'C']) setState(k, '', 'waiting');
+      env.setAttribute('hidden', '');
+      status.textContent = 'idle'; status.className = 'pill grey';
+      log.textContent = IDLE;
+    }
+    async function run(fail: boolean) {
+      reset();
+      const id = ++runId;
+      status.textContent = 'phase 1: get ready'; status.className = 'pill b';
+      log.innerHTML = '<span class="line">phase 1 · prepare</span>The application on A makes its own change ready, then sends "get ready" to B and to C, one message on each channel.';
+      setState('A', 'ready', 'ready, not final');
+      if (!(await carry(id, 'A', 'B', 'prepare'))) return;
+      setState('B', 'ready', 'ready, not final');
+      if (!(await carry(id, 'B', 'A', 'reply: ready'))) return;
+      log.innerHTML = '<span class="line">phase 1 · B replied</span>B made its change ready and its reply says so. One message, one reply: the tally on A now has B.';
+      if (!(await carry(id, 'A', 'C', 'prepare'))) return;
+      if (fail) {
+        setState('C', 'undone', 'cannot');
+        if (!(await carry(id, 'C', 'A', 'reply: cannot'))) return;
+        status.textContent = 'phase 2: roll back'; status.className = 'pill bad';
+        log.innerHTML = '<span class="line">phase 2 · one said no</span>C\'s reply says it cannot. The tally is incomplete, so A sends "roll back" to everyone who was ready.';
+        if (!(await carry(id, 'A', 'B', 'roll back'))) return;
+        setState('B', 'undone', 'undone');
+        setState('A', 'undone', 'undone');
+        if (!(await carry(id, 'B', 'A', 'reply: undone'))) return;
+        env.setAttribute('hidden', '');
+        status.textContent = 'rolled back'; status.className = 'pill bad';
+        log.innerHTML = '<span class="line">done · nothing landed</span><span class="bad">Rolled back everywhere.</span> No ledger kept a change the others did not. CLPR carried six messages and six replies; the decision was the application\'s.';
+      } else {
+        setState('C', 'ready', 'ready, not final');
+        if (!(await carry(id, 'C', 'A', 'reply: ready'))) return;
+        status.textContent = 'phase 2: commit'; status.className = 'pill ok';
+        log.innerHTML = '<span class="line">phase 2 · everyone ready</span>Both replies say ready. A sends "commit" on each channel and makes its own change final.';
+        setState('A', 'done', 'final');
+        if (!(await carry(id, 'A', 'B', 'commit'))) return;
+        setState('B', 'done', 'final');
+        if (!(await carry(id, 'B', 'A', 'reply: done'))) return;
+        if (!(await carry(id, 'A', 'C', 'commit'))) return;
+        setState('C', 'done', 'final');
+        if (!(await carry(id, 'C', 'A', 'reply: done'))) return;
+        env.setAttribute('hidden', '');
+        status.textContent = 'committed'; status.className = 'pill ok';
+        log.innerHTML = '<span class="line">done · all three landed</span><span class="ok">Committed everywhere.</span> Three ledgers changed together. Each message was proven by its own ledger\'s validators; the tally that tied them together lived in the application.';
+      }
+    }
+    for (const b of Array.from(root.querySelectorAll<HTMLButtonElement>('button[data-run]'))) b.addEventListener('click', () => { void run(b.dataset.run === 'fail'); });
+    $('[data-role="reset"]').addEventListener('click', reset);
+  }
+</script>

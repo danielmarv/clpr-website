@@ -1,0 +1,57 @@
+{
+  "$comment": "Provenance manifest. Every protocol claim on the site is written against these exact commits. Update with `npm run sync:fetch` and the clpr-sync skill; never edit the commit fields by hand.",
+  "org": {
+    "name": "LFDT-CLPR",
+    "url": "https://github.com/LFDT-CLPR",
+    "lab": "LF Decentralized Trust Labs",
+    "labUrl": "https://www.lfdecentralizedtrust.org/"
+  },
+  "lastSynced": "2026-09-30",
+  "sources": [
+    {
+      "id": "clpr-spec",
+      "repo": "https://github.com/LFDT-CLPR/clpr-spec",
+      "branch": "main",
+      "commit": "945082d69e65dd0fd9e9bdf8d59cb8121579f6fd",
+      "committedAt": "2026-08-31T11:59:29-05:00",
+      "role": "Protocol specification (clpr-service.md, clpr-service-spec.md), ADRs and verifier documents. The primary source for every protocol claim on both pages.",
+      "watch": ["clpr-service.md", "clpr-service-spec.md", "ADR/", "verifiers/", "clpr-options-to-consider.md", "*.svg"]
+    },
+    {
+      "id": "clpr-smart-contracts",
+      "repo": "https://github.com/LFDT-CLPR/clpr-smart-contracts",
+      "branch": "main",
+      "commit": "276c8d524e6ce3b5ef01da9d68ce3e8f27798a44",
+      "committedAt": "2026-09-01T12:22:36-05:00",
+      "role": "Solidity CLPR Service, logic modules and Verifier contracts for EVM ledgers. Source of the application interfaces and of every pinned code link on the developer page.",
+      "watch": ["src/interfaces/", "src/logic/", "src/verifiers/", "src/libraries/ClprTypes.sol", "docs/", "README.md"]
+    },
+    {
+      "id": "clpr-endpoint",
+      "repo": "https://github.com/LFDT-CLPR/clpr-endpoint",
+      "branch": "main",
+      "commit": "2ccd48d2d5d0d2f15d0829b1a057f27d88fd085e",
+      "committedAt": "2026-09-01T12:53:10-05:00",
+      "role": "Java CLPR Endpoint (relay) for EVM ledgers: gRPC sync, proof construction, bundle submission. Source for the endpoint and sync-protocol sections.",
+      "watch": ["README.md", "clpr-relay-proto/", "clpr-relay-sync/", "clpr-relay-evm/", "clpr-relay-app/src/main/resources/"]
+    },
+    {
+      "id": "governance",
+      "repo": "https://github.com/LFDT-CLPR/governance",
+      "branch": "main",
+      "commit": "498d4f4b71a62572ec337dc85d29cd4dfd2069c3",
+      "committedAt": "2026-09-17T08:05:33-07:00",
+      "role": "Lab governance: LF Decentralized Trust Labs charter, teams and repository permissions. Source for the governance section.",
+      "watch": ["teams.yml", "*.pdf", "CODEOWNERS", "*.md"]
+    },
+    {
+      "id": "org-profile",
+      "repo": "https://github.com/LFDT-CLPR/.github",
+      "branch": "main",
+      "commit": "263fb3945a75e157ee6e607fa9fd2c203f52cf80",
+      "committedAt": "2026-09-22T04:06:02-07:00",
+      "role": "Organization profile README: lab scope, terminology, the four layers and the extension process. Source for the 'what CLPR is' framing and the LFDT section.",
+      "watch": ["profile/README.md"]
+    }
+  ]
+}

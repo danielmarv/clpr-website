@@ -1,1 +1,0 @@
-function e(e,t){let n=e.getBoundingClientRect(),r=t.getBoundingClientRect();r.top<n.top?e.scrollTop+=r.top-n.top:r.bottom>n.bottom&&(e.scrollTop+=r.bottom-n.bottom)}export{e as t};

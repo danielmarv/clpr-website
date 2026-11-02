@@ -1,0 +1,392 @@
+---
+/**
+ * Response ordering and correlation: the worked example from design §3.2.8 and spec §4.5.
+ *
+ * Ledger A's outbound queue holds [Ma1, Ma2, Ra3, Ma4]. B acks through Ma2 (nothing deleted:
+ * Data Messages are the ordering reference, Ra3 is not acked yet); B sends Rb1, Rb2 (matched in
+ * order, Ma1 and Ma2 deleted); B acks through Ma4 (Ra3 deleted on ack, Ma4 retained); B sends
+ * Rb4 (matched, deleted). The fault button delivers Rb4 while an older Data Message is still
+ * unanswered: the channel is PAUSED and the bundle rejected (spec §4.5).
+ *
+ * Also shown: the spec's distinction between bad bundles (hash, replay, size: rejected, no state
+ * change) and PAUSED, which is reserved for response-ordering violations.
+ *
+ * The four queue rows and the three possible reply chips are rendered here and only toggled by
+ * the script, so a deletion is seen as a strike-through that folds away, a matched reply flies
+ * from the inbox to its row, and the head keeps a dot per entry that turns green once it is gone.
+ */
+import { design, spec } from '../../lib/sources';
+const { id = 'ordering-sim' } = Astro.props as { id?: string };
+const links = {
+  spec42: spec('42-bundle-verification-algorithm'),
+  spec44: spec('44-message-lifecycle'),
+  spec45: spec('45-response-ordering-verification'),
+  spec211: spec('211-channel-status-transitions'),
+  design327: design('327-message-lifecycle'),
+  design328: design('328-response-ordering-and-correlation'),
+};
+const rows = [
+  { id: 1, type: 'DATA', name: 'Ma1', note: 'data message from A' },
+  { id: 2, type: 'DATA', name: 'Ma2', note: 'data message from A' },
+  { id: 3, type: 'REPLY', name: 'Ra3', note: "A's reply to an earlier message from B" },
+  { id: 4, type: 'DATA', name: 'Ma4', note: 'data message from A' },
+];
+const replies = ['Rb1', 'Rb2', 'Rb4'];
+---
+<div class="sim ordering" id={id} data-links={JSON.stringify(links)}>
+  <div class="sim__head">
+    <div><span class="kind">Simulation</span><h3>Acks, replies, and what may be deleted when</h3></div>
+    <div class="od__headright">
+      <span class="od__dots" data-role="dots" title="One dot per queue entry; green once it has been deleted">
+        {rows.map((x) => <span class="od__dot" data-dot={x.id}><i></i>{x.name}</span>)}
+      </span>
+      <span class="pill ok" data-role="status">ACTIVE</span>
+    </div>
+  </div>
+  <div class="sim__body">
+    <p class="small" style="margin:0 0 10px">Two different confirmations flow back to a sender. An <strong>acknowledgement</strong> is transport-level: the peer's <code>received_message_id</code>, reported on every sync, says which queue entries have been delivered. A <strong>response</strong> is application-level: the <code>ClprMessageReply</code> the peer generates after processing a Data Message. Only the first lets a sender delete replies and control messages; a Data Message stays until its response has arrived <em>in the right order</em>.</p>
+    <div class="od__panel" data-panel="queue">
+      <h4>Ledger A's outbound queue (to Ledger B)</h4>
+      <p class="od__counters"><code>acked_message_id</code> <b data-f="acked">0</b> · <code>next_message_id</code> <b>5</b> · next expected response: <b data-f="expect">Rb1</b></p>
+      <div class="od__msgs" data-role="queue">
+        {rows.map((x) => (
+          <div class="od__msg" data-id={x.id} data-type={x.type}>
+            <span class={`pill ${x.type === 'DATA' ? 'c' : 'b'}`}>{x.type}</span><b>{x.name}</b><span class="meta">#{x.id} · {x.note}</span>
+            <span class="marks">
+              <span class="pill grey" data-m="inflight">in flight, not yet acked</span>
+              <span class="pill ok" data-m="acked" hidden>acked</span>
+              <span class="pill bad" data-m="del" hidden></span>
+            </span>
+          </div>
+        ))}
+        <span class="od__empty od__empty--ok" data-role="empty" hidden>empty: everything acknowledged and answered</span>
+      </div>
+    </div>
+    <div class="od__panel" data-panel="inbox">
+      <h4>Latest bundle from Ledger B <span class="od__sub" data-f="inbox-meta">none yet</span></h4>
+      <div class="od__msgs" data-role="inbox">
+        <span class="od__empty" data-role="inbox-none">nothing has arrived</span>
+        <div class="od__inbox" data-role="inbox-row" hidden>
+          <span class="od__empty" data-role="inbox-sync" hidden>no messages, only sync data</span>
+          {replies.map((r) => (
+            <span class="od__msg od__chip" data-chip={r} hidden><span class="pill b">REPLY</span><b>{r}</b><span class="pill ok" data-m="ok" hidden>matched</span><span class="pill bad" data-m="bad" hidden>out of order</span></span>
+          ))}
+          <span class="pill ok" data-role="verdict">accepted</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="sim__controls">
+    <button class="btn" type="button" data-ev="ack2">B acks through Ma2</button>
+    <button class="btn" type="button" data-ev="rb12">B sends Rb1, Rb2</button>
+    <button class="btn" type="button" data-ev="ack4">B acks through Ma4</button>
+    <button class="btn" type="button" data-ev="rb4">B sends Rb4</button>
+    <button class="btn danger" type="button" data-ev="fault">B sends Rb4 before Rb2</button>
+    <span class="spacer"></span>
+    <button class="btn" type="button" data-ev="reset">Reset</button>
+  </div>
+  <div class="sim__log sim__log--tall" data-role="log"></div>
+  <div class="od__notes">
+    <p class="small" style="margin:0 0 6px"><strong>Two kinds of rejection.</strong> A bundle that fails verification (bad hash chain, replay, oversized payload) is simply rejected: no pause, no state change, and the channel stays ACTIVE ready for the next valid bundle. PAUSED is reserved exclusively for response-ordering violations, because they indicate corruption in the peer's own outbound queue state, not a bad endpoint. Nobody is slashed either way; in the design document's words, you cannot slash a peer ledger.</p>
+    <p class="small" style="margin:0">Source: <a href={links.design328} rel="noopener">design §3.2.8</a> (the worked example is taken from there) · <a href={links.design327} rel="noopener">§3.2.7</a> · <a href={links.spec45} rel="noopener">spec §4.5</a> · <a href={links.spec44} rel="noopener">§4.4</a> · <a href={links.spec42} rel="noopener">§4.2 step 5</a> · <a href={links.spec211} rel="noopener">§2.1.1</a>.</p>
+  </div>
+</div>
+
+<style is:global>
+  /* Global (not scoped) because the travelling reply chip is created at runtime; every selector
+     is prefixed with .ordering so nothing leaks. */
+  .ordering { position: relative; }
+  .ordering [hidden] { display: none !important; } /* the display rules below would otherwise beat the hidden attribute */
+  .ordering .od__headright { display: inline-flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .ordering .od__dots { display: inline-flex; gap: 8px; font-family: var(--mono); font-size: 0.7rem; color: var(--text-3); }
+  .ordering .od__dot { display: inline-flex; align-items: center; gap: 4px; transition: color 250ms; }
+  .ordering .od__dot i { width: 9px; height: 9px; border-radius: 50%; border: 1.5px solid var(--border-2); transition: background-color 250ms, border-color 250ms; }
+  .ordering .od__dot.done { color: var(--ok); }
+  .ordering .od__dot.done i { background: var(--ok); border-color: var(--ok); }
+  .ordering .od__dot.pop i { animation: od-pop 500ms ease; }
+  @keyframes od-pop { 50% { transform: scale(1.6); } }
+  .ordering .od__panel { border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; background: var(--bg-2); min-width: 0; transition: border-color 250ms, background-color 250ms; }
+  .ordering .od__panel + .od__panel { margin-top: 10px; }
+  .ordering.paused .od__panel[data-panel="queue"] { border-color: var(--bad); }
+  .ordering .od__panel h4 { margin: 0 0 6px; font-size: 0.92rem; }
+  .ordering .od__sub { font-weight: 400; font-size: 0.78rem; color: var(--text-3); margin-left: 6px; }
+  .ordering .od__counters { margin: 0 0 6px; font-size: 0.82rem; color: var(--text-2); }
+  .ordering .od__counters code { font-size: 0.74rem; }
+  .ordering .od__counters b { border-radius: 4px; padding: 0 2px; }
+  .ordering .od__counters b.chg { animation: od-flash 700ms ease-out; }
+  @keyframes od-flash { 0%, 50% { background-color: var(--ok-soft); color: var(--ok); } }
+  .ordering .od__msgs { display: flex; flex-direction: column; gap: 5px; min-height: 2em; }
+  .ordering .od__msg {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 4px 7px; border: 1px solid var(--border-2); border-radius: 8px;
+    padding: 6px 9px; background: var(--surface); font-size: 0.82rem; max-height: 8em; overflow: hidden;
+    transition: opacity 250ms, border-color 250ms, background-color 250ms, max-height 300ms ease-in, padding 300ms, border-width 300ms, margin 300ms;
+  }
+  .ordering .od__msg b { font-size: 0.9rem; position: relative; }
+  .ordering .od__msg b::after { content: ''; position: absolute; left: 0; top: 55%; height: 1.5px; width: 0; background: var(--text-2); transition: width 350ms ease; }
+  .ordering .od__msg .meta { color: var(--text-3); font-size: 0.72rem; }
+  .ordering .od__msg .marks { margin-left: auto; display: inline-flex; flex-wrap: wrap; gap: 4px; justify-content: flex-end; }
+  .ordering .od__inbox { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+  .ordering .od__msg.del { opacity: 0.6; border-style: dashed; }
+  .ordering .od__msg.del b::after { width: 100%; }
+  .ordering .od__msg.fold { max-height: 0; opacity: 0; padding-top: 0; padding-bottom: 0; border-top-width: 0; border-bottom-width: 0; margin-bottom: -5px; }
+  .ordering .od__msg.ref { border-color: var(--c); border-width: 2px; }
+  .ordering .od__msg.ref::before { content: '\2192'; color: var(--c); font-weight: 700; animation: od-fadein 200ms ease-out; }
+  @keyframes od-fadein { from { opacity: 0; transform: translateX(-4px); } }
+  .ordering .od__msg.flash { animation: od-rowflash 700ms ease-out; }
+  @keyframes od-rowflash { 0%, 60% { background-color: var(--ok-soft); border-color: var(--ok); } }
+  .ordering .od__msg.bad { border-color: var(--bad); background: var(--bad-soft); }
+  .ordering .od__chip { display: inline-flex; }
+  .ordering .od__chip.in { animation: od-slide 220ms ease-out; }
+  .ordering .od__chip.bad.in { animation: od-slide 220ms ease-out, od-shake 320ms ease-in-out 220ms; }
+  @keyframes od-slide { from { opacity: 0; transform: translateX(24px); } }
+  @keyframes od-shake { 0%, 100% { transform: translate(0, 0); } 25% { transform: translate(-3px, 1px); } 50% { transform: translate(3px, -1px); } 75% { transform: translate(-3px, 1px); } }
+  .ordering .od__fly { position: absolute; z-index: 3; pointer-events: none; box-shadow: var(--shadow); will-change: transform; }
+  .ordering .od__empty { color: var(--text-3); font-size: 0.8rem; font-style: italic; align-self: center; }
+  .ordering .od__empty--ok { align-self: flex-start; animation: od-fadein 250ms ease-out; }
+  .ordering .od__empty--ok::before { content: '\2713 '; color: var(--ok); font-weight: 700; font-style: normal; }
+  .ordering .sim__log p { margin: 0 0 6px; }
+  .ordering .sim__log p:last-child { margin-bottom: 0; }
+  .ordering .sim__log .proto { font-size: 0.88rem; }
+  .ordering .od__notes { padding: 10px 14px 12px; border-top: 1px solid var(--border); }
+</style>
+
+<script>
+  type Ev = 'ack2' | 'rb12' | 'ack4' | 'rb4' | 'fault' | 'reset';
+  interface Item { id: number; type: 'DATA' | 'REPLY'; name: string; del?: string; row: HTMLElement }
+  interface Inbox { ack: string; msgs: { name: string; bad?: boolean; ok?: boolean }[]; verdict: string; verdictClass: string }
+  interface Token { name: string; id: number }
+  const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const FLY_MS = REDUCED ? 0 : 400;
+  const FOLD_DELAY = 1800; // a struck row stays readable this long before it folds away
+  const replay = (el: Element, cls: string) => { el.classList.remove(cls); void (el as HTMLElement).offsetWidth; el.classList.add(cls); };
+
+  for (const root of Array.from(document.querySelectorAll<HTMLElement>('.sim.ordering'))) {
+    const $ = (s: string) => root.querySelector<HTMLElement>(s)!;
+    const links: Record<string, string> = JSON.parse(root.dataset.links || '{}');
+    const L = (k: string, label: string) => `<a href="${links[k]}" rel="noopener">${label}</a>`;
+    const log = $('[data-role="log"]');
+    const status = $('[data-role="status"]');
+    const emptyEl = $('[data-role="empty"]');
+    const ackedEl = $('[data-f="acked"]'); const expectEl = $('[data-f="expect"]');
+    const chips = Array.from(root.querySelectorAll<HTMLElement>('.od__chip[data-chip]'));
+    const buttons = Array.from(root.querySelectorAll<HTMLButtonElement>('button[data-ev]'));
+    const fromRows = (): Item[] => Array.from(root.querySelectorAll<HTMLElement>('.od__msg[data-id]')).map((row) => ({
+      id: Number(row.dataset.id), type: row.dataset.type as Item['type'], name: row.querySelector('b')!.textContent || '', row,
+    }));
+    let q: Item[] = fromRows();
+    let acked = 0;
+    let st: 'ACTIVE' | 'PAUSED' = 'ACTIVE';
+    let inbox: Inbox | null = null;
+    const timers = new Set<number>();
+    const flights: { el: HTMLElement; anim: Animation }[] = [];
+    const inFlight = new Set<number>(); // rows whose deletion waits for a reply chip to land
+
+    const later = (fn: () => void, ms: number) => { const t = window.setTimeout(() => { timers.delete(t); fn(); }, ms); timers.add(t); };
+    const live = () => q.filter((x) => !x.del);
+    const oldest = () => live().find((x) => x.type === 'DATA');
+    const has = (name: string) => live().some((x) => x.name === name);
+    function allowed(ev: Ev): boolean {
+      const o = oldest();
+      switch (ev) {
+        case 'ack2': return st === 'ACTIVE' && acked < 2;
+        case 'rb12': return has('Ma1') && has('Ma2');
+        case 'ack4': return st === 'ACTIVE' && acked < 4;
+        case 'rb4': return st === 'ACTIVE' && has('Ma4') && !!o && o.id === 4;
+        case 'fault': return has('Ma4') && !!o && o.id !== 4;
+        case 'reset': return true;
+      }
+    }
+    function why(ev: Ev): string {
+      const o = oldest();
+      const paused = 'disabled while the channel is PAUSED; a correctly ordered bundle resumes it';
+      switch (ev) {
+        case 'ack2': return st === 'PAUSED' ? paused : 'B has already acked through Ma2';
+        case 'rb12': return 'Ma1 and Ma2 have already been answered';
+        case 'ack4': return st === 'PAUSED' ? paused : 'B has already acked through Ma4';
+        case 'rb4': return !has('Ma4') ? 'Ma4 has already been answered' : `Rb4 would be out of order while ${o ? o.name : 'an older Data Message'} is unanswered; that is the fault button`;
+        case 'fault': return !has('Ma4') ? 'Ma4 has already been answered' : 'Rb4 is in order now: no older Data Message is waiting for a reply';
+        case 'reset': return '';
+      }
+    }
+    function say(plain: string, proto: string) {
+      const o = oldest();
+      log.innerHTML = `<span class="line">acked_message_id=${acked} · expect=${o ? `Rb${o.id}` : 'none'} · status=${st}</span><p>${plain}</p><p class="proto"><strong>In protocol terms.</strong> ${proto}</p>`;
+    }
+    function ackDeletes(): Item[] {
+      const gone: Item[] = [];
+      for (const x of q) if (!x.del && x.type !== 'DATA' && x.id <= acked) { x.del = 'deleted on ack'; gone.push(x); }
+      return gone;
+    }
+    function setText(el: HTMLElement, text: string) { if (el.textContent !== text) { el.textContent = text; replay(el, 'chg'); } }
+    function markDel(x: Item) {
+      const row = x.row;
+      if (!x.del || row.classList.contains('del')) return;
+      row.classList.add('del'); row.classList.remove('ref'); row.removeAttribute('title');
+      const del = row.querySelector<HTMLElement>('[data-m="del"]')!;
+      del.textContent = x.del; del.hidden = false;
+      row.querySelector<HTMLElement>('[data-m="acked"]')!.hidden = true;
+      row.querySelector<HTMLElement>('[data-m="inflight"]')!.hidden = true;
+      const dot = root.querySelector<HTMLElement>(`.od__dot[data-dot="${x.id}"]`);
+      if (dot) { dot.classList.add('done'); replay(dot, 'pop'); }
+      later(() => {
+        row.classList.add('fold');
+        later(() => {
+          row.hidden = true;
+          if (q.every((y) => y.row.hidden)) emptyEl.hidden = false;
+        }, REDUCED ? 0 : 320);
+      }, FOLD_DELAY);
+    }
+    function render() {
+      const o = oldest();
+      setText(ackedEl, String(acked));
+      setText(expectEl, o ? `Rb${o.id}` : 'none (no unanswered Data Message)');
+      if (status.textContent !== st) { status.textContent = st; status.className = 'pill ' + (st === 'ACTIVE' ? 'ok' : 'bad'); replay(status, 'pulse'); }
+      root.classList.toggle('paused', st === 'PAUSED');
+      for (const x of q) {
+        if (x.del) { if (!inFlight.has(x.id)) markDel(x); continue; }
+        const isAcked = x.id <= acked;
+        const isRef = !!o && o.id === x.id;
+        const ackedPill = x.row.querySelector<HTMLElement>('[data-m="acked"]')!;
+        ackedPill.textContent = x.type === 'DATA' ? `acked · awaiting Rb${x.id}` : 'acked';
+        ackedPill.hidden = !isAcked;
+        x.row.querySelector<HTMLElement>('[data-m="inflight"]')!.hidden = isAcked;
+        x.row.classList.toggle('ref', isRef);
+        if (isRef) x.row.title = `ordering reference: next response must be Rb${x.id}`; else x.row.removeAttribute('title');
+      }
+      const inboxNone = $('[data-role="inbox-none"]'); const inboxRow = $('[data-role="inbox-row"]');
+      if (!inbox) {
+        inboxNone.hidden = false; inboxRow.hidden = true; $('[data-f="inbox-meta"]').textContent = 'none yet';
+        for (const c of chips) c.hidden = true;
+      } else {
+        $('[data-f="inbox-meta"]').textContent = inbox.ack;
+        inboxNone.hidden = true; inboxRow.hidden = false;
+        $('[data-role="inbox-sync"]').hidden = inbox.msgs.length > 0;
+        for (const c of chips) {
+          const m = inbox.msgs.find((y) => y.name === c.dataset.chip);
+          c.hidden = !m;
+          if (!m) continue;
+          c.classList.toggle('bad', !!m.bad);
+          c.querySelector<HTMLElement>('[data-m="ok"]')!.hidden = !m.ok;
+          c.querySelector<HTMLElement>('[data-m="bad"]')!.hidden = !m.bad;
+          replay(c, 'in');
+        }
+        const verdict = $('[data-role="verdict"]');
+        verdict.textContent = inbox.verdict; verdict.className = `pill ${inbox.verdictClass}`; replay(verdict, 'pulse');
+      }
+      for (const b of buttons) {
+        const ok = allowed(b.dataset.ev as Ev);
+        b.disabled = !ok;
+        if (ok) b.removeAttribute('title'); else b.title = why(b.dataset.ev as Ev);
+      }
+    }
+    /** A copy of each matched reply chip travels from the inbox to its queue row; the row is struck when it lands. */
+    function fly(tokens: Token[]) {
+      tokens.forEach((t, i) => {
+        const x = q.find((y) => y.id === t.id)!;
+        const chip = chips.find((c) => c.dataset.chip === t.name);
+        const land = () => { inFlight.delete(t.id); replay(x.row, 'flash'); markDel(x); };
+        if (!FLY_MS || !chip) { land(); return; }
+        later(() => {
+          const base = root.getBoundingClientRect();
+          const from = chip.getBoundingClientRect();
+          const to = x.row.querySelector('b')!.getBoundingClientRect();
+          const el = document.createElement('span');
+          el.className = 'od__fly pill b'; el.textContent = t.name; el.setAttribute('aria-hidden', 'true');
+          el.style.left = `${from.left - base.left}px`; el.style.top = `${from.top - base.top}px`;
+          root.appendChild(el);
+          const anim = el.animate(
+            [{ transform: 'translate(0, 0)' }, { transform: `translate(${to.left - from.left}px, ${to.top - from.top}px)`, opacity: 0.85 }],
+            { duration: FLY_MS, easing: 'cubic-bezier(0.3, 0.7, 0.3, 1)', fill: 'forwards' },
+          );
+          const flight = { el, anim }; flights.push(flight);
+          anim.finished.then(() => { el.remove(); flights.splice(flights.indexOf(flight), 1); land(); }).catch(() => {});
+        }, 260 + i * 160);
+      });
+    }
+    function clearMotion() {
+      for (const t of timers) clearTimeout(t); timers.clear();
+      for (const f of flights.splice(0)) { f.anim.cancel(); f.el.remove(); }
+      inFlight.clear();
+    }
+    const handlers: Record<Ev, () => Token[] | void> = {
+      ack2: () => {
+        acked = 2;
+        const gone = ackDeletes();
+        inbox = { ack: 'sync_data.received_message_id = 2', msgs: [], verdict: 'accepted', verdictClass: 'ok' };
+        say(
+          'B\'s sync data now says it has received A\'s messages through 2. A records the ack but deletes nothing: Ma1 and Ma2 are data messages, and A must keep them as the reference list for checking the order of B\'s replies. Ra3 could go as soon as it is acked, but it is not acked yet, and neither is Ma4.',
+          `§4.2 step 5: acked_message_id ← sync_data.received_message_id = 2. Acknowledged Data Messages are retained until their response arrives (${L('spec44', 'spec §4.4')}); acknowledged Response and Control Messages are deleted, but Ra3 (id 3) is beyond the ack${gone.length ? '' : ', so nothing is deleted'}. Example from ${L('design328', 'design §3.2.8')}: "A cannot yet delete Ma1 or Ma2 — it needs them to verify response ordering."`,
+        );
+      },
+      rb12: () => {
+        const resumed = st === 'PAUSED';
+        st = 'ACTIVE';
+        const ackNote = acked < 2 ? ' B can only have generated these replies after receiving Ma1 and Ma2, so its sync data acks through 2 as well.' : '';
+        acked = Math.max(acked, 2);
+        ackDeletes();
+        for (const x of q) if (!x.del && (x.name === 'Ma1' || x.name === 'Ma2')) x.del = `deleted: Rb${x.id} matched`;
+        inbox = { ack: `sync_data.received_message_id = ${acked}`, msgs: [{ name: 'Rb1', ok: true }, { name: 'Rb2', ok: true }], verdict: resumed ? 'accepted · channel resumes' : 'accepted', verdictClass: 'ok' };
+        say(
+          `A bundle from B carries Rb1 and Rb2. A walks its queue of unanswered data messages: the oldest is Ma1, and Rb1 answers 1, a match, so Rb1 is delivered to the application that sent Ma1 and Ma1 is deleted. Then Rb2 is checked against Ma2: match, delivered, deleted.${ackNote}${resumed ? ' Because the replies are correctly ordered, the channel resumes from PAUSED to ACTIVE on its own; no admin action was needed or available.' : ''}`,
+          `${L('spec45', 'spec §4.5')}: for each Response Message, walk the outbound queue of retained Data Messages (skipping Response and Control Messages); its message_id MUST equal the oldest unresponded Data Message's id. Match → deliver to the originating application read from ClprMessage.sender, delete the matched slot.${resumed ? ` PAUSED → ACTIVE: "auto-resumes when the next inbound bundle contains correctly ordered responses" (${L('spec211', 'spec §2.1.1')}).` : ''}`,
+        );
+        return [{ name: 'Rb1', id: 1 }, { name: 'Rb2', id: 2 }];
+      },
+      ack4: () => {
+        acked = 4;
+        const gone = ackDeletes();
+        const kept = live().filter((x) => x.type === 'DATA').map((x) => x.name);
+        inbox = { ack: 'sync_data.received_message_id = 4', msgs: [], verdict: 'accepted', verdictClass: 'ok' };
+        say(
+          `B acks through 4. Ra3 is a reply, and replies never get replies, so once B has it there is nothing left to check: it is deleted immediately. ${kept.join(' and ')} ${kept.length > 1 ? 'are' : 'is'} kept until ${kept.length > 1 ? 'their responses arrive' : 'Rb4 arrives'}.`,
+          `acked_message_id ← 4. Delete acknowledged Response and Control Messages (${gone.map((x) => x.name).join(', ') || 'none left'}); retain acknowledged Data Messages (${kept.join(', ')}) until matched (${L('spec42', 'spec §4.2 step 5')}, ${L('design327', 'design §3.2.7')}). From the example: "A deletes Ra3 immediately (it is a response, no further action needed) but retains Ma4 until Rb4 arrives."`,
+        );
+      },
+      rb4: () => {
+        const ackNote = acked < 4 ? ' B\'s sync data acks through 4 as well, which lets Ra3 go.' : '';
+        acked = Math.max(acked, 4);
+        const gone = ackDeletes();
+        for (const x of q) if (!x.del && x.name === 'Ma4') x.del = 'deleted: Rb4 matched';
+        inbox = { ack: 'sync_data.received_message_id = 4', msgs: [{ name: 'Rb4', ok: true }], verdict: 'accepted', verdictClass: 'ok' };
+        say(
+          `Rb4 arrives. The oldest unanswered data message is Ma4: match. The response is delivered to Ma4's sender and Ma4 is deleted.${ackNote} The queue is now empty: every message has been both acknowledged and, where it needed one, answered.`,
+          `${L('spec45', 'spec §4.5')} walk: oldest unresponded Data Message = Ma4; Rb4.message_id = 4 → match, deliver, delete.${gone.length ? ` Ack update deletes ${gone.map((x) => x.name).join(', ')} (Response Message, ${L('spec44', 'spec §4.4')}).` : ''} Response ordering is tracked implicitly by walking the retained Data Messages; there is no separate counter.`,
+        );
+        return [{ name: 'Rb4', id: 4 }];
+      },
+      fault: () => {
+        const o = oldest()!;
+        const again = st === 'PAUSED';
+        st = 'PAUSED';
+        inbox = { ack: 'sync_data.received_message_id = 4 (not applied)', msgs: [{ name: 'Rb4', bad: true }], verdict: 'rejected outright', verdictClass: 'bad' };
+        say(
+          again
+            ? `B sends the same bundle again. It is rejected again, for the same reason, and the channel stays PAUSED. Nothing in it is processed. B has to fix its reply generation, which on a ledger like Ethereum may mean upgrading its CLPR Service contract; A's admin may alternatively close the channel, which then drains once B behaves.`
+            : `A bundle from B carries Rb4, but the oldest data message still waiting for an answer is ${o.name}. B has answered out of order. That cannot happen on a healthy ledger, because replies are generated in the order the messages arrived, so A treats it as corruption of B's reply generation rather than as noise: the channel is PAUSED, the bundle is rejected outright, and nothing in it is delivered, acknowledged or advanced. Nobody is slashed: you cannot slash a ledger, and the bad replies are already committed in B's queue and cannot be unsent. The channel resumes on its own when B delivers a correctly ordered bundle (try "B sends Rb1, Rb2"); the admin may also close it.`,
+          `${L('spec45', 'spec §4.5')} step 4, mismatch (Rb4 ≠ oldest unresponded ${o.name}): set Channel status to PAUSED; reject new sendMessage calls. While PAUSED, existing queued messages remain and continue syncing, but inbound bundles with out-of-order responses are rejected outright: nothing is dispatched, acknowledged or advanced (${L('spec211', 'spec §2.1.1')}). Auto-resume: "when the next inbound bundle contains correctly ordered responses (if the admin hasn't closed it)". ${L('design328', 'design §3.2.8')}: "It does not slash — you cannot slash a peer ledger, only individual endpoints."`,
+        );
+      },
+      reset: () => {
+        clearMotion();
+        q = fromRows(); acked = 0; st = 'ACTIVE'; inbox = null;
+        emptyEl.hidden = true;
+        for (const x of q) {
+          x.row.hidden = false; x.row.classList.remove('del', 'fold', 'flash', 'ref'); x.row.removeAttribute('title');
+          x.row.querySelector<HTMLElement>('[data-m="del"]')!.hidden = true;
+        }
+        for (const d of Array.from(root.querySelectorAll<HTMLElement>('.od__dot'))) d.classList.remove('done', 'pop');
+        say(
+          'Ledger A has sent four messages to Ledger B: three data messages (Ma1, Ma2, Ma4) and one reply of its own (Ra3, answering an earlier message from B). Nothing is acknowledged yet. Press the buttons in any order the protocol allows; the others are greyed out.',
+          `The queue is ${L('design328', 'design §3.2.8')}'s example, [Ma1, Ma2, Ra3, Ma4]. "Ma" is a Data Message from A, "Ra" a Response Message from A, "Rb" a Response Message from B answering the Ma with the same number. The ordering reference is always the oldest Data Message that has not yet been answered.`,
+        );
+      },
+    };
+    for (const b of buttons) b.addEventListener('click', () => {
+      const tokens = handlers[b.dataset.ev as Ev]() || [];
+      for (const t of tokens) inFlight.add(t.id);
+      render();
+      fly(tokens);
+    });
+    handlers.reset(); render();
+  }
+</script>

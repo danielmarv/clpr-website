@@ -1,0 +1,94 @@
+---
+/** A bundle is a proven prefix of the sender's backlog: the slice starts at the receiver's received_message_id + 1, one state proof covers only the last message (the anchor), the running hash ties the earlier messages to it, and the rest waits for a later cycle. Draws on design §3.2.3, spec §4.1 and ADR 2026-07-17. */
+import Figure from '@kse/components/Figure.astro';
+import { design, spec, pinned } from '../../../lib/sources';
+---
+<Figure
+  lead="One proof, many messages."
+  caption="The endpoint takes messages from received + 1 up to the cap (max_messages_per_bundle or max_sync_bytes), proves only the last one (the anchor), and the receiver recomputes the running hash from its own stored value. Since ADR 2026-07-17 the slice may be a proper prefix, so a large backlog drains in bundles. Ids and the cap are illustrative."
+  source={[{ label: 'design §3.2.3', href: design('323-bundle-transport') }, { label: 'spec §4.1', href: spec('41-running-hash-computation') }, { label: 'ADR 2026-07-17', href: pinned('clpr-spec', 'ADR/2026-07-17-queue-metadata-and-partial-bundle-proofs.md') }]}
+  kind="spec"
+  minWidth={760}
+>
+  <svg viewBox="0 0 760 380" role="img" aria-label="Ledger B, the receiver, on the right with received_message_id = 42 and stored H42, sends a dashed BundleRequest to Ledger A's outbound queue on the left. The queue shows message 42 already received, a bundle frame around messages 43 to 46 with 46 marked as the anchor, and a remainder 47 to 52 waiting for a later cycle. A running hash chain H42 to H46 runs under the slots. A state proof from A's validators covers H46 and A's ChannelSyncData and is submitted with the bundle as one transaction to B's verifier, which recomputes H43 to H46 from its stored H42 and requires the result to equal the proven H46.">
+    <defs>
+      <marker id="bpa-arrow-c" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9 Z" fill="var(--c)"/></marker>
+      <marker id="bpa-arrow-ok" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9 Z" fill="var(--ok)"/></marker>
+    </defs>
+
+    <!-- Ledger B: the receiver drives -->
+    <rect x="570" y="40" width="170" height="300" rx="12" class="d-b"/>
+    <text x="584" y="62" class="t b">Ledger B</text>
+    <text x="584" y="78" class="t small muted">receiver</text>
+    <text x="584" y="98" class="t mono">received_message_id</text>
+    <text x="584" y="114" class="t mono">= 42 · stored H42</text>
+    <rect x="582" y="200" width="146" height="104" rx="8" class="d-ok"/>
+    <text x="594" y="220" class="t b">Verifier</text>
+    <text x="594" y="238" class="t small">recomputes H43 … H46</text>
+    <text x="594" y="254" class="t small">from its stored H42;</text>
+    <text x="594" y="270" class="t small">must equal the</text>
+    <text x="594" y="286" class="t small">proven H46</text>
+
+    <!-- The request: unproven, shapes the bundle -->
+    <path d="M568,66 H280 V92" class="line c dash" marker-end="url(#bpa-arrow-c)"/>
+    <text x="556" y="54" class="t mono end c">BundleRequest(current_received_message_id: 42)</text>
+    <text x="556" y="82" class="t small end muted">unproven: shapes the bundle, never changes state</text>
+
+    <!-- Ledger A: the sender's outbound queue -->
+    <rect x="20" y="96" width="470" height="240" rx="12" class="d-a"/>
+    <text x="34" y="118" class="t b">Ledger A · sender outbound queue</text>
+    <text x="34" y="136" class="t mono">unacked ids 43 … 52 · next_message_id = 53 (illustrative)</text>
+
+    <rect x="30" y="176" width="52" height="44" rx="6" class="d-grey"/>
+    <text x="56" y="195" class="t b center muted">42</text>
+    <text x="56" y="211" class="t small center muted">received</text>
+
+    <rect x="90" y="150" width="262" height="76" rx="8" class="d-c"/>
+    <text x="102" y="168" class="t b c">Bundle</text>
+    <text x="152" y="168" class="t small">43 … 46 · at the cap (4 here)</text>
+    <rect x="98" y="176" width="56" height="44" rx="6" class="d-surface"/>
+    <text x="126" y="202" class="t b center">43</text>
+    <rect x="162" y="176" width="56" height="44" rx="6" class="d-surface"/>
+    <text x="190" y="202" class="t b center">44</text>
+    <rect x="226" y="176" width="56" height="44" rx="6" class="d-surface"/>
+    <text x="254" y="202" class="t b center">45</text>
+    <rect x="290" y="176" width="56" height="44" rx="6" class="d-ok"/>
+    <text x="318" y="196" class="t b center">46</text>
+    <text x="318" y="212" class="t small center ok">anchor</text>
+
+    <!-- Running hash chain under the slots -->
+    <text x="56" y="238" class="t mono center muted">H42</text>
+    <line x1="70" y1="234" x2="112" y2="234" class="line ok" marker-end="url(#bpa-arrow-ok)"/>
+    <text x="126" y="238" class="t mono center ok">H43</text>
+    <line x1="140" y1="234" x2="176" y2="234" class="line ok" marker-end="url(#bpa-arrow-ok)"/>
+    <text x="190" y="238" class="t mono center ok">H44</text>
+    <line x1="204" y1="234" x2="240" y2="234" class="line ok" marker-end="url(#bpa-arrow-ok)"/>
+    <text x="254" y="238" class="t mono center ok">H45</text>
+    <line x1="268" y1="234" x2="304" y2="234" class="line ok" marker-end="url(#bpa-arrow-ok)"/>
+    <text x="318" y="238" class="t mono center ok">H46</text>
+
+    <!-- The remainder waits -->
+    <rect x="368" y="176" width="108" height="44" rx="6" class="d-grey"/>
+    <text x="422" y="195" class="t b center muted">47 … 52</text>
+    <text x="422" y="211" class="t small center muted">later cycle</text>
+    <text x="422" y="238" class="t small center muted">next bundle: 47</text>
+
+    <!-- Where the slice starts -->
+    <text x="34" y="292" class="t small muted">slice starts at</text>
+    <text x="34" y="308" class="t mono">received + 1 = 43</text>
+
+    <!-- One proof, over the anchor -->
+    <rect x="200" y="272" width="276" height="50" rx="8" class="d-ok"/>
+    <text x="212" y="292" class="t b">State proof</text>
+    <text x="212" y="308" class="t small">from A's validators: H46 + ChannelSyncData</text>
+    <line x1="318" y1="272" x2="318" y2="252" class="line ok" marker-end="url(#bpa-arrow-ok)"/>
+
+    <!-- Bundle + proof go to B's verifier -->
+    <line x1="476" y1="297" x2="580" y2="262" class="line c" marker-end="url(#bpa-arrow-c)"/>
+    <text x="530" y="304" class="t small center muted">submitted</text>
+    <text x="530" y="318" class="t small center muted">as one tx</text>
+
+    <!-- takeaway -->
+    <text x="380" y="364" class="t take center">One proof over the anchor; the running hash extends it back over every earlier message in the slice.</text>
+  </svg>
+</Figure>

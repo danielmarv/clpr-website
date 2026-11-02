@@ -1,0 +1,259 @@
+---
+/**
+ * Sections 3–4: "Who do you trust?" Compare three ways of carrying a message between ledgers
+ * and attack each one. Outcomes follow the CLPR design document §2.3 (trust model) and §3.1.4
+ * (endpoints must be unable to forge; availability depends on at least one honest endpoint).
+ */
+const { id = 'trust-designs' } = Astro.props as { id?: string };
+const markerId = `${id}-arrow`;
+const arrow = `url(#${markerId})`;
+---
+<div class="sim trust" id={id}>
+  <div class="sim__head"><div><span class="kind">Simulation</span><h3>Who has to be honest for a message to be safe?</h3></div><span class="pill grey" data-role="status">no attack yet</span></div>
+  <div class="sim__body">
+    <div class="choices" role="group" aria-label="Pick a design">
+      <span class="kicker">Design:</span>
+      <div class="seg">
+        <button class="btn" type="button" data-design="relayer" aria-pressed="false">A single relayer</button>
+        <button class="btn" type="button" data-design="committee" aria-pressed="true">A committee (3 of 5 keys)</button>
+        <button class="btn" type="button" data-design="clpr" aria-pressed="false">CLPR: verify it yourself</button>
+      </div>
+    </div>
+    <div class="sim__scroll">
+    <svg viewBox="0 0 760 230" role="img" aria-label="Ledger A on the left, ledger B on the right, and whatever sits between them.">
+      <rect x="20" y="40" width="170" height="150" rx="12" class="d-a" />
+      <text x="105" y="66" class="t b center">Ledger A</text>
+      <text x="105" y="86" class="t small center">its own validators</text>
+      <text x="105" y="150" class="t small center" data-role="a-note">"Ann sends 5 to Bo on B"</text>
+      <rect x="570" y="40" width="170" height="150" rx="12" class="d-b" />
+      <text x="655" y="66" class="t b center">Ledger B</text>
+      <text x="655" y="86" class="t small center">its own validators</text>
+      <text x="655" y="150" class="t small center" data-role="b-note">waiting…</text>
+
+      <!-- middle: relayer -->
+      <g data-mid="relayer" hidden>
+        <rect x="320" y="80" width="120" height="70" rx="10" class="d-grey" />
+        <text x="380" y="108" class="t center b">Relayer</text>
+        <text x="380" y="126" class="t small center">holds the key B trusts</text>
+        <line x1="190" y1="115" x2="320" y2="115" class="line" marker-end={arrow} />
+        <line x1="440" y1="115" x2="570" y2="115" class="line" marker-end={arrow} />
+        <text x="255" y="101" class="t small center">watches A</text>
+        <text x="505" y="101" class="t small center">signs "I saw it"</text>
+        <text x="20" y="218" class="t mono takeaway">security = one key</text>
+      </g>
+      <!-- middle: committee -->
+      <g data-mid="committee">
+        {[0, 1, 2, 3, 4].map((i) => {
+          const cx = 314 + i * 34;
+          return (
+            <g data-member={i}>
+              <rect x={300 + i * 34} y="88" width="28" height="54" rx="6" class="d-grey slot" />
+              <circle cx={cx} cy="104" r="5.5" class="key ring" />
+              <rect x={cx - 1.5} y="109" width="3" height="20" rx="1" class="key" />
+              <rect x={cx} y="117" width="5" height="3" class="key" />
+              <rect x={cx} y="124" width="6" height="3" class="key" />
+            </g>
+          );
+        })}
+        <text x="380" y="70" class="t center b">Committee</text>
+        <text x="380" y="164" class="t small center">B accepts anything 3 of them sign</text>
+        <line x1="190" y1="115" x2="298" y2="115" class="line" marker-end={arrow} />
+        <line x1="466" y1="115" x2="570" y2="115" class="line" marker-end={arrow} />
+        <text x="20" y="218" class="t mono takeaway">security = 3 of 5 keys</text>
+      </g>
+      <!-- middle: clpr -->
+      <g data-mid="clpr" hidden>
+        <rect x="320" y="80" width="120" height="70" rx="10" class="d-c" />
+        <text x="380" y="106" class="t center b">Endpoint</text>
+        <text x="380" y="124" class="t small center">carries a proof</text>
+        <text x="380" y="138" class="t small center">signed by A itself</text>
+        <line x1="190" y1="115" x2="320" y2="115" class="line c" marker-end={arrow} />
+        <line x1="440" y1="115" x2="570" y2="115" class="line c" marker-end={arrow} />
+        <text x="655" y="170" class="t small center" style="fill:var(--ok)">B checks A's signature itself</text>
+        <text x="20" y="218" class="t mono takeaway">security = Ledger A's own validators</text>
+      </g>
+      <!-- the message on its way: starts just right of Ledger A, moved by the script -->
+      <g transform="translate(212,115)">
+        <g data-role="env" class="env">
+          <rect x="-17" y="-10" width="34" height="20" rx="4" class="d-a" />
+          <text y="4" class="t mono center b" data-role="env-label">5</text>
+        </g>
+      </g>
+      <defs><marker id={markerId} viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--text-3)" /></marker></defs>
+      <g data-role="verdict" hidden>
+        <rect x="560" y="196" width="190" height="26" rx="6" data-role="verdict-box" class="d-ok" />
+        <text x="655" y="214" class="t small center b" data-role="verdict-text"></text>
+      </g>
+    </svg>
+    </div>
+    <p class="sim__scroll-note">Wider than a phone; scroll it sideways if you need to.</p>
+  </div>
+  <div class="sim__controls">
+    <div class="group">
+      <span class="kicker">Attack:</span>
+      <button class="btn danger" type="button" data-attack="steal" aria-pressed="false">Steal the middleman's keys</button>
+      <button class="btn danger" type="button" data-attack="tamper" aria-pressed="false">Change the message in transit</button>
+      <button class="btn danger" type="button" data-attack="offline" aria-pressed="false">Switch the middleman off</button>
+    </div>
+    <span class="spacer"></span>
+    <button class="btn" type="button" data-role="reset">Reset</button>
+  </div>
+  <div class="sim__log" data-role="log">Pick a design, then try an attack. The question is always the same: what can a dishonest middleman make Ledger B believe?</div>
+</div>
+<style is:global>
+  .sim.trust .choices .kicker { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-3); font-weight: 700; align-self: center; }
+  .sim.trust .seg { flex-wrap: wrap; }
+  .sim.trust g[data-mid] { transition: opacity 250ms; }
+  .sim.trust g[data-mid]:not([hidden]) { animation: trust-in 220ms ease-out; }
+  .sim.trust g[data-mid].off { opacity: 0.35; }
+  .sim.trust g[data-mid].off line { stroke-dasharray: 5 4; }
+  .sim.trust g[data-mid].hit > rect { fill: var(--bad-soft); stroke: var(--bad); }
+  .sim.trust .key { fill: var(--text-2); stroke: none; }
+  .sim.trust .key.ring { fill: none; stroke: var(--text-2); stroke-width: 2.5; }
+  .sim.trust g[data-member].bad .slot { fill: var(--bad-soft); stroke: var(--bad); }
+  .sim.trust g[data-member].bad .key { fill: var(--bad); }
+  .sim.trust g[data-member].bad .key.ring { fill: none; stroke: var(--bad); }
+  .sim.trust .takeaway { fill: var(--b); }
+  .sim.trust .env { opacity: 0; transition: transform 450ms ease-in-out, opacity 160ms; }
+  .sim.trust .env.on { opacity: 1; }
+  .sim.trust .env.forged rect { fill: var(--bad-soft); stroke: var(--bad); }
+  .sim.trust .env.forged text { fill: var(--bad); }
+  .sim.trust [data-role="b-note"].ok { fill: var(--ok); }
+  .sim.trust [data-role="b-note"].bad { fill: var(--bad); }
+  .sim.trust [data-role="b-note"].warn { fill: var(--b); }
+  .sim.trust [data-role="verdict"]:not([hidden]) { animation: trust-pop 220ms ease-out; transform-box: fill-box; transform-origin: center; }
+  @keyframes trust-in { from { opacity: 0; } }
+  @keyframes trust-pop { from { opacity: 0; transform: scale(0.9); } }
+  @media (min-width: 720px) { .sim.trust .sim__log { min-height: 6.4em; } }
+</style>
+
+<script>
+  type D = 'relayer' | 'committee' | 'clpr';
+  type A = 'steal' | 'tamper' | 'offline';
+  const OUT: Record<D, Record<A, { ok: boolean; b: string; log: string; stall?: boolean }>> = {
+    relayer: {
+      steal: { ok: false, b: 'accepts a forged message', log: '<span class="bad">Forged.</span> Ledger B trusts the relayer\'s key, so whoever holds that key can invent a message that Ledger A never sent. One key is the whole security of the system.' },
+      tamper: { ok: false, b: 'accepts "Ann sends 500"', log: '<span class="bad">Altered.</span> The relayer signs whatever it likes; B has no way to check the claim against A. Ann\'s 5 became 500.' },
+      offline: { ok: false, b: 'hears nothing', log: '<span class="warn">Stalled.</span> No relayer, no messages. Delivery and safety both depend on the same party.', stall: true },
+    },
+    committee: {
+      steal: { ok: false, b: 'accepts a forged message', log: '<span class="bad">Forged.</span> Three of the five keys are enough. Collude, hack or coerce three key-holders and Ledger B accepts anything. More keys raise the price of the attack; they do not remove it.' },
+      tamper: { ok: false, b: 'accepts "Ann sends 500"', log: '<span class="bad">Altered.</span> The committee attests to what it says it saw. If three members agree to lie, B cannot tell.' },
+      offline: { ok: false, b: 'hears nothing', log: '<span class="warn">Stalled.</span> If fewer than three members are online, nothing is delivered.', stall: true },
+    },
+    clpr: {
+      steal: { ok: true, b: 'rejects it', log: '<span class="ok">Rejected.</span> The endpoint holds no key that Ledger B cares about. What B checks is the signature of Ledger A\'s own validators on a proof that the message is in A\'s sealed state. An endpoint cannot produce that signature, so a stolen endpoint key forges nothing.' },
+      tamper: { ok: true, b: 'rejects it', log: '<span class="ok">Rejected.</span> The message is folded into a running hash chain that the proof commits to. Change one byte and the running hash B recomputes no longer matches the proven one. The endpoint only wasted its own transaction fee.' },
+      offline: { ok: false, b: 'hears nothing, for now', log: '<span class="warn">Delayed, not broken.</span> An endpoint can refuse or delay, but it cannot forge. Messages wait in Ledger A\'s queue until any honest endpoint, even a brand-new one, carries them across. Safety never depended on the endpoint; only liveness does.', stall: true },
+    },
+  };
+  // Left and right edges of each design's middle box, in SVG units; the token stops at the
+  // left edge, vanishes inside, and comes out at the right edge.
+  const EDGE: Record<D, [number, number]> = { relayer: [320, 440], committee: [300, 466], clpr: [320, 440] };
+  const ENV_X = 212;
+  const ENV_HALF = 19;
+  const END_X = 548;
+  for (const root of Array.from(document.querySelectorAll<HTMLElement>('.sim.trust'))) {
+    const $ = (s: string) => root.querySelector<HTMLElement>(s)!;
+    const log = $('[data-role="log"]');
+    const bNote = $('[data-role="b-note"]');
+    const verdict = $('[data-role="verdict"]');
+    const vbox = $('[data-role="verdict-box"]');
+    const vtext = $('[data-role="verdict-text"]');
+    const status = $('[data-role="status"]');
+    const env = $('[data-role="env"]');
+    const envLabel = $('[data-role="env-label"]');
+    const mids = Array.from(root.querySelectorAll<SVGGElement>('g[data-mid]'));
+    const members = Array.from(root.querySelectorAll<SVGGElement>('g[data-member]'));
+    const designButtons = Array.from(root.querySelectorAll<HTMLButtonElement>('button[data-design]'));
+    const attackButtons = Array.from(root.querySelectorAll<HTMLButtonElement>('button[data-attack]'));
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const IDLE_LOG = 'Pick a design, then try an attack. The question is always the same: what can a dishonest middleman make Ledger B believe?';
+    let design: D = 'committee';
+    // Every attack gets a number; Reset, a new attack or a design switch bumps it and the stale one stops.
+    let runId = 0;
+    const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+    const motion = (ms: number) => wait(reduced ? 0 : ms);
+    function place(x: number, instant = false) {
+      if (instant) env.style.transition = 'none';
+      env.style.transform = `translate(${x - ENV_X}px, 0)`;
+      if (instant) { void env.getBoundingClientRect(); env.style.transition = ''; }
+    }
+    function park() {
+      env.style.transition = 'none';
+      env.classList.remove('on', 'forged');
+      envLabel.textContent = '5';
+      env.style.transform = '';
+      void env.getBoundingClientRect();
+      env.style.transition = '';
+    }
+    function show() {
+      for (const g of mids) g.toggleAttribute('hidden', g.dataset.mid !== design);
+      for (const b of designButtons) b.setAttribute('aria-pressed', String(b.dataset.design === design));
+    }
+    function setStatus(text: string, kind: string) {
+      status.textContent = text;
+      status.className = 'pill ' + kind;
+      void status.offsetWidth;
+      status.classList.add('pulse');
+    }
+    status.addEventListener('animationend', () => status.classList.remove('pulse'));
+    function clear() {
+      runId++;
+      bNote.textContent = 'waiting…';
+      bNote.classList.remove('ok', 'bad', 'warn');
+      verdict.setAttribute('hidden', '');
+      for (const m of members) m.classList.remove('bad');
+      for (const g of mids) g.classList.remove('hit', 'off');
+      park();
+      status.textContent = 'no attack yet';
+      status.className = 'pill grey';
+      for (const b of attackButtons) b.setAttribute('aria-pressed', 'false');
+    }
+    function reset() { clear(); log.textContent = IDLE_LOG; }
+    async function attack(a: A) {
+      clear();
+      const my = runId;
+      const alive = () => my === runId;
+      const o = OUT[design][a];
+      const kind = o.stall ? 'grey' : o.ok ? 'ok' : 'bad';
+      const word = o.stall ? 'stalled' : o.ok ? 'safe' : 'compromised';
+      const mid = mids.find((g) => g.dataset.mid === design)!;
+      const [left, right] = EDGE[design];
+      for (const b of attackButtons) b.setAttribute('aria-pressed', String(b.dataset.attack === a));
+      log.innerHTML = `<span class="line">[${design} x ${a}]</span>${o.log}`;
+      env.classList.add('on');
+      await motion(20); if (!alive()) return;
+      place(left - ENV_HALF);
+      await motion(450); if (!alive()) return;
+      if (a === 'offline') {
+        mid.classList.add('off');
+      } else {
+        env.classList.remove('on');
+        await motion(160); if (!alive()) return;
+        place(right + ENV_HALF, true);
+        if (a === 'tamper') envLabel.textContent = '500';
+        env.classList.add('forged');
+        if (a === 'steal') {
+          mid.classList.add('hit');
+          if (design === 'committee') members.forEach((m, i) => m.classList.toggle('bad', i < 3));
+        }
+        env.classList.add('on');
+        await motion(160); if (!alive()) return;
+        place(END_X);
+        await motion(450); if (!alive()) return;
+      }
+      bNote.textContent = o.b;
+      bNote.classList.add(kind === 'grey' ? 'warn' : kind);
+      verdict.removeAttribute('hidden');
+      vbox.setAttribute('class', o.stall ? 'd-grey' : o.ok ? 'd-ok' : 'd-bad');
+      vtext.textContent = word;
+      vtext.style.fill = o.stall ? 'var(--text-2)' : o.ok ? 'var(--ok)' : 'var(--bad)';
+      setStatus(word, kind);
+    }
+    for (const b of designButtons) b.addEventListener('click', () => { design = b.dataset.design as D; show(); reset(); });
+    for (const b of attackButtons) b.addEventListener('click', () => { attack(b.dataset.attack as A); });
+    $('[data-role="reset"]').addEventListener('click', reset);
+    show();
+  }
+</script>

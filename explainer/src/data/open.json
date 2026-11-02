@@ -1,0 +1,89 @@
+{
+  "$comment": "What the design document itself marks as unresolved or as a caution for anyone relying on it. marker \"‼️\" rows are the passages the document flags with that sign, one row each, so check-data.mjs can tell when one is added or resolved; marker \"prose\" rows are gaps the document states in running text. plain is the site's short reading of each; optionsDoc points at the separate list of possible changes to the specification.",
+  "open": [
+    {
+      "id": "ledger-configuration",
+      "marker": "‼️",
+      "title": "Anyone can register a channel claiming any chain id",
+      "plain": "Channel creation needs nobody's permission, so anyone can register a ledger configuration with any chain id they like. An application has to check for itself that a channel really leads to the ledger it intends; a channel's existence proves nothing about its peer.",
+      "refs": [
+        {
+          "doc": "design",
+          "anchor": "311-ledger-identity-and-configuration",
+          "label": "design §3.1.1"
+        }
+      ]
+    },
+    {
+      "id": "sybil-endpoints",
+      "marker": "‼️",
+      "title": "Open endpoint registration rests on admin curation",
+      "plain": "Where anyone can register an endpoint, keeping the list honest rests mainly on the admin admitting each one; the bond adds friction but is not sized against attack costs on any particular chain. Peers should be picked with some randomness so no two endpoints pair up for good. On Hiero the network's own stake-weighted consensus covers this.",
+      "refs": [
+        {
+          "doc": "design",
+          "anchor": "312-endpoint-manifest",
+          "label": "design §3.1.2"
+        }
+      ]
+    },
+    {
+      "id": "upgradeable-verifiers",
+      "marker": "‼️",
+      "title": "A verifier behind an upgradeable proxy can change under a channel",
+      "plain": "The verifier's address is fixed for a channel's life, but the contract at that address may be a proxy whose logic can be replaced without the protocol noticing. The protocol allows it; anyone evaluating a channel should check whether its verifier is a proxy and who holds the upgrade key.",
+      "refs": [
+        {
+          "doc": "design",
+          "anchor": "315-verifier-contracts",
+          "label": "design §3.1.5"
+        }
+      ]
+    },
+    {
+      "id": "stake-sizing",
+      "marker": "‼️",
+      "title": "How large a connector's stake must be is not yet quantified",
+      "plain": "A connector's locked stake must cover the worst case: on the receiving side, the cost of running in-flight messages from a connector that has run dry; on the sending side, the fines for failed deliveries. A bond that is too small lets an attacker drain endpoints faster than fines can repay them. The minimum is a design parameter still to be quantified before production.",
+      "refs": [
+        {
+          "doc": "design",
+          "anchor": "334-failure-consequences-and-slashing",
+          "label": "design §3.3.4"
+        }
+      ]
+    },
+    {
+      "id": "queue-monopolization",
+      "marker": "‼️",
+      "title": "One connector could fill a shared queue",
+      "plain": "A single connector could approve enough messages to fill a channel's queue and block everyone else on it. Candidate answers: money escrowed per message and returned when the reply arrives, a per-connector share of the queue, or prices that rise as the queue fills. Unresolved before production.",
+      "refs": [
+        {
+          "doc": "design",
+          "anchor": "335-open-economic-design-issues",
+          "label": "design §3.3.5"
+        }
+      ]
+    },
+    {
+      "id": "admin-incentive",
+      "marker": "prose",
+      "title": "The admin has duties but no reward",
+      "plain": "The service admin must close a compromised channel promptly and gains nothing in the protocol for doing so: a known gap between responsibility and motivation.",
+      "refs": [
+        {
+          "doc": "design",
+          "anchor": "46-clpr-service-admin",
+          "label": "design §4.6"
+        }
+      ]
+    }
+  ],
+  "optionsDoc": {
+    "doc": "repo",
+    "id": "clpr-spec",
+    "path": "clpr-options-to-consider.md",
+    "label": "options to consider"
+  }
+}

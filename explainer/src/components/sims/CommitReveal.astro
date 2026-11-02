@@ -1,0 +1,461 @@
+---
+/**
+ * Channel registration by commit-reveal on two ledgers, with a real Keccak-256 computed in the
+ * browser (self-tested at load; shows "(hash unavailable)" rather than a wrong value).
+ *
+ * Spec §2.1, §5.1, §6.2 (channels), §2.2, §6.3 (connectors); design §3.1.3, §3.3.1. What the EVM
+ * reference contracts do differently (docs/lifecycle.md in clpr-smart-contracts) is shown in a
+ * separate "Reference implementation" callout and never blended into the spec's own claims.
+ *
+ * The public key is 64 random bytes standing in for an uncompressed secp256k1 key: no real ECDSA
+ * runs here, so the reveal signature is shown as a placeholder. Every hash on screen is genuine.
+ */
+import { design, spec, pinned, sol } from '../../lib/sources';
+import Callout from '@kse/components/Callout.astro';
+const { id = 'commit-reveal' } = Astro.props as { id?: string };
+
+const LIFECYCLE = pinned('clpr-smart-contracts', 'docs/lifecycle.md', 'channel-commit-reveal');
+const steps = [
+  {
+    phase: 'Step 0 · off-chain',
+    t: 'Pick a channel id and a keypair',
+    plain: 'The same channel id must be claimed on both ledgers, and claiming is permissionless, so whoever claimed it first on the second ledger would win. Commit-reveal is the fix. First the registrant picks the channel id, any 32 bytes (here 32 random ones), and generates a keypair for this ledger. Nothing has touched a ledger yet. Every hash you will see is a real Keccak-256 computed by this page; "New random id / keypair" rerolls both inputs.',
+    proto: '<code>channel_id</code> is <code>bytes(32)</code>, an arbitrary value chosen by the registrant and used unchanged on both ledgers. The keypair uses whatever signature scheme the platform supports (ECDSA secp256k1 on Ethereum, Ed25519 on other platforms). Because the id is not derived from a key, a different keypair may be used on each ledger.',
+    refs: [{ h: spec('512-phase-1--claim-registerchannel'), l: 'spec §5.1.2' }, { h: spec('21-channel'), l: 'spec §2.1' }],
+  },
+  {
+    phase: 'Step 1 · off-chain',
+    t: 'Commit: the ownership commitment',
+    plain: 'Hash the channel id and the public key together with Keccak-256. The 32-byte result is the ownership commitment. Anyone may see it; nobody can read the id or the key back out of it.',
+    proto: '<code>ownership_commitment = keccak256(channel_id ‖ public_key)</code>. The hash function is fixed cross-platform; the public-key encoding is platform-specific. The value below is a genuine Keccak-256 computed by this page.',
+    refs: [{ h: spec('512-phase-1--claim-registerchannel'), l: 'spec §5.1.2, step 3' }, { h: design('313-establishing-and-updating-channels'), l: 'design §3.1.3' }],
+  },
+  {
+    phase: 'Step 2 · Ledger A · commit',
+    t: 'registerChannel on Ledger A → PENDING',
+    plain: 'The registrant sends only the commitment to Ledger A. The CLPR Service checks that this exact commitment has not been claimed before and creates a channel in PENDING state, filed under the commitment. A PENDING channel can do nothing: no messages, no bundles, no syncing.',
+    proto: '<code>registerChannel(caller, ownership_commitment: bytes(32))</code>, permissionless. The Service (1) verifies the commitment is not already claimed and (2) creates the Channel in PENDING, keyed internally by the commitment until reveal. In PENDING every bundle submission and every <code>sendMessage</code> is rejected.',
+    refs: [{ h: spec('512-phase-1--claim-registerchannel'), l: 'spec §5.1.2' }, { h: spec('62-channel-management'), l: 'spec §6.2' }, { h: spec('211-channel-status-transitions'), l: 'spec §2.1.1' }],
+  },
+  {
+    phase: 'Step 3 · Ledger B · commit',
+    t: 'registerChannel on Ledger B → PENDING',
+    plain: 'The same claim goes to Ledger B, independently. Both commitments are now on file, and neither shows the name or the key.',
+    proto: 'The registrant repeats the claim on both ledgers before proceeding to the reveal phase, possibly with different keypairs (which would give a different commitment on each side; this page reuses one keypair so there is a single hash to follow).',
+    refs: [{ h: spec('512-phase-1--claim-registerchannel'), l: 'spec §5.1.2' }, { h: design('313-establishing-and-updating-channels'), l: 'design §3.1.3, sequence diagram' }],
+  },
+  {
+    phase: 'Step 4 · meanwhile',
+    t: 'Someone is watching Ledger A',
+    plain: 'An attacker reads Ledger A and sees the registerChannel transaction. All it carries is the 32-byte hash. To claim the same id on Ledger B they would need the channel id; to ever complete a claim they would need the private key. The hash yields neither. Copying the hash onto Ledger B is useless too: completing it requires the preimage and a signature from the key.',
+    proto: 'Anti-squatting rationale: the commitment hides both <code>channel_id</code> and <code>public_key</code>. An attacker who sees it cannot derive either value, so they cannot complete the reveal phase on either ledger. <code>completeChannel</code> checks <code>keccak256(channel_id ‖ public_key)</code> against the stored commitment and verifies a signature from the keypair.',
+    refs: [{ h: spec('511-anti-squatting-rationale'), l: 'spec §5.1.1' }, { h: design('313-establishing-and-updating-channels'), l: 'design §3.1.3, "Anti-squatting"' }],
+  },
+  {
+    phase: 'Step 5 · Ledger A · reveal',
+    t: 'completeChannel on Ledger A → ACTIVE',
+    plain: 'Now the registrant reveals on Ledger A: the channel id, the public key, a signature proving they hold the matching private key, the address of a verifier contract they deployed on A, and two proofs fetched from Ledger B (its CLPR configuration and its endpoint list). The Service recomputes the hash, checks the signature, and hands both proofs to the verifier. If everything holds, the channel becomes ACTIVE.',
+    proto: '<code>completeChannel(caller, channel_id, public_key, signature, verifier_contract, config_proof_bytes, endpoint_manifest_proof_bytes)</code>, where the signature is over <code>keccak256(channel_id)</code>. The Service: (1) <code>keccak256(channel_id ‖ public_key)</code> matches a stored commitment; (2) the signature verifies, scheme platform-specific; (3) <code>verifyConfig(config_proof_bytes, channel_id, endpoint_manifest_proof_bytes)</code> on <code>verifier_contract</code> returns <code>ctx</code>, <code>chain_id</code>, <code>peer_config_nanos</code>, <code>throttles</code>, the initial trust anchor and its id, and the peer <code>endpoint_manifest</code>; (4–5) it stores <code>channel_context</code>, the trust anchor and the manifest (version ≥ 1, truncated to <code>max_peer_endpoints</code>); (6) PENDING → ACTIVE, and the commitment is removed.',
+    refs: [{ h: spec('513-phase-2--reveal-completechannel'), l: 'spec §5.1.3' }, { h: spec('62-channel-management'), l: 'spec §6.2' }, { h: spec('31-verifier-contract-interface'), l: 'spec §3.1, verifyConfig' }],
+  },
+  {
+    phase: 'Step 6 · Ledger B · reveal',
+    t: 'completeChannel on Ledger B → ACTIVE',
+    plain: 'The same reveal on Ledger B, with a verifier deployed on B and proofs fetched from A. Each verifier understands the other ledger\'s proofs, which is why the two are different contracts.',
+    proto: 'The same inputs work on both ledgers. Note the order the design document\'s sequence diagram fixes: commitments on both ledgers first, then reveals. The verifier is a locally deployed contract; the Service only requires that it exists on this ledger.',
+    refs: [{ h: design('313-establishing-and-updating-channels'), l: 'design §3.1.3' }, { h: spec('513-phase-2--reveal-completechannel'), l: 'spec §5.1.3' }],
+  },
+  {
+    phase: 'Step 7 · done',
+    t: 'Both ACTIVE; the verifier is now fixed for life',
+    plain: 'Both sides are ACTIVE and syncing may begin. The verifier each side named cannot be changed later; if the other ledger changes how its proofs look, you register a new channel with a new verifier. The commitment was deleted at reveal, and the registration keypair has no further role in the protocol.',
+    proto: 'Verifier immutability: <code>verifier_contract</code> is immutable after <code>completeChannel</code>; a proof-format upgrade means a new Channel. Initial values on each side: <code>acked_message_id = 0</code>, both running hashes 32 zero bytes, own <code>ChannelSyncData</code> with <code>received_message_id = 0</code> and <code>next_message_id = 1</code>. An abandoned PENDING claim can be deleted by the admin with <code>closeChannel</code>.',
+    refs: [{ h: spec('515-verifier-immutability'), l: 'spec §5.1.5' }, { h: spec('21-channel'), l: 'spec §2.1' }, { h: spec('514-admin-cleanup'), l: 'spec §5.1.4' }, { h: design('313-establishing-and-updating-channels'), l: 'design §3.1.3, "Who can close"' }],
+  },
+];
+const ledgers = [
+  { k: 'a', x: 16, name: 'Ledger A', peer: 'B', col: 'var(--a)', box: 'd-a' },
+  { k: 'b', x: 422, name: 'Ledger B', peer: 'A', col: 'var(--b)', box: 'd-b' },
+];
+---
+<div class="sim commitreveal" id={id}>
+  <div class="sim__head"><div><span class="kind">Step-through</span><h3>Claiming a channel on two ledgers without being front-run</h3></div><span class="pill grey" data-role="clock">step 0 / 7</span>
+    <span class="sim__track seg" data-role="track" aria-hidden="true"><i data-tone="c"></i><i data-tone="a"></i><i data-tone="b"></i><i data-tone="bad"></i><i data-tone="a"></i><i data-tone="b"></i><i data-tone="ok"></i></span></div>
+  <div class="sim__body">
+    <div class="choices cr__tabs" role="group" aria-label="Which registration to show">
+      <button class="btn" type="button" data-tab="channel" aria-pressed="true">Channel registration</button>
+      <button class="btn" type="button" data-tab="connector" aria-pressed="false">Connectors use the same trick</button>
+    </div>
+
+    <div data-panel="channel">
+      <div class="sim__scroll">
+      <svg viewBox="0 0 760 362" role="img" aria-label="Two ledgers side by side. A registrant at the top sends a commitment to each, then reveals on each; an attacker at the bottom watches Ledger A and can do nothing on Ledger B.">
+        <defs>
+          <marker id={`${id}-arr`} viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--c)" /></marker>
+          <marker id={`${id}-arr-ok`} viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--ok)" /></marker>
+          <marker id={`${id}-arr-bad`} viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--bad)" /></marker>
+        </defs>
+
+        <g><rect x="300" y="8" width="160" height="46" rx="8" class="d-c" /><text x="380" y="27" class="t b center">Registrant</text><text x="380" y="44" class="t small center">any account, no permission</text></g>
+
+        <g class="part" data-part="regA"><path d="M302,50 L192,88" class="line c" marker-end={`url(#${id}-arr)`} /><text x="212" y="62" class="t small center">registerChannel(commitment)</text></g>
+        <g class="part" data-part="revA"><path d="M302,50 L192,88" class="line ok" stroke-width="2.5" marker-end={`url(#${id}-arr-ok)`} /><text x="212" y="62" class="t small center">completeChannel(reveal)</text></g>
+        <g class="part" data-part="regB"><path d="M458,50 L568,88" class="line c" marker-end={`url(#${id}-arr)`} /><text x="548" y="62" class="t small center">registerChannel(commitment)</text></g>
+        <g class="part" data-part="revB"><path d="M458,50 L568,88" class="line ok" stroke-width="2.5" marker-end={`url(#${id}-arr-ok)`} /><text x="548" y="62" class="t small center">completeChannel(reveal)</text></g>
+
+        {ledgers.map((L) => (
+          <g data-ledger={L.k}>
+            <rect x={L.x} y="92" width="322" height="188" rx="12" class="d-surface" stroke-dasharray="6 5" />
+            <text x={L.x + 16} y="112" class="t b" style={`fill:${L.col}`}>{L.name}</text>
+            <rect x={L.x + 240} y="98" width="72" height="20" rx="10" class="d-grey" data-role={`${L.k}-pill`} />
+            <text x={L.x + 276} y="112" class="t small center b cr__st" data-role={`${L.k}-st`}>none</text>
+            <rect x={L.x + 14} y="122" width="294" height="88" rx="8" class={L.box} fill-opacity="0.35" />
+            <text x={L.x + 26} y="140" class="t b">CLPR Service</text>
+            <rect x={L.x + 26} y="148" width="270" height="54" rx="6" class="d-surface" />
+            <text x={L.x + 36} y="164" class="t small" data-role={`${L.k}-r1`}>no channel record</text>
+            <text x={L.x + 36} y="180" class="t mono" data-role={`${L.k}-r2`}></text>
+            <text x={L.x + 36} y="196" class="t mono" data-role={`${L.k}-r3`}></text>
+            <g class="part" data-part={`ver${L.k.toUpperCase()}`}><rect x={L.x + 14} y="220" width="136" height="50" rx="6" class="d-surface" /><text x={L.x + 82} y="239" class="t small center">Verifier for {L.peer}'s proofs</text><text x={L.x + 82} y="256" class="t small center" style="fill:var(--ok)">verifyConfig ✓</text></g>
+            <g class="part" data-part={`prf${L.k.toUpperCase()}`}><rect x={L.x + 160} y="220" width="148" height="50" rx="6" class={L.k === 'a' ? 'd-b' : 'd-a'} /><text x={L.x + 234} y="239" class="t small center">proofs fetched from {L.peer}</text><text x={L.x + 234} y="256" class="t small center">config · endpoint list</text></g>
+          </g>
+        ))}
+
+        <g class="cr__env" data-role="env-b" data-at="reg"><rect width="156" height="16" rx="4" class="d-c" /><text x="78" y="12" class="t mono center cr__envtext"></text></g>
+        <g class="cr__env" data-role="env-a" data-at="reg"><rect width="156" height="16" rx="4" class="d-c" /><text x="78" y="12" class="t mono center cr__envtext"></text></g>
+
+        <g class="part" data-part="atk"><rect x="262" y="306" width="236" height="50" rx="8" class="d-bad" /><text x="380" y="325" class="t b center">Attacker watching Ledger A</text><text x="380" y="342" class="t small center mono" data-role="atk-sees">sees only the hash</text></g>
+        <g class="part" data-part="atkWatch"><path d="M177,280 L300,306" class="line bad dash" /><text x="130" y="324" class="t small center">reads the tx: sees the hash only</text></g>
+        <g class="part" data-part="atkX"><path d="M460,306 L583,280" class="line bad dash" marker-end={`url(#${id}-arr-bad)`} /><text x="521" y="299" class="t b center" style="fill:var(--bad);font-size:18px">✕</text><text x="630" y="324" class="t small center">cannot register the id, cannot reveal</text></g>
+      </svg>
+      </div>
+      <p class="sim__scroll-note">Wider than a phone; scroll it sideways if you need to.</p>
+
+      <div class="sim__controls">
+        <button class="btn" type="button" data-role="prev">◀ Prev</button>
+        <button class="btn primary" type="button" data-role="next">Next ▶</button>
+        <button class="btn" type="button" data-role="reset">Reset</button>
+        <span class="spacer"></span>
+        <button class="btn" type="button" data-role="reroll">New random id / keypair</button>
+      </div>
+      <div class="sim__log" data-role="log">The registrant holds a channel id and a keypair. Neither ledger knows anything yet.</div>
+
+      <div class="steps" style="margin-top:10px">
+        <div class="step-card" data-role="card">
+          {steps.map((s, i) => (
+            <div data-card={i} hidden={i !== 0}>
+              <div class="phase">{s.phase}</div>
+              <h4>{s.t}</h4>
+              <p>{s.plain}</p>
+              <p class="proto"><strong>In protocol terms.</strong> <span set:html={s.proto} /></p>
+              <p class="small" style="margin:6px 0 0">Source: {s.refs.map((r, j) => (<><a href={r.h} rel="noopener">{r.l}</a>{j < s.refs.length - 1 ? ' · ' : ''}</>))}</p>
+            </div>
+          ))}
+        </div>
+        <div class="cr__vals">
+          <div class="cr__row"><b>channel_id</b><span><code data-role="v-chan">…</code> <span class="small">32 random bytes</span></span></div>
+          <div class="cr__row"><b>public_key</b><span><code data-role="v-pub">…</code> <span class="small">64 random bytes standing in for an uncompressed secp256k1 key</span></span></div>
+          <div class="cr__row" data-from="1"><b>ownership_commitment</b><span><code data-role="v-commit">…</code> <span class="small">= keccak256(channel_id ‖ public_key)</span></span></div>
+          <div class="cr__row" data-from="5"><b>keccak256(channel_id)</b><span><code data-role="v-idhash">…</code> <span class="small">what the reveal signature is over</span></span></div>
+          <div class="cr__row" data-from="5"><b>signature</b><span><code>(placeholder)</code> <span class="small">no real ECDSA runs on this page</span></span></div>
+          <details class="cr__full"><summary class="small">Full hex, to check with your own keccak256</summary><pre data-role="full"></pre></details>
+        </div>
+      </div>
+    </div>
+
+    <div data-panel="connector" hidden>
+      <p class="small" style="margin:0 0 10px">A Connector is registered with the same commit-reveal, with one extra input (a 32-byte salt) and an id that is derived rather than chosen. Everything below is computed live from the channel id and public key of the other tab.</p>
+      <div class="cr__vals">
+        <div class="cr__row"><b>channel_id</b><span><code data-role="c-chan">…</code></span></div>
+        <div class="cr__row"><b>public_key</b><span><code data-role="c-pub">…</code></span></div>
+        <div class="cr__row"><b>salt</b><span><code data-role="c-salt">…</code> <button class="btn" type="button" data-role="salt-random">random salt</button> <button class="btn" type="button" data-role="salt-zero">bytes32(0)</button> <span class="small">a label for operators who need several Connectors on one Channel; defaults to 32 zero bytes</span></span></div>
+        <div class="cr__row"><b>connector_id</b><span><code data-role="c-id">…</code> <span class="small">= keccak256(channel_id ‖ public_key ‖ salt); the same on every ledger, so no address translation is ever needed</span></span></div>
+        <div class="cr__row"><b>ownership_commitment</b><span><code data-role="c-commit">…</code> <span class="small">= keccak256(connector_id ‖ public_key), the value passed to registerConnector(channel_id, commitment)</span></span></div>
+        <div class="cr__row"><b>signed at reveal</b><span><code data-role="c-sig">…</code> <span class="small">= keccak256(connector_id ‖ service_address); here with the Hiero CLPR system contract address 0x…016e. On EVM it is address(this) of the CLPR Service. Binding the signature to the deployment stops it being replayed elsewhere.</span></span></div>
+      </div>
+      <p class="small" style="margin:10px 0 0"><strong>Reveal.</strong> <code>completeConnector(channel_id, public_key, salt, signature, connector_contract, initial_balance, stake)</code> re-derives the id, checks the commitment and the signature, and creates the Connector keyed by <code>(channel_id, connector_id)</code>; the caller becomes its admin. A Connector must be registered on <em>both</em> ledgers with the same <code>public_key</code> and <code>salt</code>, so the ids match: the source side authorises, the destination side pays. Registered on one side only, messages fail with <code>CONNECTOR_NOT_FOUND</code>.</p>
+      <p class="small" style="margin:6px 0 0">Source: <a href={spec('22-connector')} rel="noopener">spec §2.2</a> · <a href={spec('63-connector-management')} rel="noopener">spec §6.3</a> · <a href={design('331-connectors')} rel="noopener">design §3.3.1</a>.</p>
+    </div>
+
+    <Callout kind="impl">
+      <p>The EVM contracts in <a href={LIFECYCLE} rel="noopener">clpr-smart-contracts (docs/lifecycle.md)</a> differ from the platform-neutral spec above in three places that matter here.</p>
+      <ul style="margin-bottom:0">
+        <li><strong>The channel id is derived, not chosen.</strong> <code><a href={sol('src/logic/ChannelLogic.sol', 201)} rel="noopener">deriveChannelId(peerChainId, pubKey, salt)</a></code> = <code>keccak256(loChain ‖ hiChain ‖ pubKey ‖ salt)</code>, the two chain ids sorted by their own keccak256 so both ends compute the same value, and <code>completeChannel</code> re-derives it and rejects a mismatch. With the key above, salt <code>bytes32(0)</code> and the spec's CAIP-2 examples <code>hedera:mainnet</code> / <code>eip155:1</code> as illustrative chain ids, that would give <code data-role="evm-id">…</code>, not the free-form id this page picked. lifecycle.md says the spec "will be updated" to this form; it still says "arbitrary 32-byte value chosen by registrant".</li>
+        <li><strong>The commit call also names the id.</strong> <code><a href={sol('src/logic/ChannelLogic.sol', 82)} rel="noopener">registerChannel(channelId, commitment)</a></code> takes the channel id in the clear, only to build a reverse index so that <code>closeChannel</code> can purge an abandoned PENDING commitment; the id is not validated until <code>completeChannel</code>.</li>
+        <li><strong>Key encoding and signature domain.</strong> The public key must be the 64-byte uncompressed secp256k1 key (X‖Y, no 0x04 prefix), and the reveal signature is over <code>keccak256(channelId ‖ address(this))</code>, bound to the specific service deployment, wrapped in the EIP-191 prefix <code>"\x19Ethereum Signed Message:\n32"</code> and checked with <code>ecrecover</code> against <code>address(keccak256(pubKey))</code> (<a href={sol('src/libraries/crypto/ECDSA.sol', 11)} rel="noopener">ECDSA.sol</a>). The spec's signature is over <code>keccak256(channel_id)</code> alone.</li>
+      </ul>
+    </Callout>
+
+    <p class="small" style="margin:8px 0 0">Source: <a href={spec('51-channel-registration')} rel="noopener">spec §5.1</a> · <a href={spec('62-channel-management')} rel="noopener">§6.2</a> · <a href={spec('21-channel')} rel="noopener">§2.1</a> · <a href={design('313-establishing-and-updating-channels')} rel="noopener">design §3.1.3</a> · <a href={LIFECYCLE} rel="noopener">lifecycle.md</a> (EVM). Keccak-256 is implemented in this page and self-tested against the standard vectors at load.</p>
+  </div>
+</div>
+<style>
+  /* Arrows appear only on their step; the boxes that will fill in later stay as a faint skeleton. */
+  .commitreveal .part { opacity: 0; transition: opacity 250ms; }
+  .commitreveal .part[data-part^="ver"], .commitreveal .part[data-part^="prf"], .commitreveal .part[data-part="atk"] { opacity: 0.12; }
+  .commitreveal .part.on { opacity: 1; }
+  /* After the reveal the attacker stays faintly on the map, cross included, so the story still reads. */
+  .commitreveal .part.faint { opacity: 0.35; }
+  /* The solid arrows draw on along their length when their step lands. */
+  .commitreveal .part[data-part^="reg"] path, .commitreveal .part[data-part^="rev"] path { stroke-dasharray: 130; stroke-dashoffset: 130; transition: stroke-dashoffset 350ms ease 80ms; }
+  .commitreveal .part.on[data-part^="reg"] path, .commitreveal .part.on[data-part^="rev"] path { stroke-dashoffset: 0; }
+  /* The commitment: one token per ledger, travelling from the registrant to its ledger. */
+  .commitreveal .cr__env { opacity: 0; transform: translate(302px, 60px); transition: transform 450ms ease, opacity 250ms; }
+  .commitreveal .cr__env[data-role="env-b"] { transform: translate(306px, 64px); }
+  .commitreveal .cr__env[data-at="a"] { transform: translate(166px, 128px); }
+  .commitreveal .cr__env[data-at="b"] { transform: translate(572px, 128px); }
+  .commitreveal .cr__env.shown { opacity: 1; }
+  .commitreveal .cr__envtext { font-size: 10px; }
+  .commitreveal .cr__st { transform-box: fill-box; transform-origin: center; }
+  .commitreveal .cr__st.pulse { animation: cr-pop 600ms ease; }
+  @keyframes cr-pop { 50% { transform: scale(1.3); } }
+  /* Progress track: each segment takes the colour of the actor that acts at that step. */
+  .commitreveal .sim__track.seg > i.now { opacity: 0.55; }
+  .commitreveal .sim__track.seg > i[data-tone="a"].done, .commitreveal .sim__track.seg > i[data-tone="a"].now { background: var(--a); }
+  .commitreveal .sim__track.seg > i[data-tone="b"].done, .commitreveal .sim__track.seg > i[data-tone="b"].now { background: var(--b); }
+  .commitreveal .sim__track.seg > i[data-tone="c"].done, .commitreveal .sim__track.seg > i[data-tone="c"].now { background: var(--c); }
+  .commitreveal .sim__track.seg > i[data-tone="bad"].done, .commitreveal .sim__track.seg > i[data-tone="bad"].now { background: var(--bad); }
+  .commitreveal .sim__track.seg > i[data-tone="ok"].done, .commitreveal .sim__track.seg > i[data-tone="ok"].now { background: var(--ok); }
+  /* Controls and log sit under the drawing as one bordered block. */
+  .commitreveal .sim__body .sim__controls { border: 1px solid var(--border); border-radius: 8px 8px 0 0; margin: 10px 0 0; }
+  .commitreveal .sim__body .sim__log { border: 1px solid var(--border); border-top: 0; border-radius: 0 0 8px 8px; padding: 8px 14px; min-height: 0; }
+  .cr__tabs { margin: 0 0 12px; }
+  .cr__vals { font-size: 0.88rem; border: 1px solid var(--border); border-radius: 8px; padding: 6px 12px; background: var(--surface); min-width: 0; }
+  .cr__row { display: grid; grid-template-columns: minmax(0, 13em) minmax(0, 1fr); gap: 4px 10px; padding: 5px 0; border-bottom: 1px solid var(--border); align-items: baseline; }
+  .cr__row[hidden] { display: none; }
+  .cr__row[data-from]:not([hidden]) { animation: cr-row 220ms ease-out; }
+  @keyframes cr-row { from { opacity: 0; transform: translateY(4px); } }
+  .cr__row code.flash { animation: cr-flash 600ms ease-out; }
+  @keyframes cr-flash { from { background: var(--ok-soft); border-color: var(--ok); } }
+  .cr__row:last-of-type { border-bottom: 0; }
+  .cr__row b { color: var(--text-2); font-weight: 600; font-family: var(--mono); font-size: 0.8rem; overflow-wrap: anywhere; }
+  .cr__row code { overflow-wrap: anywhere; }
+  .cr__row .small { display: block; margin-left: 0; }
+  .cr__row .btn { font-size: 0.78rem; padding: 3px 8px; margin-right: 4px; }
+  .cr__full { margin-top: 6px; }
+  .cr__full summary { cursor: pointer; }
+  .cr__full pre { font-size: 0.72rem; white-space: pre-wrap; overflow-wrap: anywhere; margin: 6px 0 0; }
+  @media (max-width: 560px) { .cr__row { grid-template-columns: minmax(0, 1fr); gap: 2px; } }
+</style>
+
+<script>
+  // ---------- Keccak-256, self-contained. Keccak-f[1600], rate 136 bytes, pad10*1 with the
+  // original Keccak domain byte 0x01 (SHA-3 would use 0x06). Lanes are little-endian uint64,
+  // held as BigInt: slow by hashing-library standards, plenty for a handful of hashes.
+  const M64 = (1n << 64n) - 1n;
+  const RC = [
+    0x0000000000000001n, 0x0000000000008082n, 0x800000000000808an, 0x8000000080008000n,
+    0x000000000000808bn, 0x0000000080000001n, 0x8000000080008081n, 0x8000000000008009n,
+    0x000000000000008an, 0x0000000000000088n, 0x0000000080008009n, 0x000000008000000an,
+    0x000000008000808bn, 0x800000000000008bn, 0x8000000000008089n, 0x8000000000008003n,
+    0x8000000000008002n, 0x8000000000000080n, 0x000000000000800an, 0x800000008000000an,
+    0x8000000080008081n, 0x8000000000008080n, 0x0000000080000001n, 0x8000000080008008n,
+  ];
+  // Rotation offsets r[x][y], indexed ROT[x][y].
+  const ROT = [[0, 36, 3, 41, 18], [1, 44, 10, 45, 2], [62, 6, 43, 15, 61], [28, 55, 25, 21, 56], [27, 20, 39, 8, 14]];
+  const rotl = (v: bigint, n: number): bigint => (n === 0 ? v : ((v << BigInt(n)) | (v >> BigInt(64 - n))) & M64);
+  function keccakF(A: bigint[]): void {
+    for (let r = 0; r < 24; r++) {
+      const C = [0, 1, 2, 3, 4].map((x) => A[x] ^ A[x + 5] ^ A[x + 10] ^ A[x + 15] ^ A[x + 20]);
+      for (let x = 0; x < 5; x++) {
+        const D = C[(x + 4) % 5] ^ rotl(C[(x + 1) % 5], 1);
+        for (let y = 0; y < 25; y += 5) A[x + y] ^= D;
+      }
+      const B: bigint[] = new Array(25).fill(0n);
+      for (let x = 0; x < 5; x++) for (let y = 0; y < 5; y++) B[y + 5 * ((2 * x + 3 * y) % 5)] = rotl(A[x + 5 * y], ROT[x][y]);
+      for (let y = 0; y < 25; y += 5) for (let x = 0; x < 5; x++) A[x + y] = B[x + y] ^ (~B[((x + 1) % 5) + y] & M64 & B[((x + 2) % 5) + y]);
+      A[0] ^= RC[r];
+    }
+  }
+  function keccak256(msg: Uint8Array): Uint8Array {
+    const rate = 136;
+    const padded = new Uint8Array(Math.ceil((msg.length + 1) / rate) * rate);
+    padded.set(msg);
+    padded[msg.length] ^= 0x01;
+    padded[padded.length - 1] ^= 0x80;
+    const A: bigint[] = new Array(25).fill(0n);
+    for (let off = 0; off < padded.length; off += rate) {
+      for (let i = 0; i < 17; i++) {
+        let lane = 0n;
+        for (let b = 7; b >= 0; b--) lane = (lane << 8n) | BigInt(padded[off + i * 8 + b]);
+        A[i] ^= lane;
+      }
+      keccakF(A);
+    }
+    const out = new Uint8Array(32);
+    for (let i = 0; i < 4; i++) { let lane = A[i]; for (let b = 0; b < 8; b++) { out[i * 8 + b] = Number(lane & 0xffn); lane >>= 8n; } }
+    return out;
+  }
+
+  const enc = new TextEncoder();
+  const hex = (b: Uint8Array): string => Array.from(b, (x) => x.toString(16).padStart(2, '0')).join('');
+  const fromHex = (h: string): Uint8Array => new Uint8Array(h.match(/../g)!.map((x) => parseInt(x, 16)));
+  const cat = (...parts: Uint8Array[]): Uint8Array => { const o = new Uint8Array(parts.reduce((n, p) => n + p.length, 0)); let k = 0; for (const p of parts) { o.set(p, k); k += p.length; } return o; };
+  const rnd = (n: number): Uint8Array => crypto.getRandomValues(new Uint8Array(n));
+  // Self-test against the standard Keccak-256 vectors. If this fails, no hash is ever shown.
+  let HASH_OK = false;
+  try {
+    HASH_OK = hex(keccak256(new Uint8Array(0))) === 'c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'
+      && hex(keccak256(enc.encode('abc'))) === '4e03657aea45a94fc7d47ba826c8d667c0d1e6e33a64a036ec44f58fa12d6c45';
+  } catch { HASH_OK = false; }
+  const K = (b: Uint8Array): Uint8Array | null => (HASH_OK ? keccak256(b) : null);
+  const UNAVAILABLE = '(hash unavailable)';
+  const short = (b: Uint8Array): string => '0x' + hex(b.subarray(0, 4)) + '…' + hex(b.subarray(b.length - 3));
+  const hs = (b: Uint8Array | null): string => (b ? short(b) : UNAVAILABLE);
+  const hf = (b: Uint8Array | null): string => (b ? '0x' + hex(b) : UNAVAILABLE);
+  const HIERO_SERVICE = fromHex('000000000000000000000000000000000000016e');
+  const CHAIN_IDS = [enc.encode('hedera:mainnet'), enc.encode('eip155:1')];
+  const ZERO32 = new Uint8Array(32);
+
+  // Which SVG parts are visible at each step 0..7 (not cumulative: each step is a full picture).
+  const SHOW: string[][] = [
+    [], [], ['regA'], ['regB'], ['atk', 'atkWatch', 'atkX'],
+    ['revA', 'verA', 'prfA'], ['verA', 'prfA', 'revB', 'verB', 'prfB'], ['verA', 'prfA', 'verB', 'prfB'],
+  ];
+  // From the first reveal on, the attacker's part of the picture stays faintly visible.
+  const FAINT = new Set(['atk', 'atkWatch', 'atkX']);
+  type St = 'none' | 'PENDING' | 'ACTIVE';
+  const stateAt = (step: number, pendingAt: number, activeAt: number): St => (step >= activeAt ? 'ACTIVE' : step >= pendingAt ? 'PENDING' : 'none');
+
+  for (const root of Array.from(document.querySelectorAll<HTMLElement>('.sim.commitreveal'))) {
+    const $ = (s: string) => root.querySelector<HTMLElement>(s)!;
+    const text = (role: string, s: string) => { const el = root.querySelector<HTMLElement>(`[data-role="${role}"]`); if (el) el.textContent = s; };
+    const log = $('[data-role="log"]');
+    const parts = Array.from(root.querySelectorAll<SVGGElement>('g.part'));
+    const cards = Array.from(root.querySelectorAll<HTMLElement>('[data-card]'));
+    const rows = Array.from(root.querySelectorAll<HTMLElement>('.cr__row[data-from]'));
+    const segs = Array.from(root.querySelectorAll<HTMLElement>('[data-role="track"] > i'));
+    const clock = $('[data-role="clock"]');
+    const prevBtn = $('[data-role="prev"]') as HTMLButtonElement;
+    const nextBtn = $('[data-role="next"]') as HTMLButtonElement;
+    const envs = { a: $('[data-role="env-a"]'), b: $('[data-role="env-b"]') };
+    // One-shot animations: the class comes off when the animation ends, so it can fire again.
+    root.addEventListener('animationend', (e) => { const el = e.target as HTMLElement; el.classList.remove('flash'); el.classList.remove('pulse'); });
+    let first = true;
+    // A short hex value that flashes when it changes (not on the first paint).
+    const code = (role: string, s: string) => { const el = root.querySelector<HTMLElement>(`[data-role="${role}"]`); if (!el || el.textContent === s) return; el.textContent = s; if (!first) el.classList.add('flash'); };
+    const TOTAL = 7;
+    let step = 0;
+    let chan = rnd(32);
+    let pub = rnd(64);
+    let salt = new Uint8Array(32);
+
+    function values() {
+      const commit = K(cat(chan, pub));
+      const idHash = K(chan);
+      const conId = K(cat(chan, pub, salt));
+      const conCommit = conId ? K(cat(conId, pub)) : null;
+      const conSig = conId ? K(cat(conId, HIERO_SERVICE)) : null;
+      let evmId: Uint8Array | null = null;
+      if (HASH_OK) {
+        const [x, y] = CHAIN_IDS;
+        const [lo, hi] = hex(keccak256(x)) <= hex(keccak256(y)) ? [x, y] : [y, x];
+        evmId = keccak256(cat(lo, hi, pub, ZERO32));
+      }
+      return { commit, idHash, conId, conCommit, conSig, evmId };
+    }
+
+    const lastSt: Record<'a' | 'b', St> = { a: 'none', b: 'none' };
+    function setLedger(k: 'a' | 'b', st: St, commit: Uint8Array | null) {
+      const pill = $(`[data-role="${k}-pill"]`);
+      pill.setAttribute('class', st === 'ACTIVE' ? 'd-ok' : st === 'PENDING' ? 'd-grey' : 'd-surface');
+      text(`${k}-st`, st);
+      if (st !== lastSt[k] && st !== 'none') $(`[data-role="${k}-st"]`).classList.add('pulse');
+      lastSt[k] = st;
+      // The commitment token: at the registrant until the commit lands on this ledger; revealed at the reveal.
+      const env = envs[k];
+      env.classList.toggle('shown', step >= 1);
+      env.dataset.at = st === 'none' ? 'reg' : k;
+      env.querySelector('rect')!.setAttribute('class', st === 'ACTIVE' ? 'd-ok' : 'd-c');
+      env.querySelector('text')!.textContent = st === 'ACTIVE' ? `reveal ${short(chan)}` : `commit ${hs(commit)}`;
+      if (st === 'none') { text(`${k}-r1`, 'no channel record'); text(`${k}-r2`, ''); text(`${k}-r3`, ''); }
+      else if (st === 'PENDING') { text(`${k}-r1`, 'PENDING · filed under the commitment'); text(`${k}-r2`, `commitment ${hs(commit)}`); text(`${k}-r3`, 'channel_id ?  public_key ?  (hidden)'); }
+      else { text(`${k}-r1`, 'ACTIVE · commitment removed'); text(`${k}-r2`, `channel_id ${short(chan)}`); text(`${k}-r3`, 'verifier fixed · peer config stored'); }
+    }
+
+    function render() {
+      const v = values();
+      const aSt = stateAt(step, 2, 5);
+      const bSt = stateAt(step, 3, 6);
+      setLedger('a', aSt, v.commit);
+      setLedger('b', bSt, v.commit);
+      const on = new Set(SHOW[step]);
+      const faint = step >= 5;
+      for (const p of parts) {
+        p.classList.toggle('on', on.has(p.dataset.part!));
+        p.classList.toggle('faint', faint && FAINT.has(p.dataset.part!));
+      }
+      for (const c of cards) c.hidden = Number(c.dataset.card) !== step;
+      for (const r of rows) r.hidden = Number(r.dataset.from) > step;
+      for (let i = 0; i < segs.length; i++) {
+        segs[i].classList.toggle('done', i + 1 < step || step === TOTAL);
+        segs[i].classList.toggle('now', i + 1 === step && step < TOTAL);
+      }
+      const clockText = `step ${step} / ${TOTAL}`;
+      if (clock.textContent !== clockText && !first) clock.classList.add('pulse');
+      clock.textContent = clockText;
+      clock.classList.toggle('ok', step === TOTAL);
+      clock.classList.toggle('grey', step !== TOTAL);
+      prevBtn.disabled = step === 0;
+      nextBtn.disabled = step === TOTAL;
+      code('v-chan', short(chan)); code('v-pub', short(pub)); code('v-commit', hs(v.commit)); code('v-idhash', hs(v.idHash));
+      text('atk-sees', `sees only ${hs(v.commit)}`);
+      code('c-chan', short(chan)); code('c-pub', short(pub)); code('c-salt', short(salt));
+      code('c-id', hs(v.conId)); code('c-commit', hs(v.conCommit)); code('c-sig', hs(v.conSig));
+      code('evm-id', hs(v.evmId));
+      text('full', [
+        `channel_id            = 0x${hex(chan)}`,
+        `public_key            = 0x${hex(pub)}`,
+        `ownership_commitment  = ${hf(v.commit)}`,
+        `keccak256(channel_id) = ${hf(v.idHash)}`,
+        `salt                  = 0x${hex(salt)}`,
+        `connector_id          = ${hf(v.conId)}`,
+        `connector commitment  = ${hf(v.conCommit)}`,
+        `connector sig message = ${hf(v.conSig)}`,
+      ].join('\n'));
+      const c = hs(v.commit);
+      const LOG: string[] = [
+        `The registrant holds <code>channel_id ${short(chan)}</code> and a keypair. Neither ledger knows anything yet. Press <strong>Next</strong>.`,
+        `<strong>commitment = keccak256(channel_id ‖ public_key) = ${c}</strong>, a real Keccak-256 computed by this page.`,
+        `Ledger A: <strong>PENDING</strong>, filed under ${c}. Ledger B: nothing yet.`,
+        `Ledger A: <strong>PENDING</strong>. Ledger B: <strong>PENDING</strong>. Both hold the same 32-byte hash; neither knows the id or the key.`,
+        `<span class="bad">The attacker holds ${c} and nothing else:</span> no channel_id, no public_key, no private key. Ledger B stays as it is.`,
+        `Ledger A: <span class="ok">ACTIVE</span> for channel_id ${short(chan)}; commitment removed; verifier fixed. Ledger B: still PENDING.`,
+        `Ledger B: <span class="ok">ACTIVE</span> too. The same channel_id now exists on both ledgers, each with its own verifier.`,
+        `Done: two ACTIVE channel records, one channel id ${short(chan)}, two verifiers, no commitments left. Syncing may begin.`,
+      ];
+      log.innerHTML = HASH_OK ? LOG[step] : `<span class="bad">Keccak-256 self-test failed in this browser;</span> hash values are shown as "${UNAVAILABLE}". ` + LOG[step];
+      const st = `A: ${aSt} · B: ${bSt}`;
+      const LINE: string[] = [
+        `step 0 · off-chain · channel_id ${short(chan)} · ${st}`,
+        `step 1 · ownership_commitment = ${c} · ${st}`,
+        `step 2 · A: registerChannel(${c}) · ${st}`,
+        `step 3 · B: registerChannel(${c}) · ${st}`,
+        `step 4 · attacker sees ${c} only · ${st}`,
+        `step 5 · A: completeChannel(${short(chan)}, …) · ${st}`,
+        `step 6 · B: completeChannel(${short(chan)}, …) · ${st}`,
+        `step 7 · done · ${st}`,
+      ];
+      const line = document.createElement('span');
+      line.className = 'line';
+      line.textContent = LINE[step];
+      log.prepend(line);
+      first = false;
+    }
+
+    const tabs = Array.from(root.querySelectorAll<HTMLButtonElement>('button[data-tab]'));
+    const panels = Array.from(root.querySelectorAll<HTMLElement>('[data-panel]'));
+    function showTab(tab: string) {
+      for (const x of tabs) x.setAttribute('aria-pressed', String(x.dataset.tab === tab));
+      for (const p of panels) p.hidden = p.dataset.panel !== tab;
+    }
+    for (const b of tabs) b.addEventListener('click', () => showTab(b.dataset.tab!));
+    // The step controls live inside the channel panel, so they cannot be pressed from the connector tab.
+    nextBtn.addEventListener('click', () => { step = Math.min(TOTAL, step + 1); render(); });
+    prevBtn.addEventListener('click', () => { step = Math.max(0, step - 1); render(); });
+    $('[data-role="reset"]').addEventListener('click', () => { step = 0; render(); });
+    $('[data-role="reroll"]').addEventListener('click', () => { chan = rnd(32); pub = rnd(64); render(); });
+    $('[data-role="salt-random"]').addEventListener('click', () => { salt = rnd(32); render(); });
+    $('[data-role="salt-zero"]').addEventListener('click', () => { salt = new Uint8Array(32); render(); });
+    render();
+  }
+</script>

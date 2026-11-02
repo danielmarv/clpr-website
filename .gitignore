@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# the plumbing explainer, built into public/plumbing/ from explainer/ by pnpm build
+/public/plumbing/

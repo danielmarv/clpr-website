@@ -1,0 +1,78 @@
+---
+/** A verifier as a pure function: proof bytes and the stored anchor and context in, verified contents out; spec §3.1, design §3.1.5, ADR 2026-07-02. */
+import Figure from '@kse/components/Figure.astro';
+import { design, spec, pinned } from '../../../lib/sources';
+---
+<Figure
+  lead="Stateless on purpose."
+  caption="Mutable trust material comes in and goes out through the trust_anchor parameters; constant identity comes in through ChannelContext, a field designed never to rotate. The service stores what the verifier returns and never reads the proof bytes itself."
+  source={[{ label: 'spec §3.1', href: spec('31-verifier-contract-interface') }, { label: 'design §3.1.5', href: design('315-verifier-contracts') }, { label: 'ADR 2026-07-02', href: pinned('clpr-spec', 'ADR/2026-07-02-channel-context-verifier-interface.md') }]}
+  kind="spec"
+  minWidth={740}
+>
+  <svg viewBox="0 0 740 356" role="img" aria-label="The endpoint's bundle_payload and the channel storage's trust_anchor and ChannelContext flow into the verifier's verifyBundle. The verifier returns sync data, messages, the anchor message id and running hash, and any new trust anchor or endpoint manifest, or reverts. The CLPR Service checks the returned contents and stores a new trust anchor back into channel storage before any message is processed.">
+    <defs>
+      <marker id="vio-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--text-3)" /></marker>
+      <marker id="vio-arrow-c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--c)" /></marker>
+      <marker id="vio-arrow-ok" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--ok)" /></marker>
+      <marker id="vio-arrow-b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--b)" /></marker>
+    </defs>
+
+    <!-- inputs -->
+    <rect x="16" y="24" width="190" height="64" rx="8" class="d-c" />
+    <text x="111" y="46" class="t b center">Endpoint</text>
+    <text x="111" y="64" class="t mono center">bundle_payload</text>
+    <text x="111" y="80" class="t small center">opaque proof bytes</text>
+
+    <rect x="16" y="150" width="190" height="122" rx="8" class="d-grey" />
+    <text x="111" y="172" class="t b center">Channel storage</text>
+    <text x="111" y="192" class="t mono center">trust_anchor</text>
+    <text x="111" y="206" class="t mono center">trust_anchor_id</text>
+    <text x="111" y="222" class="t small center">opaque to the service</text>
+    <text x="111" y="242" class="t mono center">ChannelContext</text>
+    <text x="111" y="258" class="t small center">channel_id, service_address</text>
+
+    <path d="M206,56 L268,100" class="line c" marker-end="url(#vio-arrow-c)" />
+    <text x="214" y="50" class="t small">payload</text>
+
+    <path d="M206,200 L268,146" class="line dash" marker-end="url(#vio-arrow)" />
+    <text x="214" y="222" class="t small">passed in</text>
+
+    <!-- the function -->
+    <rect x="270" y="70" width="200" height="100" rx="8" class="d-ok" />
+    <text x="370" y="92" class="t b center">Verifier</text>
+    <text x="370" y="110" class="t mono center">verifyBundle(payload,</text>
+    <text x="370" y="124" class="t mono center">trust_anchor, ctx)</text>
+    <text x="370" y="142" class="t small center">read-only;</text>
+    <text x="370" y="156" class="t small center">no per-channel state</text>
+
+    <line x1="470" y1="110" x2="532" y2="110" class="line ok" marker-end="url(#vio-arrow-ok)" />
+    <text x="502" y="102" class="t small center">returns</text>
+    <text x="502" y="124" class="t small center bad">or revert</text>
+
+    <!-- output -->
+    <rect x="534" y="70" width="190" height="108" rx="8" class="d-surface" />
+    <text x="629" y="92" class="t b center">Returned contents</text>
+    <text x="629" y="110" class="t mono center">sync_data · messages[]</text>
+    <text x="629" y="124" class="t mono center">anchor_message_id</text>
+    <text x="629" y="138" class="t mono center">anchor_running_hash</text>
+    <text x="629" y="152" class="t mono center">new_trust_anchor (+id)</text>
+    <text x="629" y="166" class="t mono center">new_endpoint_manifest</text>
+
+    <line x1="629" y1="178" x2="629" y2="216" class="line b" marker-end="url(#vio-arrow-b)" />
+    <text x="637" y="202" class="t small">checked</text>
+
+    <!-- the service -->
+    <rect x="534" y="218" width="190" height="84" rx="8" class="d-b" />
+    <text x="629" y="240" class="t b center">CLPR Service</text>
+    <text x="629" y="258" class="t small center">the service's checks:</text>
+    <text x="629" y="274" class="t mono center">hash chain · ordering</text>
+    <text x="629" y="288" class="t mono center">replay · progress</text>
+
+    <path d="M534,256 H208" class="line ok" marker-end="url(#vio-arrow-ok)" />
+    <text x="370" y="248" class="t small center">stores new_trust_anchor before any message (step 1c)</text>
+
+    <text x="370" y="328" class="t take center">The verifier validates that the bundle belongs to (trust_anchor, service_address, channel_id).</text>
+    <text x="370" y="344" class="t take center">Hash chain, ordering, replay and progress are the service's job.</text>
+  </svg>
+</Figure>

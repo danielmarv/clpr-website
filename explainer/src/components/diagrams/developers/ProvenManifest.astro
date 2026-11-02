@@ -1,0 +1,70 @@
+---
+/** Where each ledger's endpoint list comes from, how the other ledger stores a proven copy per channel, and the two ways that copy is refreshed (design §3.1.2, §5 R1/R9; spec §2.4). */
+import Figure from '@kse/components/Figure.astro';
+import { design, spec } from '../../../lib/sources';
+---
+<Figure
+  lead="Where the addresses come from."
+  caption="Each ledger publishes its own endpoint list on-chain; the other ledger stores a proven copy per channel and refreshes it from bundles. If every endpoint on one side vanishes at once, anyone can prove the new list and submit it directly."
+  source={[
+    { label: 'design §3.1.2', href: design('312-endpoint-manifest') },
+    { label: 'spec §2.4.1', href: spec('241-local-endpoint-manifest') },
+    { label: 'spec §2.4.2', href: spec('242-peer-manifest-on-ledger-per-channel') },
+    { label: 'design §5', href: design('5-recovery-scenarios') },
+  ]}
+  kind="spec"
+  minWidth={740}
+>
+  <svg viewBox="0 0 740 370" role="img" aria-label="Ledger A keeps its own endpoint list on-chain: on a Hiero network its consensus nodes, on an EVM network endpoints that applied with a bond and were admitted. At channel creation a proof of that list, sealed by Ledger A's validators, is checked by the verifier and stored as Ledger B's copy for the channel. Two paths refresh the copy from below: later changes arrive inside ordinary bundles via the endpoints, and if every endpoint on A is replaced at once, anyone fetches the new list, wraps it in a proof and submits it directly as an ordinary transaction.">
+    <defs>
+      <marker id="pab-arrow-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--a)" /></marker>
+      <marker id="pab-arrow-c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--c)" /></marker>
+      <marker id="pab-arrow-ok" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--ok)" /></marker>
+    </defs>
+
+    <!-- step labels above the top row -->
+    <text x="259" y="30" class="t small center">1 at channel creation</text>
+    <text x="467" y="30" class="t small center">2 the verifier checks it, then it is stored</text>
+
+    <!-- Ledger A's own list -->
+    <rect x="14" y="40" width="220" height="96" rx="8" class="d-a" />
+    <text x="124" y="64" class="t b center">Ledger A's endpoint list</text>
+    <text x="124" y="82" class="t small center">on-chain, kept by its CLPR Service</text>
+    <text x="124" y="98" class="t small center">Hiero: its consensus nodes, automatic</text>
+    <text x="124" y="114" class="t small center">EVM: apply with a bond, admin admits</text>
+
+    <!-- proof -->
+    <line x1="234" y1="88" x2="269" y2="88" class="line a" marker-end="url(#pab-arrow-a)" />
+    <rect x="272" y="56" width="176" height="64" rx="8" class="d-ok" />
+    <rect x="280" y="71" width="26" height="22" rx="6" class="d-surface" /><circle cx="293" cy="82" r="5" class="d-ok" />
+    <text x="378" y="86" class="t b center">Proof of the list</text>
+    <text x="360" y="104" class="t small center">sealed by A's validators</text>
+    <line x1="448" y1="88" x2="487" y2="88" class="line ok" marker-end="url(#pab-arrow-ok)" />
+
+    <!-- Ledger B's copy -->
+    <rect x="490" y="40" width="236" height="96" rx="8" class="d-b" />
+    <text x="608" y="64" class="t b center">Ledger B's copy, per channel</text>
+    <text x="608" y="82" class="t small center">checked by the verifier,</text>
+    <text x="608" y="98" class="t small center">stored with the channel;</text>
+    <text x="608" y="114" class="t small center">never typed in by hand</text>
+
+    <!-- update path: later changes -->
+    <rect x="14" y="166" width="220" height="56" rx="8" class="d-c" />
+    <text x="124" y="188" class="t b center">Later changes to the list</text>
+    <text x="124" y="206" class="t small center">arrive inside ordinary bundles</text>
+    <path d="M234,194 L580,194 L580,139" class="line c" marker-end="url(#pab-arrow-c)" />
+    <text x="400" y="184" class="t small center">3 via the endpoints, inside a bundle</text>
+
+    <!-- update path: every endpoint replaced at once -->
+    <rect x="14" y="250" width="220" height="84" rx="8" class="d-ok" />
+    <text x="124" y="272" class="t b center">Every endpoint on A</text>
+    <text x="124" y="288" class="t b center">replaced at once?</text>
+    <text x="124" y="306" class="t small center">anyone fetches the new list, wraps it</text>
+    <text x="124" y="322" class="t small center">in a proof and submits it directly</text>
+    <path d="M234,292 L650,292 L650,139" class="line ok" marker-end="url(#pab-arrow-ok)" />
+    <text x="400" y="282" class="t small center">4 as an ordinary transaction, no endpoint needed</text>
+
+    <!-- takeaway -->
+    <text x="370" y="358" class="t take center">Nobody configures the other side's endpoints by hand; a proof does, and anyone can submit one.</text>
+  </svg>
+</Figure>

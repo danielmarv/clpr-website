@@ -1,0 +1,652 @@
+---
+/**
+ * Trust anchor rotation, per design §3.1.5 (Verifier Contracts / Trust Anchor), spec §3.1
+ * (verifier interface), §3.2 (endpoint rotation obligations), §2.1.2 (Criterion 2) and §4.2
+ * Step 1c, plus the concrete QBFT and Hiero anchor documents and ADR 2026-07-02 (ChannelContext).
+ *
+ * The source chain's signing authority rotates V1 → V2 → … at epoch boundaries; the destination
+ * Channel stores one opaque trust_anchor (+ trust_anchor_id) and accepts only proofs an authority
+ * in that anchor can verify. Two encodings are simulated: single-authority (QBFT/IBFT-like) and
+ * window {current, next} (Ethereum-sync-committee-like). Nothing here is cryptographic; the
+ * outcomes follow the spec's rules for accepting, rejecting and rotating.
+ *
+ * Every drawn state is a class (epoch boxes, arrows, verdict, Channel tint) so the shared SVG
+ * transitions animate it; a small "bundle" chip rides along the top edge of the three boxes on
+ * each submit: green to the Channel on accept, red and back on revert, grey and still on "not sent".
+ */
+import { design, spec, pinned, sol } from '../../lib/sources';
+const { id = 'trust-anchor' } = Astro.props as { id?: string };
+const MAX = 7;
+const epochs = Array.from({ length: MAX }, (_, i) => i + 1);
+const LINKS = {
+  design315: design('315-verifier-contracts'),
+  spec31: spec('31-verifier-contract-interface'),
+  spec32: spec('32-endpoint-trust-anchor-rotation-obligations'),
+  specTiming: spec('timing-depends-on-trust-anchor-encoding'),
+  specTransition: spec('transition-bundle'),
+  specCatchup: spec('catch-up-across-multiple-missed-rotations'),
+  spec212: spec('212-bundle-progress-criteria'),
+  spec42: spec('42-bundle-verification-algorithm'),
+  qbft: pinned('clpr-spec', 'verifiers/qbft/trust_anchor.md'),
+  hiero: pinned('clpr-spec', 'verifiers/hiero/trust_anchor.md'),
+  adr: pinned('clpr-spec', 'ADR/2026-07-02-channel-context-verifier-interface.md'),
+  qbftSol: sol('src/verifiers/evm/qbft/QBFTVerifier.sol', 96),
+  relayConfig: pinned('clpr-endpoint', 'docs/configuration.md'),
+};
+---
+<div class="sim trustanchor" id={id} data-links={JSON.stringify(LINKS)}>
+  <div class="sim__head">
+    <div><span class="kind">Simulation</span><h3>Trust anchors: keeping up with the source's validators</h3></div>
+    <span class="pill ok" data-role="state">anchor current</span>
+  </div>
+  <div class="sim__body">
+    <div class="choices" role="group" aria-label="Trust anchor encoding">
+      <span class="small" style="align-self:center">Encoding:</span>
+      <div class="seg">
+        <button class="btn" type="button" data-mode="single" aria-pressed="true">Single-authority encoding</button>
+        <button class="btn" type="button" data-mode="window" aria-pressed="false">Window encoding</button>
+      </div>
+      <span class="small" style="align-self:center" data-role="mode-note">one authority at a time (a QBFT validator set)</span>
+    </div>
+    <div class="sim__scroll">
+      <svg viewBox="0 0 760 336" role="img" aria-labelledby={`${id}-title`}>
+      <title id={`${id}-title`}>Top: the source chain's validator sets by epoch. Bottom: the endpoint, the verifier call, and the destination Channel's stored trust anchor with the authorities it currently accepts.</title>
+      <defs>
+        <marker id={`${id}-arr`} viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--text-3)" /></marker>
+      </defs>
+
+      <!-- Source timeline -->
+      <text x="20" y="18" class="t b" style="fill:var(--b)">Source ledger: who seals its blocks</text>
+      <text x="740" y="18" class="t small" style="text-anchor:end" data-role="queue">outbound queue: 2 pending messages</text>
+      {epochs.map((e) => {
+        const x = 20 + (e - 1) * 104;
+        return (
+          <g data-epoch={e}>
+            <text x={x + 48} y="40" class="t small center muted">epoch {e}</text>
+            <rect x={x} y="46" width="96" height="42" rx="8" class={`ta__ebox ${e === 1 ? 'now' : 'future'}`} data-role="ebox" />
+            {e > 1 && <rect x={x + 6} y="52" width="8" height="8" rx="1" fill="var(--text-3)" />}
+            <text x={x + 48} y="66" class={`t b center${e === 1 ? '' : ' muted'}`} data-role="ename">V{e}</text>
+            <text x={x + 48} y="81" class="t small center" data-role="enote">{e === 1 ? 'signing now' : ''}</text>
+          </g>
+        );
+      })}
+      <rect data-role="trusted" class="ta__trusted" x="20" y="96" width="96" height="4" rx="2" />
+      <text x="92" y="114" class="t small center ta__ok" data-role="trusted-label">trusted by the destination</text>
+      <rect x="20" y="126" width="8" height="8" rx="1" fill="var(--text-3)" />
+      <text x="34" y="134" class="t small muted">first block of an epoch: sealed by the previous validator set, lists the next set in its extraData</text>
+
+      <!-- Endpoint -->
+      <g>
+        <rect x="20" y="152" width="200" height="128" rx="10" class="d-c" />
+        <text x="30" y="172" class="t b">Endpoint</text>
+        <text x="30" y="190" class="t small" data-role="ep-status">online, sees epoch 1</text>
+        <text x="30" y="207" class="t small">local record of anchor ids:</text>
+        <text x="30" y="223" class="t mono" data-role="ep-record">1</text>
+        <text x="30" y="244" class="t small" data-role="ep-remote">remote anchor id 1: current</text>
+        <text x="30" y="261" class="t small" data-role="ep-todo"></text>
+      </g>
+      <line x1="220" y1="216" x2="248" y2="216" class="line" marker-end={`url(#${id}-arr)`} data-role="arr1" />
+
+      <!-- Verifier call -->
+      <g>
+        <rect x="250" y="152" width="240" height="128" rx="10" class="d-surface" />
+        <text x="260" y="172" class="t b">Verifier</text>
+        <text x="260" y="188" class="t mono">verifyBundle(payload, anchor, ctx)</text>
+        <text x="260" y="207" class="t small" data-role="v-bundle">bundle: none yet</text>
+        <text x="260" y="223" class="t small" data-role="v-proof"></text>
+        <text x="260" y="239" class="t small" data-role="v-returns"></text>
+        <text x="260" y="255" class="t small" data-role="v-store"></text>
+        <g data-role="verdict" class="ta__verdict empty">
+          <rect x="260" y="260" width="130" height="18" rx="9" data-role="verdict-box" />
+          <text x="325" y="273" class="t small center b" data-role="verdict-text">verdict</text>
+        </g>
+      </g>
+      <line x1="490" y1="216" x2="518" y2="216" class="line" marker-end={`url(#${id}-arr)`} data-role="arr2" />
+
+      <!-- Destination channel -->
+      <g>
+        <rect x="520" y="152" width="220" height="128" rx="10" class="d-a ta__ch ok" data-role="ch-box" />
+        <text x="530" y="172" class="t b">Destination ledger: Channel</text>
+        <text x="530" y="190" class="t mono" data-role="ch-anchor">trust_anchor: V1</text>
+        <text x="530" y="206" class="t mono" data-role="ch-id">trust_anchor_id: 1</text>
+        <text x="530" y="225" class="t small">accepts proofs sealed by</text>
+        <g data-role="ch-pills">
+          <g data-pill="0"><rect x="530" y="233" width="52" height="20" rx="10" class="d-ok" /><text x="556" y="247" class="t small center b ta__ok">V1</text></g>
+          <g data-pill="1" class="ta__pill off"><rect x="590" y="233" width="52" height="20" rx="10" class="d-ok" /><text x="616" y="247" class="t small center b ta__ok">V2</text></g>
+        </g>
+        <text x="530" y="271" class="t small muted">the Service never inspects the bytes</text>
+      </g>
+      <rect x="520" y="292" width="220" height="38" rx="8" class="d-grey" />
+      <text x="530" y="308" class="t small b">channel_context: immutable</text>
+      <text x="530" y="323" class="t mono">channel_id · service_address</text>
+      <line x1="510" y1="304" x2="224" y2="304" class="line dash" marker-end={`url(#${id}-arr)`} />
+      <text x="367" y="298" class="t small center muted" data-role="sync-label">every sync payload carries trust_anchor_id = 1</text>
+      <text x="367" y="320" class="t small center muted">(self-reported and unproven: a cue, not evidence)</text>
+
+      <!-- The bundle chip rides along the top edge of the three boxes (Endpoint, Verifier, Channel);
+           it is drawn last so it paints above them. -->
+      <g transform="translate(200,151)" aria-hidden="true">
+        <g data-role="chip" class="ta__chip off">
+          <rect x="-27" y="-8" width="54" height="16" rx="8" />
+          <text x="0" y="4" class="t mono center">bundle</text>
+        </g>
+      </g>
+      </svg>
+    </div>
+    <p class="sim__scroll-note">Wider than a phone; scroll it sideways if you need to.</p>
+    <div class="ta__stats" data-role="stats">
+      <span class="pill grey">transactions sent <b data-stat="tx">0</b></span>
+      <span class="pill bad">reverted (fee wasted) <b data-stat="wasted">0</b></span>
+      <span class="pill ok">messages delivered <b data-stat="delivered">0</b></span>
+      <span class="pill b">waiting on the source <b data-stat="pending">2</b></span>
+      <span class="small">the timeline ends at epoch {MAX}.</span>
+    </div>
+  </div>
+  <div class="sim__controls">
+    <div class="group">
+      <span class="kicker">Source</span>
+      <button class="btn" type="button" data-ev="rotate">Source chain rotates (next epoch)</button>
+    </div>
+    <div class="group">
+      <span class="kicker">Endpoint</span>
+      <button class="btn" type="button" data-ev="normal">Submits a normal bundle</button>
+      <button class="btn" type="button" data-ev="late">Submits a late bundle (sealed by the previous authority)</button>
+      <button class="btn primary" type="button" data-ev="transition">Submits a transition bundle</button>
+      <button class="btn" type="button" data-ev="batch">Submits one batched catch-up bundle</button>
+      <button class="btn danger" type="button" data-ev="inject">Compromised endpoint injects an anchor</button>
+    </div>
+    <div class="group">
+      <span class="kicker">Outage</span>
+      <label class="range">N <input type="range" min="1" max="4" value="2" data-role="n" aria-label="Number of epochs the endpoint is offline" /></label>
+      <button class="btn" type="button" data-ev="offline">Endpoint goes offline for <span data-role="n-label">2</span> <span data-role="n-unit">epochs</span></button>
+      <button class="btn" type="button" data-ev="back">Endpoint comes back</button>
+      <span class="spacer"></span>
+      <button class="btn" type="button" data-ev="reset">Reset</button>
+    </div>
+  </div>
+  <div class="sim__log sim__log--tall" data-role="log"></div>
+  <div class="sim__body trustanchor__panels">
+    <div class="steps two">
+      <div class="result">
+        <h4>Concrete encodings</h4>
+        <p><strong>QBFT (Besu) verifier.</strong> The anchor is <code>abi.encode(…)</code> of four fields, 128 bytes in all:</p>
+        <ul class="small trustanchor__fields">
+          <li><code>bytes32 validatorSetHash</code> keccak256 of the sorted validator addresses</li>
+          <li><code>bytes32 codeHash</code> keccak256 of the ClprService bytecode</li>
+          <li><code>uint64 epochLength</code> blocks per epoch</li>
+          <li><code>uint64 epochNumber</code> epoch of this validator set</li>
+          <li><code>trust_anchor_id</code> = <code>epochNumber</code> as big-endian bytes, no leading zeros</li>
+        </ul>
+        <p class="small">Rotation evidence is the list of epoch-boundary headers (<code>epochBlockHeaders</code>) in the proof: each is sealed by the previous set and lists the next set in <code>extraData</code>; the verifier walks them in order and returns only the final anchor. The relay includes at most <code>maxEpochBlockHeadersPerBundle</code> (default 5) per bundle and catches up over several bundles if more epochs passed. Implementation note: the reference <code>QBFTVerifier.sol</code> currently stores a single validator address in the first slot, reverts with <code>MultiValidatorNotSupported</code> for larger sets, and returns the id as a fixed 8-byte <code>uint64</code>.</p>
+        <p><strong>Hiero (TSS) verifier.</strong> The anchor is the raw <code>ledger_id</code> bytes, the genesis-rooted identity of the network's threshold signing key, with no framing and no separate id (<code>verifyConfig</code> returns an empty <code>initialTrustAnchorId</code>). Rotation is not implemented yet: <code>verifyBundle</code> returns an empty <code>newTrustAnchor</code>, so the anchor is immutable for the Channel's lifetime. One generic Hiero verifier can serve Channels to many Hiero networks; the anchor says which network is being verified.</p>
+      </div>
+      <div class="result">
+        <h4>What can and cannot change the anchor</h4>
+        <ul class="small" style="margin:0;padding-left:1.1rem">
+          <li>The anchor is written by <code>verifyConfig</code> at <code>completeChannel</code> and afterwards changes only when <code>verifyBundle</code> returns a non-empty <code>new_trust_anchor</code>. There is no admin key, governance call or <code>ConfigUpdate</code> path.</li>
+          <li>Succession requirement: the successor must be committed to inside the same proof that was verified against the current anchor; a verifier that returns a new anchor without that proven commitment must revert. This is what stops a compromised endpoint from injecting an authority.</li>
+          <li>The Service stores <code>new_trust_anchor</code> and <code>new_trust_anchor_id</code> atomically before processing any message in the bundle (spec §4.2 Step 1c); the id must be non-empty exactly when the anchor is.</li>
+          <li>A bundle with zero application messages that advances the anchor is valid: Bundle Progress Criterion 2.</li>
+          <li><code>ChannelContext</code> (<code>channel_id</code>, <code>service_address</code>) is stored separately and never changes. The ADR rejected putting identity inside the anchor because a field designed to rotate cannot also carry something that must not: it would make a legitimate rotation indistinguishable from an identity substitution.</li>
+        </ul>
+      </div>
+    </div>
+    <p class="small" style="margin:10px 0 0">Source: <a href={LINKS.design315} rel="noopener">design §3.1.5</a> · <a href={LINKS.spec31} rel="noopener">spec §3.1</a> · <a href={LINKS.spec32} rel="noopener">spec §3.2</a> · <a href={LINKS.spec42} rel="noopener">spec §4.2</a> · <a href={LINKS.qbft} rel="noopener">QBFT trust anchor</a> · <a href={LINKS.qbftSol} rel="noopener">QBFTVerifier.sol</a> · <a href={LINKS.relayConfig} rel="noopener">relay configuration</a> · <a href={LINKS.hiero} rel="noopener">Hiero trust anchor</a> · <a href={LINKS.adr} rel="noopener">ADR 2026-07-02</a>.</p>
+  </div>
+</div>
+
+<style is:global>
+  /* Global (not scoped) so the state classes the script toggles on SVG elements always match;
+     every selector is prefixed with .trustanchor so nothing leaks. */
+  .trustanchor .sim__scroll > svg { min-width: 760px; }
+  .trustanchor .ta__ebox { fill: var(--surface); stroke: var(--border-2); stroke-width: 1; transform-box: fill-box; transform-origin: center; }
+  .trustanchor .ta__ebox.past { fill: var(--grey-soft); }
+  .trustanchor .ta__ebox.future { stroke-dasharray: 5 4; }
+  .trustanchor .ta__ebox.now { fill: var(--b-soft); stroke: var(--b); stroke-width: 2.5; }
+  .trustanchor .ta__ebox.pop { animation: ta-pop 500ms ease; }
+  @keyframes ta-pop { 50% { transform: scale(1.06); } }
+  .trustanchor .ta__trusted { fill: var(--ok); transition: x 300ms ease, width 300ms ease; }
+  .trustanchor [data-role="trusted-label"] { transition: transform 300ms ease; }
+  .trustanchor .ta__ok { fill: var(--ok); }
+  .trustanchor .ta__pill { transition: opacity 250ms; }
+  .trustanchor .ta__pill.off { opacity: 0; }
+  .trustanchor .ta__ch.ok { fill: var(--ok-soft); stroke: var(--ok); }
+  .trustanchor .ta__ch.bad { fill: var(--bad-soft); stroke: var(--bad); }
+  .trustanchor .ta__verdict rect { fill: var(--grey-soft); stroke: var(--border-2); }
+  .trustanchor .ta__verdict text { fill: var(--text-2); }
+  .trustanchor .ta__verdict.empty rect { fill: none; stroke: var(--border-2); stroke-dasharray: 3 3; }
+  .trustanchor .ta__verdict.empty text { fill: var(--text-3); font-weight: 400; }
+  .trustanchor .ta__verdict.ok rect { fill: var(--ok-soft); stroke: var(--ok); }
+  .trustanchor .ta__verdict.ok text { fill: var(--ok); }
+  .trustanchor .ta__verdict.bad rect { fill: var(--bad-soft); stroke: var(--bad); }
+  .trustanchor .ta__verdict.bad text { fill: var(--bad); }
+  .trustanchor .ta__chip { transition: opacity 250ms; }
+  .trustanchor .ta__chip.off { opacity: 0; }
+  .trustanchor .ta__chip rect { fill: var(--c-soft); stroke: var(--c); stroke-width: 1.5; }
+  .trustanchor .ta__chip text { fill: var(--text); }
+  .trustanchor .ta__chip.ok rect { fill: var(--ok-soft); stroke: var(--ok); }
+  .trustanchor .ta__chip.bad rect { fill: var(--bad-soft); stroke: var(--bad); }
+  .trustanchor .ta__chip.grey rect { fill: var(--grey-soft); stroke: var(--border-2); }
+  .trustanchor .ta__chip.grey text { fill: var(--text-3); }
+  .trustanchor .ta__stats { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 8px 0 0; }
+  .trustanchor .ta__stats b { display: inline-block; min-width: 1.2em; text-align: right; font-variant-numeric: tabular-nums; }
+  .trustanchor .ta__stats b.chg { animation: ta-flip 240ms ease-out; }
+  @keyframes ta-flip { from { transform: translateY(-0.6em); opacity: 0; } }
+  .trustanchor .sim__controls .group { flex: 1 1 100%; }
+  .trustanchor .trustanchor__panels { border-top: 1px solid var(--border); }
+  .trustanchor .trustanchor__fields { margin: 0 0 8px; padding-left: 1.1rem; }
+  .trustanchor .trustanchor__fields code { font-size: 0.8em; }
+  .trustanchor .result p { margin: 0 0 8px; }
+  .trustanchor .result p:last-child { margin-bottom: 0; }
+  .trustanchor .sim__log .proto { margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--border-2); font-size: 0.88rem; }
+  .trustanchor .sim__log .refs { margin-top: 4px; font-size: 0.8rem; color: var(--text-3); }
+  .trustanchor .sim__log .refs a { color: inherit; }
+</style>
+
+<script>
+  type Mode = 'single' | 'window';
+  type Verdict = 'accepted' | 'reverted' | 'suppressed';
+  interface Last { bundle: string; proof: string; returns: string; store: string; verdict: Verdict }
+  interface Msg { plain: string; proto: string; refs: [string, string][] }
+  const MAX = 7;
+  const CAP = 5; // rotation proofs per batched bundle (the QBFT relay's maxEpochBlockHeadersPerBundle default)
+  const NOTE: Record<Mode, string> = {
+    single: 'one authority at a time (a QBFT validator set)',
+    window: '{current, next} (Ethereum sync committees)',
+  };
+  const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const VERIFIER_X = 170; // chip travel, in viewBox units from its start over the Endpoint
+  const CHANNEL_X = 360;
+  const VERDICT_MS = REDUCED ? 0 : 420; // when the chip reaches the Verifier
+  const replay = (el: Element, cls: string) => { el.classList.remove(cls); void (el as HTMLElement).offsetWidth; el.classList.add(cls); };
+
+  for (const root of Array.from(document.querySelectorAll<HTMLElement>('.sim.trustanchor'))) {
+    const $ = (sel: string) => root.querySelector<HTMLElement>(sel)!;
+    const links = JSON.parse(root.dataset.links || '{}') as Record<string, string>;
+    const log = $('[data-role="log"]');
+    const nIn = root.querySelector<HTMLInputElement>('[data-role="n"]')!;
+    const nLabel = $('[data-role="n-label"]'); const nUnit = $('[data-role="n-unit"]');
+    const buttons = Array.from(root.querySelectorAll<HTMLButtonElement>('button[data-ev]'));
+    const btn = (ev: string) => buttons.find((b) => b.dataset.ev === ev)!;
+    const chip = $('[data-role="chip"]');
+    const arr1 = $('[data-role="arr1"]'); const arr2 = $('[data-role="arr2"]');
+    const verdict = $('[data-role="verdict"]'); const verdictText = $('[data-role="verdict-text"]');
+    const timers = new Set<number>();
+    let chipAnim: Animation | null = null;
+
+    let mode: Mode = 'single';
+    let s = 1;            // source epoch: blocks are sealed by V<s>
+    let cur = 1;          // anchor: V<cur> (single) or {V<cur>, V<cur+1>} (window)
+    let seen = 1;         // last source epoch the endpoint observed
+    let offline = false;
+    let pending: number[] = [1, 1]; // epoch in which each pending message was sent
+    let tx = 0, wasted = 0, delivered = 0;
+    let last: Last | null = null;
+    let shown: Last | null = null; // the bundle the chip has already travelled for
+    let shownS = 1;                // the epoch box last shown as "signing now"
+    let before = 'V1';             // the anchor as it read when the current action started
+
+    const set = () => (mode === 'single' ? [cur] : [cur, cur + 1]);
+    const words = () => (mode === 'single' ? `V${cur}` : `{V${cur}, V${cur + 1}}`);
+    const accepts = (v: number) => set().includes(v);
+    const gapAt = (epoch: number) => (mode === 'single' ? epoch - cur : Math.max(0, epoch - cur - 1));
+    const gap = () => gapAt(s);
+    const steps = () => s - cur; // rotation proofs the source can currently supply
+    const plural = (n: number, w: string) => `${n} ${w}${n === 1 ? '' : 's'}`;
+    const later = (fn: () => void, ms: number) => { const t = window.setTimeout(() => { timers.delete(t); fn(); }, ms); timers.add(t); };
+    const clearMotion = () => { for (const t of timers) clearTimeout(t); timers.clear(); if (chipAnim) { chipAnim.cancel(); chipAnim = null; } };
+    const setNum = (el: HTMLElement, text: string) => { if (el.textContent !== text) { el.textContent = text; replay(el, 'chg'); } };
+    const start = () => { before = words(); };
+
+    function deliverUpTo(epoch: number): number {
+      const k = pending.filter((e) => e <= epoch).length;
+      pending = pending.filter((e) => e > epoch);
+      delivered += k;
+      return k;
+    }
+    function line(): string {
+      const anchor = before === words() ? words() : `${before} -> ${words()}`;
+      const tail = last ? (last.verdict === 'accepted' ? 'accepted' : last.verdict === 'reverted' ? 'reverted' : 'not sent') : offline ? 'endpoint offline' : 'no bundle';
+      return `epoch ${s} · anchor ${anchor} · id ${cur} · tx ${tx} · ${tail}`;
+    }
+    function say(m: Msg) {
+      const refs = m.refs.map(([k, l]) => `<a href="${links[k]}" rel="noopener">${l}</a>`).join(' · ');
+      log.innerHTML = `<span class="line">${line()}</span><div>${m.plain}</div><div class="proto"><strong>Protocol.</strong> ${m.proto}</div><div class="refs">Source: ${refs}</div>`;
+    }
+    const setVerdict = (cls: string, text: string) => { verdict.setAttribute('class', `ta__verdict ${cls}`); verdictText.textContent = text; };
+
+    /** The chip leaves the Endpoint on every submit; where it ends, and its colour, is the verdict. */
+    function travel(v: Verdict) {
+      clearMotion();
+      chip.setAttribute('class', `ta__chip ${v === 'accepted' ? 'ok' : v === 'reverted' ? 'bad' : 'grey'}`);
+      arr1.setAttribute('class', v === 'suppressed' ? 'line' : 'line c');
+      const atVerifier = () => {
+        arr2.setAttribute('class', v === 'accepted' ? 'line ok' : v === 'reverted' ? 'line bad' : 'line');
+        setVerdict(v === 'accepted' ? 'ok' : v === 'reverted' ? 'bad' : 'grey', v === 'accepted' ? 'accepted' : v === 'reverted' ? 'reverted, fee lost' : 'not sent');
+      };
+      const end = v === 'accepted' ? CHANNEL_X : 0;
+      if (REDUCED) { chip.style.transform = `translateX(${end}px)`; atVerifier(); return; }
+      const frames = v === 'suppressed'
+        ? [{ transform: 'translateX(0)' }, { transform: 'translateX(22px)' }, { transform: 'translateX(0)' }]
+        : v === 'accepted'
+          ? [{ transform: 'translateX(0)' }, { transform: `translateX(${VERIFIER_X}px)`, offset: 0.45 }, { transform: `translateX(${VERIFIER_X}px)`, offset: 0.6 }, { transform: `translateX(${CHANNEL_X}px)` }]
+          : [{ transform: 'translateX(0)' }, { transform: `translateX(${VERIFIER_X}px)`, offset: 0.45 }, { transform: `translateX(${VERIFIER_X}px)`, offset: 0.6 }, { transform: 'translateX(0)' }];
+      chip.style.transform = 'translateX(0)';
+      chipAnim = chip.animate(frames, { duration: v === 'suppressed' ? 420 : 950, easing: 'ease-in-out', fill: 'forwards' });
+      later(atVerifier, v === 'suppressed' ? 200 : VERDICT_MS);
+    }
+    function idle() {
+      clearMotion();
+      chip.setAttribute('class', 'ta__chip off'); chip.style.transform = '';
+      arr1.setAttribute('class', 'line'); arr2.setAttribute('class', 'line');
+      setVerdict('empty', 'verdict');
+    }
+
+    function render() {
+      const trusted = set();
+      for (const g of Array.from(root.querySelectorAll<SVGGElement>('g[data-epoch]'))) {
+        const e = Number(g.dataset.epoch);
+        const box = g.querySelector<SVGRectElement>('[data-role="ebox"]')!;
+        const name = g.querySelector<SVGTextElement>('[data-role="ename"]')!;
+        const note = g.querySelector<SVGTextElement>('[data-role="enote"]')!;
+        box.setAttribute('class', `ta__ebox ${e === s ? 'now' : e < s ? 'past' : 'future'}`);
+        if (e === s && s !== shownS) replay(box, 'pop');
+        name.setAttribute('class', 't b center' + (e > s ? ' muted' : ''));
+        note.textContent = e === s ? 'signing now' : e < s ? 'past' : '';
+      }
+      shownS = s;
+      const lo = Math.min(...trusted), hi = Math.min(MAX, Math.max(...trusted));
+      const x0 = 20 + (lo - 1) * 104, x1 = 20 + (hi - 1) * 104 + 96;
+      const bar = $('[data-role="trusted"]');
+      bar.setAttribute('x', String(x0)); bar.setAttribute('width', String(x1 - x0));
+      bar.style.setProperty('x', `${x0}px`); bar.style.setProperty('width', `${x1 - x0}px`);
+      $('[data-role="trusted-label"]').style.transform = `translateX(${Math.max(92, Math.min(668, (x0 + x1) / 2)) - 92}px)`;
+      $('[data-role="queue"]').textContent = `outbound queue: ${plural(pending.length, 'pending message')}`;
+
+      $('[data-role="ep-status"]').textContent = offline ? `OFFLINE since epoch ${seen}` : `online, sees epoch ${s}`;
+      $('[data-role="ep-record"]').textContent = Array.from({ length: seen }, (_, i) => i + 1).join(' → ');
+      const g = gapAt(seen);
+      $('[data-role="ep-remote"]').textContent = `remote anchor id ${cur}: ${g === 0 ? 'current' : `behind by ${g}`}`;
+      $('[data-role="ep-todo"]').textContent = offline ? 'not syncing' : g === 0 ? 'normal bundles will verify' : `needs ${plural(g, 'transition')} first`;
+
+      $('[data-role="ch-anchor"]').textContent = `trust_anchor: ${words()}`;
+      $('[data-role="ch-id"]').textContent = `trust_anchor_id: ${cur}`;
+      for (const p of Array.from(root.querySelectorAll<SVGGElement>('[data-pill]'))) {
+        const i = Number(p.dataset.pill);
+        p.setAttribute('class', `ta__pill${i < trusted.length ? '' : ' off'}`);
+        if (i < trusted.length) p.querySelector('text')!.textContent = `V${trusted[i]}`;
+      }
+      $('[data-role="ch-box"]').setAttribute('class', `d-a ta__ch ${gap() > 0 ? 'bad' : 'ok'}`);
+      $('[data-role="sync-label"]').textContent = `every sync payload carries trust_anchor_id = ${cur}`;
+
+      $('[data-role="v-bundle"]').textContent = last ? `bundle: ${last.bundle}` : 'bundle: none yet';
+      $('[data-role="v-proof"]').textContent = last ? last.proof : '';
+      $('[data-role="v-returns"]').textContent = last ? last.returns : '';
+      $('[data-role="v-store"]').textContent = last ? last.store : '';
+      if (last && last !== shown) { shown = last; travel(last.verdict); }
+      else if (!last && shown) { shown = null; idle(); }
+
+      const state = $('[data-role="state"]');
+      const stateText = offline ? 'endpoint offline' : gap() > 0 ? `anchor behind by ${gap()}` : 'anchor current';
+      if (state.textContent !== stateText) {
+        state.textContent = stateText; state.className = 'pill ' + (offline ? 'grey' : gap() > 0 ? 'bad' : 'ok'); replay(state, 'pulse');
+      }
+
+      setNum($('[data-stat="tx"]'), String(tx));
+      setNum($('[data-stat="wasted"]'), String(wasted));
+      setNum($('[data-stat="delivered"]'), String(delivered));
+      setNum($('[data-stat="pending"]'), String(pending.length));
+
+      const room = MAX - s;
+      nIn.max = String(Math.max(1, Math.min(4, room)));
+      if (Number(nIn.value) > Number(nIn.max)) nIn.value = nIn.max;
+      nLabel.textContent = nIn.value; nUnit.textContent = Number(nIn.value) === 1 ? 'epoch' : 'epochs';
+      const stale = pending.some((e) => e <= s - 1); // something sealed by the previous authority is left to prove
+      const gate = (ev: string, disabled: boolean, why: string) => { const b = btn(ev); b.disabled = disabled; if (disabled) b.title = why; else b.removeAttribute('title'); };
+      const off = 'the endpoint is offline';
+      gate('rotate', s >= MAX, `the timeline ends at epoch ${MAX}`);
+      gate('normal', offline, off);
+      gate('late', offline || s < 2 || !stale, offline ? off : s < 2 ? 'the source has not rotated yet' : 'nothing sealed by the previous authority is left to prove');
+      gate('transition', offline, off);
+      gate('batch', offline || steps() < 2, offline ? off : 'fewer than two rotations to catch up on');
+      gate('offline', offline || room < 1, offline ? 'the endpoint is already offline' : `the timeline ends at epoch ${MAX}`);
+      gate('back', !offline, 'the endpoint is online');
+      for (const b of Array.from(root.querySelectorAll<HTMLButtonElement>('button[data-mode]'))) b.setAttribute('aria-pressed', String(b.dataset.mode === mode));
+      $('[data-role="mode-note"]').textContent = NOTE[mode];
+    }
+
+    function intro(): Msg {
+      return mode === 'single'
+        ? {
+            plain: `The Channel was created with V1 as its trust anchor (returned by verifyConfig at completeChannel). The source is in epoch 1 and seals its blocks with V1. In a single-authority encoding the anchor holds exactly one authority, so rotation is strict. Try: rotate the source, then submit a normal bundle.`,
+            proto: `Channel.trust_anchor = anchor(V1), Channel.trust_anchor_id = 1. verifyBundle accepts a proof only if the authority in the stored anchor can verify it; the Service never inspects the bytes.`,
+            refs: [['design315', 'design §3.1.5'], ['specTiming', 'spec §3.2, timing']],
+          }
+        : {
+            plain: `The Channel's anchor is a window {V1, V2}: the authority signing now and the successor the source has already committed to. Proofs sealed by either are accepted, which frees the endpoint from hitting the exact boundary. Try: rotate the source (bundles keep flowing), then advance the window when convenient.`,
+            proto: `Channel.trust_anchor = window(V1, V2), Channel.trust_anchor_id = 1. "The verifier accepts proofs signed by any authority in the set. A transition bundle advances the window when a proof includes a state-proven commitment to an additional authority." Verifier implementers SHOULD use this for frequent, predictable rotations.`,
+            refs: [['specTiming', 'spec §3.2, timing'], ['design315', 'design §3.1.5']],
+          };
+    }
+
+    function reset() {
+      s = 1; cur = 1; seen = 1; offline = false; pending = [1, 1]; tx = 0; wasted = 0; delivered = 0; last = null;
+      before = words();
+      render();
+      say(intro());
+    }
+
+    function rotate() {
+      if (s >= MAX) return;
+      start();
+      const old = s;
+      s += 1;
+      pending.push(s, s);
+      if (!offline) seen = s;
+      last = null;
+      render();
+      const stuck = !accepts(s);
+      say({
+        plain: `The source chain crossed an epoch boundary: its validators changed from V${old} to V${s}, and every block from now on is sealed by V${s}. Applications queued 2 more messages during the new epoch. Nothing changed on the destination, whose Channel still trusts ${words()}.${offline ? ' The endpoint is offline and has not noticed.' : stuck ? ` A normal bundle sealed by V${s} would now be rejected: the endpoint has to get a transition bundle in first.` : ` V${s} is already inside the window, so bundles keep flowing; the endpoint can advance the window whenever it suits.`}`,
+        proto: mode === 'single'
+          ? `The first block of epoch ${s} is sealed by V${old} and lists V${s} in its extraData. That block is the rotation evidence a transition bundle carries: verifiable by the old authority, committing to the new one. With a single-authority anchor the old authority stops being accepted the moment the transition lands, so the endpoint must submit it "at the exact source chain authority boundary, with no prior-authority proofs in-flight".`
+          : `The source state now has V${s} as current and commits to V${s + 1} as next. A proof sealed by V${s} that includes that commitment is what advances the window: "the endpoint can submit the window-advance bundle at any point while the current window covers all in-flight proofs."`,
+        refs: mode === 'single' ? [['qbft', 'QBFT trust anchor'], ['specTiming', 'spec §3.2, timing']] : [['specTiming', 'spec §3.2, timing'], ['design315', 'design §3.1.5']],
+      });
+    }
+
+    function submitNormal(late: boolean) {
+      start();
+      const v = late ? s - 1 : s;
+      const kind = late ? `late, sealed by V${v}` : `normal, sealed by V${v}`;
+      const k = pending.filter((e) => e <= v).length;
+      if (k === 0) {
+        last = { bundle: kind, proof: 'nothing new to prove', returns: 'pre-check: no progress criterion holds', store: '', verdict: 'suppressed' };
+        render();
+        say({
+          plain: late
+            ? `A proof sealed by V${v} could only prove messages that existed before the rotation, and those were all delivered already. The endpoint's pre-check finds no Bundle Progress Criterion satisfied and does not send the bundle.`
+            : `There is nothing new to deliver, so the endpoint's pre-check finds no Bundle Progress Criterion satisfied and does not send the bundle at all. Had it sent one, the Service would reject it as NoProgress and the fee would be lost.`,
+          proto: `Spec §2.1.2: "CLPR Endpoints MUST NOT submit bundles that make no progress"; the Service applies the same five criteria after the verifier call (§4.2 Step 1a) and rejects with NoProgress.`,
+          refs: [['spec212', 'spec §2.1.2'], ['spec42', 'spec §4.2']],
+        });
+        return;
+      }
+      tx += 1;
+      if (accepts(v)) {
+        deliverUpTo(v);
+        last = { bundle: kind, proof: `state proof at epoch ${v}, ${plural(k, 'message')}`, returns: 'returns new_trust_anchor = empty', store: 'anchor unchanged', verdict: 'accepted' };
+        render();
+        if (!late) {
+          say({
+            plain: `The endpoint proves the source's current state with a proof sealed by V${v}. The Channel trusts V${v}, so verifyBundle succeeds and ${plural(k, 'message')} ${k === 1 ? 'is' : 'are'} delivered. new_trust_anchor came back empty: nothing rotates.`,
+            proto: `§4.2 Step 1: verifyBundle(bundle_payload, trust_anchor, ctx) returned sync data, ${k} message payloads, the anchor message id and running hash, new_trust_anchor = empty, new_trust_anchor_id = empty. Step 1c is skipped because the anchor is empty; steps 2 to 6 (size, replay defence, running hash, dispatch) run as usual.`,
+            refs: [['spec42', 'spec §4.2'], ['spec31', 'spec §3.1']],
+          });
+        } else if (mode === 'single') {
+          say({
+            plain: `This bundle was built before the rotation: its proof is sealed by V${v}. The Channel still trusts V${v}, so it is accepted and ${plural(k, 'older message')} ${k === 1 ? 'is' : 'are'} delivered. It worked only because the transition has not landed yet.`,
+            proto: `Historical blocks stay verifiable under the authority that sealed them. In a single-authority encoding the transition must be submitted "at the exact source chain authority boundary, with no prior-authority proofs in-flight": once it lands, this bundle would revert and its fee would be lost.`,
+            refs: [['specTiming', 'spec §3.2, timing'], ['spec42', 'spec §4.2']],
+          });
+        } else {
+          say({
+            plain: `This bundle was built before the rotation and is sealed by V${v}, which is still inside the window ${words()}. It is accepted and ${plural(k, 'older message')} ${k === 1 ? 'is' : 'are'} delivered. This is the point of the window: the endpoint can drain in-flight proofs before it advances the window.`,
+            proto: `Window encoding: "the endpoint can submit the window-advance bundle at any point while the current window covers all in-flight proofs." No boundary timing to hit.`,
+            refs: [['specTiming', 'spec §3.2, timing'], ['design315', 'design §3.1.5']],
+          });
+        }
+      } else {
+        wasted += 1;
+        last = { bundle: kind, proof: `state proof at epoch ${v}, ${plural(k, 'message')}`, returns: `revert: V${v} is not in ${words()}`, store: 'anchor unchanged', verdict: 'reverted' };
+        render();
+        const movedOn = v < Math.min(...set());
+        if (late && movedOn) {
+          say({
+            plain: `<span class="bad">Rejected.</span> An in-flight bundle sealed by V${v} arrived after the anchor moved on. V${v} is no longer trusted, so verifyBundle reverts and the fee is wasted. Nothing else is harmed: the messages are still on the source and a fresh proof can deliver them.`,
+            proto: mode === 'single'
+              ? `"After the transition bundle updates it, proofs from the prior authority are immediately rejected." This is the cost of a single-authority encoding: it "maximally constrains endpoint implementation".`
+              : `A window drops its oldest authority when it advances; anything still sealed by V${v} is now stale. The endpoint chose when to advance, so it could have waited for this proof to land first.`,
+            refs: [['specTiming', 'spec §3.2, timing'], ['spec42', 'spec §4.2']],
+          });
+        } else {
+          say({
+            plain: `<span class="bad">Stuck.</span> The proof is sealed by V${v}, but the Channel only trusts ${words()}. verifyBundle reverts, the whole bundle is rejected, and the endpoint paid the transaction fee for nothing. ${plural(pending.length, 'message')} wait on the source until a transition bundle brings the anchor forward.`,
+            proto: `§4.2 Step 1: "If the verifier reverts or returns an error, reject the entire bundle. The submitting account pays the transaction cost." The endpoint's obligation (§3.2, steps 1 to 5) was to read trust_anchor_id from the last sync payload, notice it cannot produce proofs verifiable under ${words()}, and submit transition bundles before any application bundle.`,
+            refs: [['spec42', 'spec §4.2'], ['spec32', 'spec §3.2']],
+          });
+        }
+      }
+    }
+
+    function transition() {
+      start();
+      if (steps() < 1) {
+        last = { bundle: 'transition', proof: 'no rotation evidence exists yet', returns: 'pre-check: Criterion 2 would not hold', store: '', verdict: 'suppressed' };
+        render();
+        say({
+          plain: mode === 'single'
+            ? `Nothing to transition: the source is still in epoch ${s}, so no epoch-boundary block sealed by V${s} exists yet. The endpoint's pre-check suppresses the bundle.`
+            : `Nothing to advance: the window already holds V${cur} and the committed successor V${cur + 1}, and the source has not committed anything further. The endpoint's pre-check suppresses the bundle.`,
+          proto: `A transition bundle must embed "a state-proven commitment to a new or additional authority. The verifier validates this commitment and returns new_trust_anchor and new_trust_anchor_id. If no valid commitment is present the verifier MUST revert." Without evidence there is nothing to build, and Criterion 2 (new_trust_anchor_id ≠ Channel.trust_anchor_id) could not hold.`,
+          refs: [['specTransition', 'spec §3.2, transition bundle'], ['spec212', 'spec §2.1.2']],
+        });
+        return;
+      }
+      tx += 1;
+      const old = cur;
+      cur += 1;
+      const sealer = mode === 'single' ? old : old + 1;
+      const successor = mode === 'single' ? cur : cur + 1;
+      last = {
+        bundle: 'transition, 0 messages',
+        proof: `sealed by V${sealer}, commits to V${successor}`,
+        returns: `returns new anchor ${words()}, id ${cur}`,
+        store: 'stored before any message (Step 1c)',
+        verdict: 'accepted',
+      };
+      render();
+      const more = gap() > 0 ? ` The source is already at epoch ${s}, so ${plural(gap(), 'more transition')} ${gap() === 1 ? 'is' : 'are'} needed, each verified against the anchor the previous one installed.` : ' The anchor is current again: normal bundles will verify.';
+      if (mode === 'single') {
+        say({
+          plain: `The endpoint submits the first block of epoch ${cur}: it is sealed by V${old}, which the Channel trusts, and lists V${cur} as the next validator set. The verifier checks the seals against V${old}, reads the successor, and hands it back as new_trust_anchor. The Service stores the new anchor and its id ${cur} before it looks at any message. From this moment only V${cur} is accepted and V${old} is rejected. The bundle carried zero application messages and is still valid.${more}`,
+          proto: `verifyBundle(bundle_payload, anchor(V${old}), ctx) returned new_trust_anchor = anchor(V${cur}), new_trust_anchor_id = ${cur}. §4.2 Step 1a: Criterion 2 holds (new_trust_anchor_id ≠ Channel.trust_anchor_id), so a bundle with no messages makes progress. Step 1c: Channel.trust_anchor and Channel.trust_anchor_id are set atomically "before processing any message in this bundle".`,
+          refs: [['specTransition', 'spec §3.2, transition bundle'], ['spec42', 'spec §4.2 Step 1c'], ['spec212', 'spec §2.1.2'], ['qbft', 'QBFT trust anchor']],
+        });
+      } else {
+        say({
+          plain: `The endpoint submits a proof sealed by V${sealer}, which is inside the window, carrying the source's commitment to V${successor}. The verifier returns the new window ${words()}; the Service stores it and its id ${cur} before any message is processed. V${old} drops out of the window. The timing was the endpoint's choice: it could have done this at any moment while nothing sealed by V${old} was still in flight.${more}`,
+          proto: `verifyBundle returned new_trust_anchor = window(V${cur}, V${successor}), new_trust_anchor_id = ${cur}. Criterion 2 holds; §4.2 Step 1c stores both atomically before any message. "With a window encoding, the endpoint can additionally batch window-advances into regular application bundles rather than requiring separate trust-only bundles."`,
+          refs: [['specTransition', 'spec §3.2, transition bundle'], ['specCatchup', 'spec §3.2, catch-up'], ['spec42', 'spec §4.2 Step 1c']],
+        });
+      }
+    }
+
+    function batch() {
+      const missed = steps();
+      if (missed < 2) return;
+      start();
+      const n = Math.min(missed, CAP);
+      const left = missed - n;
+      tx += 1;
+      const old = cur;
+      cur += n;
+      const k = deliverUpTo(cur);
+      const final = mode === 'single' ? cur : cur + 1;
+      last = {
+        bundle: `batched catch-up, ${plural(k, 'message')}`,
+        proof: `walks ${n} rotation proofs: V${old} → V${final}`,
+        returns: `returns only the final anchor ${words()}, id ${cur}`,
+        store: 'stored before any message (Step 1c)',
+        verdict: 'accepted',
+      };
+      render();
+      say({
+        plain: `One transaction instead of ${n + 1}. The payload carries ${n} rotation proofs in order; the verifier walks them internally, checking each against the authority the previous one installed, and returns only the final anchor ${words()}. The intermediate authorities never touch the chain. ${plural(k, 'message')} proven under V${cur} ${k === 1 ? 'rides' : 'ride'} along in the same bundle.${left > 0 ? ` The endpoint missed ${missed} rotations but sends at most ${CAP} rotation proofs per bundle, so ${plural(left, 'more')} ${left === 1 ? 'follows' : 'follow'} in the next one.` : ''}`,
+        proto: `"A verifier MAY support batching multiple rotations into a single bundle_payload by walking the chain of rotation proofs internally; only the final new_trust_anchor and new_trust_anchor_id are returned and stored on-chain, and application messages proven under that final authority MAY be included in the same bundle." The QBFT verifier does this with epochBlockHeaders: each header's seals are verified against the current validator set, the next set is read from its extraData, and the current block must sit in epoch trustAnchorEpoch + headers (EpochMismatch otherwise). The relay includes at most maxEpochBlockHeadersPerBundle (default 5) headers per bundle, oldest first, and catches up over subsequent bundles.`,
+        refs: [['specCatchup', 'spec §3.2, catch-up'], ['qbft', 'QBFT trust anchor'], ['qbftSol', 'QBFTVerifier.sol']],
+      });
+    }
+
+    function inject() {
+      start();
+      tx += 1; wasted += 1;
+      last = { bundle: 'forged: names its own successor', proof: `no commitment proven under ${words()}`, returns: 'revert: succession not proven', store: 'anchor unchanged', verdict: 'reverted' };
+      render();
+      say({
+        plain: `<span class="ok">Blocked.</span> A compromised endpoint submits a bundle that names an authority of its own choosing as the successor, with no state-proven commitment from ${words()}. The verifier finds no succession evidence and reverts; the anchor is untouched and the attacker paid the fee. Only a proof that the current authority itself verified can move the anchor, and nothing else can: no admin key, no governance vote, no ConfigUpdate.`,
+        proto: `Succession requirement: "A new trust anchor MUST be committed to within the same proof that was verified against the current trust anchor. A verifier that returns a new_trust_anchor without state-proving the commitment in the supplied proof MUST revert. This requirement prevents trust anchor injection by a compromised endpoint." Design §3.1.5: "No other path (admin key, governance call, or ConfigUpdate) may modify the trust anchor; its only update channel is a verified proof returned by verifyBundle."`,
+        refs: [['design315', 'design §3.1.5'], ['spec31', 'spec §3.1'], ['specTransition', 'spec §3.2, transition bundle']],
+      });
+    }
+
+    function goOffline() {
+      const n = Math.min(Number(nIn.value), MAX - s);
+      if (offline || n < 1) return;
+      start();
+      offline = true;
+      const from = s;
+      for (let i = 0; i < n; i++) { s += 1; pending.push(s, s); }
+      last = null;
+      render();
+      say({
+        plain: `The endpoint stops. While it is away the source chain goes through ${plural(n, 'rotation')} (V${from} → V${s}) and applications keep sending: ${2 * n} more messages queue up. The destination's anchor cannot move on its own; it still trusts ${words()}. Bring the endpoint back to see what it has to do.`,
+        proto: `"No other path (admin key, governance call, or ConfigUpdate) may modify the trust anchor; its only update channel is a verified proof returned by verifyBundle." For the catch-up, "historical boundary blocks remain available in the source chain's immutable record".`,
+        refs: [['design315', 'design §3.1.5'], ['specCatchup', 'spec §3.2, catch-up']],
+      });
+    }
+
+    function comeBack() {
+      if (!offline) return;
+      start();
+      offline = false;
+      seen = s;
+      last = null;
+      render();
+      const g = gap();
+      if (g === 0) {
+        say({
+          plain: `The endpoint is back. It reads trust_anchor_id = ${cur} from the last sync payload, checks its local record, and finds the remote window ${words()} still covers V${s}: normal bundles will verify straight away. It can advance the window at a convenient moment.`,
+          proto: `Endpoint obligation, steps 1 to 4: read trust_anchor_id, look it up locally, determine whether it can produce proofs verifiable under that authority; if yes, submit a normal bundle.`,
+          refs: [['spec32', 'spec §3.2'], ['specTiming', 'spec §3.2, timing']],
+        });
+        return;
+      }
+      say({
+        plain: `The endpoint is back. It reads trust_anchor_id = ${cur} from the last sync payload (self-reported and unproven), looks it up in its local ordered record 1 → … → ${s}, and finds the remote anchor ${g === 1 ? 'one step' : `${g} steps`} behind: it cannot produce proofs of the current state that ${words()} would verify. Before any application bundle it must submit ${g === 1 ? 'one transition bundle' : `${g} consecutive transition bundles, each verified against the anchor the previous one installed`}${steps() >= 2 ? ', or one batched bundle if the verifier supports that' : ''}.`,
+        proto: `Reactive trigger: the endpoint "reads trust_anchor_id from a received sync payload and, after consulting its local record, determines it cannot produce state proofs verifiable under the identified authority (e.g., after a restart or monitoring gap). It must advance the remote anchor before submitting application bundles." "Each CLPR endpoint MUST maintain, per Channel, a local ordered sequence of trust_anchor_id values it has encountered … history and ordering are exclusively the endpoint's responsibility."`,
+        refs: [['spec32', 'spec §3.2'], ['specCatchup', 'spec §3.2, catch-up']],
+      });
+    }
+
+    const handlers: Record<string, () => void> = {
+      rotate, normal: () => submitNormal(false), late: () => submitNormal(true), transition, batch, inject, offline: goOffline, back: comeBack, reset,
+    };
+    for (const b of buttons) b.addEventListener('click', () => handlers[b.dataset.ev!]());
+    for (const b of Array.from(root.querySelectorAll<HTMLButtonElement>('button[data-mode]'))) {
+      b.addEventListener('click', () => { mode = b.dataset.mode as Mode; reset(); });
+    }
+    nIn.addEventListener('input', () => { nLabel.textContent = nIn.value; nUnit.textContent = Number(nIn.value) === 1 ? 'epoch' : 'epochs'; });
+    reset();
+  }
+</script>

@@ -1,0 +1,76 @@
+---
+/** The reveal step: completeChannel checks the commitment and signature, verifyConfig checks two proofs, and the service stores what comes back and sets the channel ACTIVE; spec §5.1.3, §3.1. */
+import Figure from '@kse/components/Figure.astro';
+import { spec } from '../../../lib/sources';
+---
+<Figure
+  lead="What completeChannel stores."
+  caption="The verifier checks the two proofs and returns the peer's identity, configuration, throttles, the immutable channel context, the initial trust anchor and the initial endpoint manifest; the service stores all of it and the channel becomes ACTIVE."
+  source={[{ label: 'spec §5.1.3', href: spec('513-phase-2--reveal-completechannel') }, { label: 'spec §3.1', href: spec('31-verifier-contract-interface') }]}
+  kind="spec"
+  minWidth={740}
+>
+  <svg viewBox="0 0 740 356" role="img" aria-label="completeChannel first checks the commitment preimage and a signature over keccak256 of the channel id, then hands two proofs to verifyConfig on the named verifier. verifyConfig reverts if a proof fails, the service_address mismatches or the manifest version is 0; otherwise its outputs are stored on the Channel record: chain_id, peer_config_timestamp, throttles, the immutable channel_context, the trust anchor and its id, the endpoint manifest with version at least 1 truncated to max_peer_endpoints, and the verifier_contract fixed for the channel's life. ChannelSyncData goes from PENDING to ACTIVE with received_message_id 0 and next_message_id 1.">
+    <defs>
+      <marker id="ccs-arrow-c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--c)" /></marker>
+      <marker id="ccs-arrow-ok" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--ok)" /></marker>
+      <marker id="ccs-arrow-bad" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--bad)" /></marker>
+    </defs>
+
+    <!-- completeChannel -->
+    <rect x="16" y="24" width="200" height="92" rx="8" class="d-surface" />
+    <text x="116" y="46" class="t b center">completeChannel</text>
+    <text x="116" y="62" class="t small center">checks first:</text>
+    <text x="116" y="78" class="t mono center">commitment preimage</text>
+    <text x="116" y="92" class="t mono center">signature over</text>
+    <text x="116" y="106" class="t mono center">keccak256(channel_id)</text>
+
+    <line x1="216" y1="70" x2="268" y2="70" class="line c" marker-end="url(#ccs-arrow-c)" />
+    <text x="242" y="62" class="t small center">proofs</text>
+
+    <!-- verifyConfig -->
+    <rect x="270" y="24" width="206" height="86" rx="8" class="d-ok" />
+    <text x="373" y="46" class="t b center">verifyConfig</text>
+    <text x="373" y="64" class="t mono center">config_proof_bytes</text>
+    <text x="373" y="78" class="t mono center">endpoint_manifest_proof_bytes</text>
+    <text x="373" y="96" class="t small center">runs once, on the named verifier</text>
+
+    <!-- revert -->
+    <line x1="373" y1="110" x2="373" y2="148" class="line bad dash" marker-end="url(#ccs-arrow-bad)" />
+    <text x="381" y="133" class="t small bad">reverts if</text>
+
+    <rect x="270" y="150" width="206" height="62" rx="8" class="d-bad" />
+    <text x="373" y="172" class="t b center">revert</text>
+    <text x="373" y="190" class="t small center">a proof fails, service_address</text>
+    <text x="373" y="204" class="t small center">mismatch, or manifest version 0</text>
+
+    <!-- stored on the channel record -->
+    <line x1="476" y1="70" x2="528" y2="70" class="line ok" marker-end="url(#ccs-arrow-ok)" />
+    <text x="502" y="62" class="t small center">stored</text>
+
+    <rect x="530" y="24" width="194" height="178" rx="8" class="d-a" />
+    <text x="627" y="46" class="t b center">Channel record</text>
+    <text x="627" y="64" class="t mono center">chain_id</text>
+    <text x="627" y="78" class="t mono center">peer_config_timestamp</text>
+    <text x="627" y="92" class="t mono center">throttles</text>
+    <text x="627" y="106" class="t mono center">channel_context (immutable)</text>
+    <text x="627" y="120" class="t mono center">trust_anchor (+ id)</text>
+    <text x="627" y="134" class="t mono center">endpoint_manifest</text>
+    <text x="627" y="148" class="t small center">version ≥ 1, truncated to</text>
+    <text x="627" y="162" class="t mono center">max_peer_endpoints</text>
+    <text x="627" y="180" class="t mono center">verifier_contract</text>
+    <text x="627" y="194" class="t small center">fixed for the channel's life</text>
+
+    <!-- status -->
+    <path d="M476,92 H500 V275 H528" class="line ok" marker-end="url(#ccs-arrow-ok)" />
+    <text x="494" y="240" class="t small end">becomes ACTIVE</text>
+
+    <rect x="530" y="236" width="194" height="78" rx="8" class="d-ok" />
+    <text x="627" y="258" class="t b center">ChannelSyncData</text>
+    <text x="627" y="276" class="t mono center">status: PENDING → ACTIVE</text>
+    <text x="627" y="290" class="t mono center">received_message_id = 0</text>
+    <text x="627" y="304" class="t mono center">next_message_id = 1</text>
+
+    <text x="370" y="342" class="t take center">The registrant keeps no privileges; the verifier it named stays for the channel's life.</text>
+  </svg>
+</Figure>

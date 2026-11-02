@@ -1,0 +1,92 @@
+---
+/** Ledger A publishes one local endpoint manifest; each channel on Ledger B holds a proven copy that is replaced whole, by proof, through three paths (completeChannel, verifyBundle, a direct submission by anyone) and never through the message queue. Draws on design §3.1.2, spec §2.4 and ADR 2026-07-03. */
+import Figure from '@kse/components/Figure.astro';
+import { design, spec, pinned } from '../../../lib/sources';
+---
+<Figure
+  lead="Two manifests, one direction of truth."
+  caption="Ledger A's local manifest is the source; each channel on Ledger B holds a proven copy. The copy changes only by proof: populated at completeChannel, then replaced whole whenever a higher version arrives inside a bundle or is submitted directly by anyone, which is what makes recovery scenario R1 possible."
+  source={[{ label: 'design §3.1.2', href: design('312-endpoint-manifest') }, { label: 'spec §2.4', href: spec('24-endpoint-manifest') }, { label: 'ADR 2026-07-03', href: pinned('clpr-spec', 'ADR/2026-07-03-clpr-endpoint-manifests.md') }]}
+  kind="spec"
+  minWidth={760}
+>
+  <svg viewBox="0 0 760 360" role="img" aria-label="Ledger A's local manifest on the left, with its ClprEndpoint entries; Ledger B's channel on the right holding a proven copy of the peer manifest. Three numbered paths in the middle carry the manifest from A to B: completeChannel with verifyConfig, verifyBundle when the version is higher, and anyone reading getEndpointManifest and submitting a state proof directly. A dashed, crossed-out path at the bottom shows the message queue, which carried the list before ADR 2026-07-03 and could deadlock, never reaching B.">
+    <defs>
+      <marker id="tm-arrow-ok" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9 Z" fill="var(--ok)"/></marker>
+      <marker id="tm-arrow-c" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9 Z" fill="var(--c)"/></marker>
+      <marker id="tm-arrow-bad" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9 Z" fill="var(--bad)"/></marker>
+    </defs>
+
+    <!-- Ledger A: the local manifest -->
+    <rect x="20" y="40" width="220" height="186" rx="12" class="d-a"/>
+    <text x="34" y="62" class="t b">Ledger A · local manifest</text>
+    <text x="34" y="80" class="t mono">ClprEndpointManifest</text>
+    <text x="34" y="96" class="t mono">version n · service_address</text>
+    <rect x="34" y="108" width="192" height="72" rx="8" class="d-c"/>
+    <text x="46" y="128" class="t b small">ClprEndpoint entries</text>
+    <text x="46" y="146" class="t mono">service_endpoint (opt.)</text>
+    <text x="46" y="162" class="t mono">tls_certificate</text>
+    <text x="34" y="206" class="t small muted">the source of truth</text>
+
+    <!-- Ledger B: the proven copy on the channel -->
+    <rect x="540" y="40" width="200" height="186" rx="12" class="d-b"/>
+    <text x="554" y="62" class="t b">Ledger B · Channel</text>
+    <text x="554" y="80" class="t mono">endpoint_manifest</text>
+    <rect x="554" y="92" width="172" height="96" rx="8" class="d-surface"/>
+    <text x="566" y="112" class="t b small">peer manifest</text>
+    <text x="566" y="128" class="t small">a proven copy</text>
+    <text x="566" y="146" class="t mono">version m ≤ n</text>
+    <text x="566" y="162" class="t mono">≤ max_peer_endpoints</text>
+    <text x="566" y="178" class="t small">replaced whole, by proof</text>
+    <text x="554" y="212" class="t small muted">changes only by proof</text>
+
+    <!-- Path 1: completeChannel -->
+    <rect x="290" y="40" width="200" height="44" rx="8" class="d-ok"/>
+    <text x="302" y="58" class="t b">completeChannel</text>
+    <text x="302" y="74" class="t mono">verifyConfig(proof)</text>
+    <circle cx="476" cy="62" r="9" class="d-grey"/>
+    <text x="476" y="66" class="t small center b">1</text>
+    <line x1="240" y1="62" x2="288" y2="62" class="line ok" marker-end="url(#tm-arrow-ok)"/>
+    <text x="264" y="56" class="t small center muted">proof</text>
+    <line x1="490" y1="62" x2="538" y2="62" class="line ok" marker-end="url(#tm-arrow-ok)"/>
+    <text x="514" y="56" class="t small center muted">stores</text>
+
+    <!-- Path 2: verifyBundle -->
+    <rect x="290" y="96" width="200" height="58" rx="8" class="d-ok"/>
+    <text x="302" y="114" class="t b">verifyBundle</text>
+    <text x="302" y="130" class="t mono">new_endpoint_manifest</text>
+    <text x="302" y="146" class="t mono">.version &gt; m · step 1b</text>
+    <circle cx="476" cy="118" r="9" class="d-grey"/>
+    <text x="476" y="122" class="t small center b">2</text>
+    <line x1="240" y1="125" x2="288" y2="125" class="line ok" marker-end="url(#tm-arrow-ok)"/>
+    <text x="264" y="119" class="t small center muted">bundle</text>
+    <line x1="490" y1="125" x2="538" y2="125" class="line ok" marker-end="url(#tm-arrow-ok)"/>
+    <text x="514" y="119" class="t small center muted">replaces</text>
+
+    <!-- Path 3: anyone, directly -->
+    <rect x="290" y="166" width="200" height="60" rx="8" class="d-c"/>
+    <text x="302" y="184" class="t b">anyone, directly</text>
+    <text x="302" y="200" class="t mono">getEndpointManifest()</text>
+    <text x="302" y="216" class="t small">state proof → ordinary tx</text>
+    <circle cx="476" cy="188" r="9" class="d-grey"/>
+    <text x="476" y="192" class="t small center b">3</text>
+    <line x1="288" y1="196" x2="242" y2="196" class="line c" marker-end="url(#tm-arrow-c)"/>
+    <text x="264" y="190" class="t small center muted">reads</text>
+    <line x1="490" y1="196" x2="538" y2="196" class="line c" marker-end="url(#tm-arrow-c)"/>
+    <text x="514" y="190" class="t small center muted">submits</text>
+
+    <!-- Not a path: the message queue -->
+    <path d="M130,226 V282 H288" class="line bad dash" marker-end="url(#tm-arrow-bad)"/>
+    <text x="140" y="262" class="t small bad">the old way</text>
+    <rect x="290" y="250" width="200" height="64" rx="8" class="d-bad"/>
+    <text x="302" y="268" class="t b">message queue</text>
+    <text x="302" y="284" class="t small">ConfigUpdate, before ADR</text>
+    <text x="302" y="298" class="t small">2026-07-03; could deadlock</text>
+    <line x1="490" y1="282" x2="528" y2="282" class="line bad dash"/>
+    <text x="540" y="287" class="t b center bad">✕</text>
+    <text x="552" y="286" class="t small bad">never reaches B's copy</text>
+
+    <!-- takeaway -->
+    <text x="380" y="344" class="t take center">The copy is replaced whole, only by a proof with a higher version, and never through the queue.</text>
+  </svg>
+</Figure>

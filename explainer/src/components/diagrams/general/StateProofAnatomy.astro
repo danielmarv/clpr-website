@@ -1,0 +1,75 @@
+---
+/** What a state proof is made of: the validators' joint signature on one summary of the ledger, plus the path from that summary down to one line. Draws from design §2.3 and spec §8.2 (state proofs as the mechanism of cross-ledger trust). */
+import Figure from '@kse/components/Figure.astro';
+import { design, spec } from '../../../lib/sources';
+---
+<Figure
+  lead="Signature plus path."
+  caption="The validators sign one summary of the whole ledger; the path shows that one particular line is inside that summary. Together they let a stranger check a line without trusting any one computer."
+  source={[{ label: 'design §2.3', href: design('23-trust-model') }, { label: 'spec §8.2', href: spec('82-trust-model') }]}
+  kind="spec"
+  minWidth={720}
+>
+  <svg viewBox="0 0 720 340" role="img" aria-label="Ledger A's state is summarised into one digest; its validators jointly sign that digest; a path leads from the digest down to line 4,231. The signature and the path together are the state proof.">
+    <defs>
+      <marker id="spa-arrow" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9 Z" fill="var(--text-3)"/></marker>
+      <marker id="spa-arrow-ok" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9 Z" fill="var(--ok)"/></marker>
+    </defs>
+
+    <!-- Ledger A: the ledger (top left) -->
+    <rect x="24" y="24" width="184" height="94" rx="12" class="d-a"/>
+    <text x="116" y="48" class="t b center">Ledger A's state</text>
+    <line x1="50" y1="62" x2="182" y2="62" class="line a"/>
+    <line x1="50" y1="74" x2="182" y2="74" class="line a"/>
+    <line x1="50" y1="86" x2="182" y2="86" class="line a"/>
+    <text x="116" y="108" class="t small center">lines 1 … 4,231, all sealed</text>
+
+    <!-- Validators of A (bottom left) -->
+    <rect x="24" y="200" width="184" height="84" rx="12" class="d-a"/>
+    <text x="116" y="226" class="t b center">Validators of A</text>
+    <text x="116" y="246" class="t small center">many machines,</text>
+    <text x="116" y="262" class="t small center">one joint signature</text>
+
+    <!-- Summary (middle top) -->
+    <rect x="296" y="38" width="160" height="66" rx="8" class="d-grey"/>
+    <text x="376" y="62" class="t b center">Summary</text>
+    <text x="376" y="80" class="t small center">one compact digest</text>
+    <text x="376" y="94" class="t small center">of the whole ledger</text>
+
+    <!-- Line 4,231 (middle) -->
+    <rect x="296" y="132" width="160" height="50" rx="8" class="d-surface"/>
+    <text x="376" y="152" class="t b center">Line 4,231</text>
+    <text x="376" y="170" class="t mono center">"send 5 to Bo on B"</text>
+
+    <!-- Signature on the summary (middle bottom) -->
+    <rect x="296" y="206" width="160" height="72" rx="8" class="d-ok"/>
+    <text x="376" y="230" class="t b center">Signature</text>
+    <text x="376" y="248" class="t small center">on the summary; checkable</text>
+    <text x="376" y="264" class="t small center">against A's public identity</text>
+
+    <!-- State proof (right) -->
+    <rect x="516" y="98" width="184" height="124" rx="12" class="d-ok"/>
+    <text x="608" y="124" class="t b center">State proof</text>
+    <line x1="538" y1="134" x2="678" y2="134" class="line ok"/>
+    <text x="608" y="160" class="t small center">the validators' signature</text>
+    <text x="608" y="182" class="t small center">+ the path to one line</text>
+    <text x="608" y="210" class="t small center muted">one object a stranger can check</text>
+
+    <!-- Arrows -->
+    <!-- ledger -> summary -->
+    <line x1="208" y1="71" x2="294" y2="71" class="line" marker-end="url(#spa-arrow)"/>
+    <text x="251" y="62" class="t small center muted">summarised</text>
+    <!-- validators -> signature -->
+    <line x1="208" y1="242" x2="294" y2="242" class="line ok" marker-end="url(#spa-arrow-ok)"/>
+    <text x="251" y="233" class="t small center muted">jointly sign</text>
+    <!-- summary -> line (path down) -->
+    <line x1="376" y1="104" x2="376" y2="130" class="line dash" marker-end="url(#spa-arrow)"/>
+    <text x="388" y="121" class="t small muted">path down to one line</text>
+    <!-- signature and line both feed the state proof -->
+    <path d="M456,242 C490,242 490,176 514,176" class="line ok" marker-end="url(#spa-arrow-ok)"/>
+    <path d="M456,157 C490,157 490,164 514,164" class="line ok" marker-end="url(#spa-arrow-ok)"/>
+
+    <!-- takeaway -->
+    <text x="360" y="318" class="t take center">Anyone holding A's public identity can check the signature. No single computer can produce it.</text>
+  </svg>
+</Figure>

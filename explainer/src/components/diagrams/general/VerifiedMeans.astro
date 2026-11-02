@@ -1,0 +1,56 @@
+---
+/** What "verified" settles and what it leaves to the application: spec §8.6 (untrusted payloads) and §8.7 (no confidentiality), with ordering from design §3.2.2. */
+import Figure from '@kse/components/Figure.astro';
+import { design, spec } from '../../../lib/sources';
+---
+<Figure
+  lead="What verified does and does not mean."
+  caption="The protocol answers three questions: did this come from Ledger A, was it altered, is it in order. It says nothing about whether the message is private, sensible or sent by someone honest. Those stay with the application, which should treat every arrival as input from a stranger."
+  source={[{ label: 'spec §8.6', href: spec('86-untrusted-payloads') }, { label: 'spec §8.7', href: spec('87-no-confidentiality') }, { label: 'design §3.2.2', href: design('322-message-storage') }]}
+  kind="spec"
+  minWidth={700}
+>
+  <svg viewBox="0 0 700 296" role="img" aria-label="A message from Ledger A on the left. Two boxes in the middle: CLPR proves it is authentic, unaltered and in order; CLPR does not prove it is private, sensible or from an honest sender. On the right, the application, which treats the message as input from a stranger. Solid green arrows run through the proves box; dashed red arrows through the does-not-prove box.">
+    <defs>
+      <marker id="vm-arrow-ok" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--ok)"/></marker>
+      <marker id="vm-arrow-bad" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--bad)"/></marker>
+    </defs>
+
+    <!-- the message -->
+    <rect x="12" y="50" width="150" height="200" rx="10" class="d-a"/>
+    <text x="87" y="134" class="t b center">Message from</text>
+    <text x="87" y="150" class="t b center">Ledger A</text>
+    <text x="87" y="172" class="t small center">contents plus the sender;</text>
+    <text x="87" y="186" class="t small center">visible on both ledgers</text>
+
+    <!-- what the protocol settles -->
+    <rect x="252" y="44" width="196" height="90" rx="8" class="d-ok"/>
+    <text x="350" y="66" class="t b center">CLPR proves</text>
+    <text x="350" y="86" class="t small center">authentic ✓   unaltered ✓</text>
+    <text x="350" y="102" class="t small center">in order ✓</text>
+    <text x="350" y="120" class="t small center muted">seal plus running hash chain</text>
+
+    <rect x="252" y="166" width="196" height="90" rx="8" class="d-bad"/>
+    <text x="350" y="188" class="t b center">CLPR does not prove</text>
+    <text x="350" y="208" class="t small center">private ✗   sensible ✗</text>
+    <text x="350" y="224" class="t small center">honest sender ✗</text>
+    <text x="350" y="242" class="t small center muted">no check in the protocol</text>
+
+    <!-- the application -->
+    <rect x="538" y="50" width="150" height="200" rx="10" class="d-b"/>
+    <text x="613" y="134" class="t b center">Your application</text>
+    <text x="613" y="156" class="t small center">treats it as input</text>
+    <text x="613" y="170" class="t small center">from a stranger</text>
+
+    <line x1="162" y1="89" x2="252" y2="89" class="line ok" marker-end="url(#vm-arrow-ok)"/>
+    <text x="207" y="79" class="t small center muted">checked</text>
+    <line x1="162" y1="211" x2="252" y2="211" class="line bad dash" marker-end="url(#vm-arrow-bad)"/>
+    <text x="207" y="201" class="t small center muted">not checked</text>
+    <line x1="448" y1="89" x2="538" y2="89" class="line ok" marker-end="url(#vm-arrow-ok)"/>
+    <text x="493" y="79" class="t small center muted">delivered</text>
+    <line x1="448" y1="211" x2="538" y2="211" class="line bad dash" marker-end="url(#vm-arrow-bad)"/>
+    <text x="493" y="201" class="t small center muted">your decision</text>
+
+    <text x="350" y="284" class="t take center">Verified means really sent on the other ledger; whether to act on it is the application's decision.</text>
+  </svg>
+</Figure>

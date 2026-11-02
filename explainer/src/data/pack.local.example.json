@@ -1,0 +1,8 @@
+{
+  "names": {
+    "must_not_mention": [
+      "Other Product Name",
+      "Its Deployed Name"
+    ]
+  }
+}

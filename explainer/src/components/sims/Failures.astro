@@ -1,0 +1,76 @@
+---
+/**
+ * "What can go wrong" picker. Every outcome is taken from the design document §2.3, §3.2.8,
+ * §3.3.3–3.3.4, §5 (recovery scenarios R1–R9) and the spec §4.2, §4.5, §4.6.
+ */
+import data from '../../data/failures.json';
+import { refHref, isDeveloperPage, type Ref } from '../../lib/sources';
+const showSource = isDeveloperPage(Astro.url.pathname);
+const { id = 'failures-sim' } = Astro.props as { id?: string };
+const cases = data.cases.map((c) => ({ ...c, ref: refHref(c.refs[0] as Ref), refLabel: c.refs[0].label }));
+// Four groups for the picker; the case texts above are untouched.
+const groups = data.groups;
+const byKey = Object.fromEntries(cases.map((c) => [c.k, c]));
+// The channel-state pill: the state word(s) up to any parenthesis, coloured by what it means.
+const short = (state: string) => state.split(' (')[0];
+const tone = (state: string) => (state.startsWith('ACTIVE') ? 'ok' : state === 'PAUSED' ? 'bad' : 'grey');
+const rest = (state: string) => (state.includes(' (') ? ' (' + state.split(' (')[1] : '');
+const recoverTone = (recovers: string) => (recovers.startsWith('Outside') ? 'bad' : 'ok');
+---
+<div class="sim failures" id={id}>
+  <div class="sim__head"><div><span class="kind">Simulation</span><h3>Pick a failure. What does the protocol do?</h3></div><span class="pill ok" data-role="status">ACTIVE</span></div>
+  <div class="sim__controls picker" role="group" aria-label="Failures">
+    {groups.map((g) => (
+      <div class="group">
+        <span class="kicker">{g.kicker}</span>
+        {g.keys.map((k) => { const c = byKey[k]; return <button class="btn" type="button" data-case={c.k} data-state={short(c.state)} data-tone={tone(c.state)} data-ref={c.refLabel} aria-pressed={c.k === cases[0].k ? 'true' : 'false'}>{c.q}</button>; })}
+      </div>
+    ))}
+  </div>
+  <div class="sim__body">
+    {cases.map((c, i) => (
+      <div class="result" data-result={c.k} hidden={i !== 0}>
+        <h4>{c.q}</h4>
+        <div class="row"><b>What happens</b><span>{c.what}</span></div>
+        <div class="row"><b><i class="sw money"></i>Who pays</b><span>{c.pays}</span></div>
+        <div class="row"><b>Channel state</b><span><span class={`pill ${tone(c.state)}`}>{short(c.state)}</span>{rest(c.state)}</span></div>
+        <div class="row"><b><i class={`sw ${recoverTone(c.recovers)}`}></i>Recovers?</b><span>{c.recovers}</span></div>
+        {showSource && <div class="row"><b>Source</b><span><a href={c.ref} rel="noopener">{c.refLabel}</a></span></div>}
+      </div>
+    ))}
+  </div>
+  <div class="sim__log" data-role="log"><span class="line" data-role="line">case: {cases[0].k} · state: {short(cases[0].state)} · source: {cases[0].refLabel}</span>Thirteen cases; pick one above and the card and the state pill follow it.</div>
+</div>
+<style>
+  .failures .sim__controls.picker { flex-direction: column; align-items: stretch; gap: 10px; border-top: 0; border-bottom: 1px solid var(--border); }
+  .failures .sim__controls .group { display: flex; flex-wrap: wrap; gap: 6px; }
+  .failures .sim__controls .group .kicker { flex-basis: 100%; }
+  .failures .btn { text-align: left; }
+  .failures .btn:hover { background: var(--bg-2); }
+  .failures .btn[aria-pressed="true"] { box-shadow: inset 4px 0 0 var(--bad); background: var(--text); }
+  .failures .btn[aria-pressed="true"]:hover { background: var(--text); }
+  .failures .result:not([hidden]) { animation: sim-fade 180ms ease-out; }
+  .failures .sw { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 6px; vertical-align: 0; }
+  .failures .sw.money { background: var(--money); }
+  .failures .sw.ok { background: var(--ok); }
+  .failures .sw.bad { background: var(--bad); }
+  @media (max-width: 520px) { .failures .sim__controls .group .btn { width: 100%; } .failures .result .row { grid-template-columns: 1fr; gap: 2px; } }
+</style>
+<script>
+  for (const root of Array.from(document.querySelectorAll<HTMLElement>('.sim.failures'))) {
+    const buttons = Array.from(root.querySelectorAll<HTMLButtonElement>('button[data-case]'));
+    const results = Array.from(root.querySelectorAll<HTMLElement>('[data-result]'));
+    const status = root.querySelector<HTMLElement>('[data-role="status"]')!;
+    const line = root.querySelector<HTMLElement>('[data-role="line"]')!;
+    status.addEventListener('animationend', () => status.classList.remove('pulse'));
+    for (const b of buttons) b.addEventListener('click', () => {
+      for (const x of buttons) x.setAttribute('aria-pressed', String(x === b));
+      for (const r of results) r.hidden = r.dataset.result !== b.dataset.case;
+      const changed = status.textContent !== b.dataset.state;
+      status.textContent = b.dataset.state!;
+      status.className = `pill ${b.dataset.tone}`;
+      if (changed) status.classList.add('pulse');
+      line.textContent = `case: ${b.dataset.case} · state: ${b.dataset.state} · source: ${b.dataset.ref}`;
+    });
+  }
+</script>

@@ -1,0 +1,85 @@
+---
+/** Latest or finalized: the phantom message. The final frame of the story: on a ledger whose recent blocks can still be undone, the newest block held "send 5 to Bo" and was then replaced by a different block. A channel whose verifier accepts the latest block delivered the message, which is now a phantom on Ledger B; a channel whose verifier waits for finalized blocks never delivered it. Draws from design §3.1.5 (one verifier per commitment level) and spec §8.3 (reorg risk). Shared with the developer page's commitment-level gotcha. */
+import Figure from '@kse/components/Figure.astro';
+import { design, spec } from '../../../lib/sources';
+---
+<Figure
+  lead="How sure is sure enough."
+  caption="On ledgers where recent blocks can be undone, a verifier that accepts the latest block is fast but can deliver a phantom message. One that waits for finalized blocks is slower and safe. Two channels between the same ledgers can choose differently."
+  source={[{ label: 'design §3.1.5', href: design('315-verifier-contracts') }, { label: 'spec §8.3', href: spec('83-reorg-risk') }]}
+  kind="spec"
+  minWidth={760}
+>
+  <svg viewBox="0 0 760 330" role="img" aria-label="Ledger A's chain of blocks: three finalized blocks, two tentative ones, then a fork where the newest block holding 'send 5 to Bo' is crossed out and replaced by a different block without it. On the right, two channels into Ledger B: the fast channel accepted the latest block and now holds a phantom message that no longer exists on A; the safe channel waits for finalized blocks and never delivered it.">
+    <defs>
+      <marker id="phm-arrow" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9 Z" fill="var(--text-3)"/></marker>
+      <marker id="phm-arrow-bad" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9 Z" fill="var(--bad)"/></marker>
+      <marker id="phm-arrow-ok" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9 Z" fill="var(--ok)"/></marker>
+    </defs>
+
+    <!-- kickers -->
+    <text x="24" y="26" class="t b a">Ledger A's chain of blocks</text>
+    <text x="520" y="26" class="t b b-col">Two channels into Ledger B</text>
+
+    <!-- finalized blocks -->
+    <rect x="24" y="66" width="60" height="44" rx="6" class="d-ok"/>
+    <text x="54" y="92" class="t mono center">block</text>
+    <rect x="96" y="66" width="60" height="44" rx="6" class="d-ok"/>
+    <text x="126" y="92" class="t mono center">block</text>
+    <rect x="168" y="66" width="60" height="44" rx="6" class="d-ok"/>
+    <text x="198" y="92" class="t mono center">block</text>
+    <line x1="84" y1="88" x2="94" y2="88" class="line ok"/>
+    <line x1="156" y1="88" x2="166" y2="88" class="line ok"/>
+    <line x1="228" y1="88" x2="238" y2="88" class="line"/>
+    <text x="126" y="132" class="t small center ok">finalized</text>
+    <text x="126" y="146" class="t small center muted">cannot be undone</text>
+
+    <!-- recent, tentative blocks -->
+    <rect x="240" y="66" width="60" height="44" rx="6" class="d-grey"/>
+    <text x="270" y="92" class="t mono center">block</text>
+    <rect x="312" y="66" width="60" height="44" rx="6" class="d-grey"/>
+    <text x="342" y="92" class="t mono center">block</text>
+    <line x1="300" y1="88" x2="310" y2="88" class="line"/>
+    <text x="306" y="132" class="t small center">recent</text>
+    <text x="306" y="146" class="t small center muted">still tentative</text>
+
+    <!-- the fork: the newest block, reversed, and its replacement -->
+    <line x1="372" y1="80" x2="396" y2="58" class="line bad"/>
+    <line x1="372" y1="96" x2="396" y2="118" class="line"/>
+    <rect x="384" y="36" width="124" height="44" rx="6" class="d-bad"/>
+    <text x="446" y="54" class="t mono center">newest block</text>
+    <text x="446" y="70" class="t mono center">"send 5 to Bo"</text>
+    <line x1="402" y1="40" x2="490" y2="76" class="line bad"/>
+    <line x1="402" y1="76" x2="490" y2="40" class="line bad"/>
+    <rect x="384" y="108" width="124" height="44" rx="6" class="d-grey"/>
+    <text x="446" y="126" class="t mono center">a different</text>
+    <text x="446" y="142" class="t mono center">block, no such line</text>
+    <text x="446" y="174" class="t small center bad">reversed</text>
+    <text x="446" y="188" class="t small center muted">replaced after the fact</text>
+
+    <!-- channel fast -->
+    <rect x="520" y="40" width="220" height="64" rx="10" class="d-grey"/>
+    <text x="630" y="60" class="t b center">Channel "fast"</text>
+    <text x="630" y="78" class="t small center">verifier accepts the latest block</text>
+    <text x="630" y="94" class="t small center">delivered it at once</text>
+    <line x1="494" y1="58" x2="518" y2="58" class="line" marker-end="url(#phm-arrow)"/>
+
+    <!-- phantom message -->
+    <line x1="630" y1="104" x2="630" y2="130" class="line bad" marker-end="url(#phm-arrow-bad)"/>
+    <text x="640" y="122" class="t small bad">the block is reversed</text>
+    <rect x="520" y="132" width="220" height="64" rx="10" class="d-bad"/>
+    <text x="630" y="152" class="t b center">Phantom message on B</text>
+    <text x="630" y="170" class="t small center">"send 5 to Bo" ran on Ledger B;</text>
+    <text x="630" y="186" class="t small center">the line no longer exists on A</text>
+
+    <!-- channel safe -->
+    <path d="M494,130 C508,130 508,250 518,250" class="line ok dash" marker-end="url(#phm-arrow-ok)"/>
+    <rect x="520" y="218" width="220" height="64" rx="10" class="d-ok"/>
+    <text x="630" y="238" class="t b center">Channel "safe"</text>
+    <text x="630" y="256" class="t small center">verifier accepts finalized blocks only</text>
+    <text x="630" y="272" class="t small center">still waiting; it never delivers it</text>
+
+    <!-- takeaway -->
+    <text x="380" y="312" class="t take center">Fast or safe is the verifier's choice; the specification recommends finalized for anything valuable.</text>
+  </svg>
+</Figure>

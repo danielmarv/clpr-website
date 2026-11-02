@@ -1,0 +1,103 @@
+{
+  "$comment": "Per-site settings the engine reads. docs name the specification documents whose headings the pages cite; refHelpers name the link helpers the content uses (src/lib/sources.ts).",
+  "id": "clpr",
+  "names": {
+    "name": "CLPR",
+    "deployment_name": "CLPR",
+    "full_name": "Cross Ledger Protocol"
+  },
+  "brand": "The plumbing of CLPR",
+  "primarySource": "clpr-spec",
+  "docs": {
+    "design": {
+      "source": "clpr-spec",
+      "path": "clpr-service.md",
+      "label": "design document"
+    },
+    "spec": {
+      "source": "clpr-spec",
+      "path": "clpr-service-spec.md",
+      "label": "protocol specification"
+    }
+  },
+  "refHelpers": [
+    {
+      "fn": "design",
+      "doc": "design"
+    },
+    {
+      "fn": "spec",
+      "doc": "spec"
+    },
+    {
+      "fn": "sol",
+      "source": "clpr-smart-contracts"
+    }
+  ],
+  "pages": {
+    "general": {
+      "path": "/",
+      "exportFile": "plumbing-of-clpr.html"
+    },
+    "developers": {
+      "path": "/developers/",
+      "exportFile": "plumbing-of-clpr-developers.html"
+    }
+  },
+  "provenance": {
+    "intro": "The <a href=\"{{orgUrl}}\">LFDT-CLPR</a> repositories and commits this explainer describes, as of {{lastSynced}}."
+  },
+  "footer": [
+    "An explainer for <a href=\"{{orgUrl}}\">CLPR</a>, a bridgeless cross-ledger protocol developed as an <a href=\"{{labUrl}}\">LF Decentralized Trust</a> lab, part of the <a href=\"/\">CLPR website</a>. It describes the repositories and commits listed above; the specification remains the reference.",
+    "Text is licensed <a href=\"https://creativecommons.org/licenses/by/4.0/\">CC BY 4.0</a>; code and simulations are <a href=\"https://www.apache.org/licenses/LICENSE-2.0\">Apache-2.0</a>. Contributions are signed off under the <a href=\"https://developercertificate.org/\">Developer Certificate of Origin</a>."
+  ],
+  "retiredVocab": [
+    [
+      "\\bcouriers?\\b",
+      "endpoint"
+    ],
+    [
+      "\\bpost offices?\\b",
+      "CLPR Service"
+    ],
+    [
+      "\\bpostal\\b",
+      "endpoint"
+    ],
+    [
+      "\\boutbox(es)?\\b",
+      "outbound queue"
+    ],
+    [
+      "\\bticket numbers?\\b",
+      "message id"
+    ],
+    [
+      "(?<![\\w_])fingerprints?\\b",
+      "running hash (or plain \"hash\")"
+    ],
+    [
+      "\\bsignature cards?\\b",
+      "trust anchor"
+    ],
+    [
+      "\\baddress books?\\b",
+      "endpoint manifest"
+    ],
+    [
+      "\\b(sealed )?envelopes?\\b",
+      "commit / reveal"
+    ],
+    [
+      "\\bnotebooks?\\b",
+      "ledger"
+    ]
+  ],
+  "structure": {
+    "developers": {
+      "minFlows": 0
+    }
+  },
+  "labels": { "callout": { "impl": "In the EVM reference code" } },
+  "themeColor": { "light": "#120f2c", "dark": "#120f2c" }
+}

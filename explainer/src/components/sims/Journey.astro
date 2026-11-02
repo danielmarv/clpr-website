@@ -1,0 +1,337 @@
+---
+/**
+ * The 28-step round trip, animated. Data comes from src/data/journey.json so the
+ * narration can be updated without touching this component.
+ *
+ * mode = 'plain'    → non-technical narration only
+ * mode = 'protocol' → precise narration only
+ * mode = 'both'     → plain first, protocol underneath
+ */
+import journey from '../../data/journey.json';
+import { design, spec, pinned } from '../../lib/sources';
+
+interface Props { mode?: 'plain' | 'protocol' | 'both'; id?: string; }
+const { mode = 'plain', id = 'journey-sim' } = Astro.props;
+
+function refHref(r: any) {
+  if (r.doc === 'design') return design(r.anchor);
+  if (r.doc === 'spec') return spec(r.anchor);
+  return pinned(r.id, r.path, r.anchor);
+}
+const phaseOf = (p: string) => journey.phases.find((x) => x.id === p)!;
+---
+<div class="sim journey" id={id} data-mode={mode}>
+  <div class="sim__head">
+    <div><span class="kind">Simulation</span><h3>One message, there and back: the 28 steps</h3></div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-left:auto">
+      <div class="seg" role="group" aria-label="Direction">
+        <button class="btn" type="button" data-dir="forward" aria-pressed="true">{journey.directions.forward.label}</button>
+        <button class="btn" type="button" data-dir="reverse" aria-pressed="false">{journey.directions.reverse.label}</button>
+      </div>
+      <span class="pill grey" data-role="clock">step 0 / 28</span>
+    </div>
+  </div>
+  <div class="sim__body">
+    <div class="sim__scroll">
+    <svg viewBox="0 0 920 410" role="img" aria-labelledby={`${id}-title`} class="journey__svg">
+      <title id={`${id}-title`}>Two ledgers, their CLPR Services, queues, connectors, verifiers and endpoints, with a message travelling from the left ledger to the right and its reply coming back.</title>
+      <defs>
+        <marker id={`${id}-arrow`} viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--text-3)" /></marker>
+      </defs>
+
+      <!-- Ledger A -->
+      <g data-node="ledgerA">
+        <rect x="20" y="20" width="360" height="380" rx="14" class="d-surface" stroke-dasharray="6 5" />
+        <text x="36" y="44" class="t b" style="fill:var(--a)">{journey.sides.a}</text>
+        <text x="36" y="60" class="t small">CLPR Service is native to the node</text>
+      </g>
+      <g data-node="appA" class="node">
+        <rect x="40" y="72" width="150" height="46" rx="8" class="d-a" />
+        <text x="115" y="92" class="t b center">Application</text>
+        <text x="115" y="108" class="t small center">PingPong</text>
+      </g>
+      <g data-node="svcA" class="node">
+        <rect x="40" y="132" width="320" height="150" rx="10" class="d-a" fill-opacity="0.35" />
+        <text x="52" y="150" class="t b">CLPR Service</text>
+        <g data-node="qA" class="node">
+          <rect x="52" y="160" width="140" height="44" rx="6" class="d-surface" />
+          <text x="122" y="178" class="t center">Outbound queue</text>
+          <text x="122" y="194" class="t small center mono">running hash</text>
+        </g>
+        <g data-node="verA" class="node">
+          <rect x="208" y="160" width="140" height="44" rx="6" class="d-surface" />
+          <text x="278" y="178" class="t center">Verifier</text>
+          <text x="278" y="194" class="t small center">for QBFT proofs</text>
+        </g>
+        <g data-node="conA" class="node">
+          <rect x="52" y="218" width="140" height="44" rx="6" class="d-money" />
+          <text x="122" y="236" class="t center">Connector</text>
+          <text x="122" y="252" class="t small center">authorizes &amp; pays</text>
+        </g>
+        <text x="278" y="246" class="t small center">sync data · trust anchor</text>
+      </g>
+      <g data-node="epA" class="node">
+        <rect x="210" y="300" width="150" height="46" rx="8" class="d-c" />
+        <text x="285" y="320" class="t b center">Endpoint</text>
+        <text x="285" y="336" class="t small center">every consensus node</text>
+      </g>
+      <g data-node="chainA" class="node">
+        <rect x="40" y="358" width="320" height="30" rx="6" class="d-grey" />
+        <text x="200" y="378" class="t small center">consensus · threshold-signed blocks</text>
+      </g>
+
+      <!-- Ledger B -->
+      <g data-node="ledgerB">
+        <rect x="560" y="20" width="340" height="380" rx="14" class="d-surface" stroke-dasharray="6 5" />
+        <text x="576" y="44" class="t b" style="fill:var(--b)">{journey.sides.b}</text>
+        <text x="576" y="60" class="t small">CLPR Service is a smart contract</text>
+      </g>
+      <g data-node="appB" class="node">
+        <rect x="730" y="72" width="150" height="46" rx="8" class="d-b" />
+        <text x="805" y="92" class="t b center">Application</text>
+        <text x="805" y="108" class="t small center">PingPong</text>
+      </g>
+      <g data-node="svcB" class="node">
+        <rect x="576" y="132" width="308" height="150" rx="10" class="d-b" fill-opacity="0.35" />
+        <text x="588" y="150" class="t b">CLPR Service</text>
+        <g data-node="verB" class="node">
+          <rect x="588" y="160" width="140" height="44" rx="6" class="d-surface" />
+          <text x="658" y="178" class="t center">Verifier</text>
+          <text x="658" y="194" class="t small center">for Hiero proofs</text>
+        </g>
+        <g data-node="qB" class="node">
+          <rect x="736" y="160" width="140" height="44" rx="6" class="d-surface" />
+          <text x="806" y="178" class="t center">Outbound queue</text>
+          <text x="806" y="194" class="t small center mono">running hash</text>
+        </g>
+        <g data-node="conB" class="node">
+          <rect x="736" y="218" width="140" height="44" rx="6" class="d-money" />
+          <text x="806" y="236" class="t center">Connector</text>
+          <text x="806" y="252" class="t small center">pays on arrival</text>
+        </g>
+        <text x="658" y="246" class="t small center">sync data · trust anchor</text>
+      </g>
+      <g data-node="chainB" class="node">
+        <rect x="576" y="358" width="308" height="30" rx="6" class="d-grey" />
+        <text x="730" y="378" class="t small center">consensus · QBFT sealed headers</text>
+      </g>
+
+      <!-- Endpoint B lives outside the ledger -->
+      <g data-node="epB" class="node">
+        <rect x="395" y="300" width="150" height="46" rx="8" class="d-c" />
+        <text x="470" y="320" class="t b center">Endpoint</text>
+        <text x="470" y="336" class="t small center">separate process</text>
+      </g>
+      <g data-node="wire" class="node">
+        <line x1="360" y1="323" x2="395" y2="323" class="line c" />
+        <text x="377" y="344" class="t small center">gRPC</text>
+        <line x1="545" y1="323" x2="576" y2="290" class="line dash" />
+        <text x="575" y="312" class="t small">JSON-RPC</text>
+      </g>
+
+      <!-- Token -->
+      <g data-role="token" class="journey__token" style="transform:translate(212px,98px)">
+        <rect x="-16" y="-11" width="32" height="22" rx="4" fill="var(--surface)" stroke="currentColor" stroke-width="1.5" style="filter:drop-shadow(0 2px 3px rgba(0,0,0,.35))" />
+        <path d="M-16,-11 L0,2 L16,-11" fill="none" stroke="currentColor" stroke-width="1.5" />
+      </g>
+    </svg>
+    </div>
+    <p class="sim__scroll-note">Wider than a phone; scroll it sideways if you need to.</p>
+  </div>
+
+  <div class="sim__controls">
+    <button class="btn primary" type="button" data-role="play" aria-pressed="false">Play</button>
+    <button class="btn" type="button" data-role="prev">◀ Prev</button>
+    <button class="btn" type="button" data-role="next">Next ▶</button>
+    <button class="btn" type="button" data-role="reset">Reset</button>
+    <span class="spacer"></span>
+    <label class="range">Speed <input type="range" min="1" max="5" value="3" data-role="speed" aria-label="Playback speed" /></label>
+  </div>
+  <div class="sim__track journey__track" data-role="track" style="--p:0" aria-hidden="true">
+    <i></i>
+    {journey.phases.slice(1).map((p) => <b class="tick" style={`left:${(((p.steps[0] - 1) / 28) * 100).toFixed(2)}%`} title={p.title}></b>)}
+  </div>
+
+  <div class="sim__body">
+    <div class="steps two">
+      <div>
+        <div class="step-card" data-role="card">
+          <div data-step-card="0">
+            <div class="phase">Before you press play</div>
+            <h4>What you are looking at</h4>
+            <p>Two ledgers. Each has an application, a CLPR Service with an outbound queue, a connector that pays, and a verifier that checks the other ledger's proofs. Endpoints carry messages between them: on the Hiero ledger every consensus node is one; on the EVM ledger it is a separate program. Press <strong>Play</strong> or step through with <strong>Next</strong>.</p>
+          </div>
+          {(['forward', 'reverse'] as const).map((dir) => (dir === 'forward' ? journey.steps : journey.reverse).map((s) => (
+            <div data-step-card={s.n} data-dir={dir} hidden>
+              <div class="phase">{phaseOf(s.phase).title} · step {s.n} of 28 · {journey.directions[dir].label}</div>
+              <h4>{s.title}</h4>
+              {(mode === 'plain' || mode === 'both') && <p>{s.plain}</p>}
+              {(mode === 'protocol') && <p>{s.protocol}</p>}
+              {mode === 'both' && <p class="proto"><strong>In protocol terms.</strong> {s.protocol}</p>}
+              {mode !== 'plain' && <p class="small">Source: {s.refs.map((r: any, i: number) => (<><a href={refHref(r)} rel="noopener">{r.label}</a>{i < s.refs.length - 1 ? ' · ' : ''}</>))}</p>}
+            </div>
+          )))}
+        </div>
+      </div>
+      {(['forward', 'reverse'] as const).map((dir) => (
+        <ol class="step-list" data-role="list" data-dir={dir} hidden={dir !== 'forward'}>
+          {journey.phases.map((p) => (
+            <>
+              <li class="phase-row" data-phase={p.id} style="cursor:default;color:var(--text-3);font-size:0.72rem;text-transform:uppercase;letter-spacing:.08em;font-weight:700;grid-template-columns:1fr"><span>{p.title}</span></li>
+              {(dir === 'forward' ? journey.steps : journey.reverse).filter((s) => s.phase === p.id).map((s) => (
+                <li data-step={s.n} tabindex="0" role="button"><span class="n">{s.n}</span><span>{s.label}</span></li>
+              ))}
+            </>
+          ))}
+        </ol>
+      ))}
+    </div>
+  </div>
+</div>
+
+<style>
+  .journey .sim__scroll > svg { min-width: 920px; }
+  .journey__token { transition: transform 600ms cubic-bezier(.4,.1,.2,1); color: var(--text); }
+  .journey .node { transition: opacity 250ms; }
+  .journey .node.off { opacity: 0.32; }
+  .journey .node.on rect { stroke-width: 2.5; }
+  .journey .node.pulse > rect { animation: journey-pulse 450ms ease-out; }
+  @keyframes journey-pulse { 40% { stroke-width: 6; } }
+  .journey g[data-node="qA"].on .mono { fill: var(--a); }
+  .journey g[data-node="qB"].on .mono { fill: var(--b); }
+  .journey__track { position: relative; height: 4px; }
+  .journey__track .tick { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--surface); }
+  .journey .phase-row { pointer-events: none; }
+</style>
+
+<script>
+  import journey from '../../data/journey.json';
+  import { scrollListTo } from '@kse/lib/scroll';
+
+  // Token parks at the top-right corner of the active node so labels stay readable; on the wire it
+  // sits on the gRPC line itself so the hop between the two endpoints is visibly along the wire.
+  const POS: Record<string, [number, number]> = {
+    appA: [212, 98], svcA: [348, 134], qA: [180, 162], verA: [336, 162], conA: [180, 220], epA: [348, 302], chainA: [348, 360],
+    wire: [378, 323], epB: [533, 302], svcB: [872, 134], verB: [716, 162], qB: [864, 162], conB: [864, 220], appB: [868, 74], chainB: [872, 360],
+  };
+  // A waypoint on the JSON-RPC line, so Endpoint B's token follows that line into its ledger
+  // instead of cutting diagonally across the drawing.
+  const VIA: Record<string, [number, number]> = { 'epB>svcB': [562, 290], 'svcB>epB': [562, 290] };
+  const TOKEN_AT: Record<'forward' | 'reverse', Record<number, string>> = {
+    forward: {
+      1: 'appA', 2: 'svcA', 3: 'conA', 4: 'conA', 5: 'qA', 6: 'qA', 7: 'chainA', 8: 'epA', 9: 'epA', 10: 'wire', 11: 'epB',
+      12: 'svcB', 13: 'verB', 14: 'svcB', 15: 'conB', 16: 'appB', 17: 'conB', 18: 'qB', 19: 'svcB', 20: 'chainB', 21: 'wire',
+      22: 'epA', 23: 'verA', 24: 'svcA', 25: 'qA', 26: 'appA', 27: 'qA', 28: 'appA',
+    },
+    reverse: {
+      1: 'appB', 2: 'svcB', 3: 'conB', 4: 'conB', 5: 'qB', 6: 'qB', 7: 'chainB', 8: 'epB', 9: 'wire', 10: 'epA', 11: 'svcA',
+      12: 'verA', 13: 'verA', 14: 'svcA', 15: 'conA', 16: 'appA', 17: 'conA', 18: 'qA', 19: 'svcA', 20: 'chainA', 21: 'wire',
+      22: 'svcB', 23: 'verB', 24: 'svcB', 25: 'qB', 26: 'appB', 27: 'qB', 28: 'appB',
+    },
+  };
+  const HOME: Record<'forward' | 'reverse', string> = { forward: 'appA', reverse: 'appB' };
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  for (const root of Array.from(document.querySelectorAll<HTMLElement>('.sim.journey'))) {
+    const $ = (sel: string) => root.querySelector<HTMLElement>(sel)!;
+    const token = $('[data-role="token"]');
+    const clock = $('[data-role="clock"]');
+    const track = $('[data-role="track"]');
+    const play = $('[data-role="play"]') as HTMLButtonElement;
+    const speed = $('[data-role="speed"]') as HTMLInputElement;
+    const nodes = Array.from(root.querySelectorAll<SVGGElement>('g.node'));
+    const cards = Array.from(root.querySelectorAll<HTMLElement>('[data-step-card]'));
+    const lists = Array.from(root.querySelectorAll<HTMLOListElement>('ol[data-role="list"]'));
+    const rows = Array.from(root.querySelectorAll<HTMLLIElement>('li[data-step]'));
+    const dirButtons = Array.from(root.querySelectorAll<HTMLButtonElement>('button[data-dir]'));
+    let dir: 'forward' | 'reverse' = 'forward';
+    let step = 0;
+    let timer: number | null = null;
+    let legTimer: number | null = null;
+    let at = HOME.forward;
+    let prevLit = new Set<string>();
+
+    const interval = () => 2600 / Number(speed.value);
+
+    // The token must land before the next tick: during Play its transition is scaled to the interval.
+    function moveToken(to: string) {
+      if (legTimer !== null) { clearTimeout(legTimer); legTimer = null; }
+      const dur = timer !== null ? Math.min(600, interval() * 0.8) : 600;
+      const place = ([x, y]: [number, number], ms: number) => {
+        token.style.transitionDuration = `${ms}ms`;
+        token.style.transform = `translate(${x}px, ${y}px)`;
+      };
+      const via = VIA[`${at}>${to}`];
+      if (via && !reduced) {
+        place(via, dur / 2);
+        legTimer = window.setTimeout(() => { legTimer = null; place(POS[to], dur / 2); }, dur / 2);
+      } else place(POS[to], dur);
+      at = to;
+    }
+
+    function render() {
+      const stepsOf = dir === 'forward' ? journey.steps : journey.reverse;
+      const s = stepsOf.find((x) => x.n === step);
+      clock.textContent = `step ${step} / 28`;
+      clock.className = `pill ${step === 28 ? 'ok' : timer !== null ? 'a' : 'grey'}`;
+      track.style.setProperty('--p', String(step / 28));
+      for (const c of cards) c.hidden = !(Number(c.dataset.stepCard) === step && (step === 0 || c.dataset.dir === dir));
+      for (const l of lists) l.hidden = l.dataset.dir !== dir;
+      for (const li of rows) {
+        const n = Number(li.dataset.step);
+        const list = li.closest<HTMLElement>('ol')!;
+        const mine = list.dataset.dir === dir;
+        if (mine && n === step) { li.setAttribute('aria-current', 'step'); scrollListTo(list, li); } else li.removeAttribute('aria-current');
+        li.classList.toggle('done', mine && n < step);
+      }
+      const lit = new Set<string>(s ? s.lit : []);
+      for (const g of nodes) {
+        const id = g.dataset.node!;
+        if (step === 0) { g.classList.remove('off', 'on', 'pulse'); continue; }
+        // A parent group is "on" if any of its children are lit; the ledger frames never dim.
+        const on = lit.has(id) || Array.from(g.querySelectorAll<SVGGElement>('g.node')).some((c) => lit.has(c.dataset.node!));
+        g.classList.toggle('on', on);
+        g.classList.toggle('off', !on);
+        if (lit.has(id) && !prevLit.has(id)) g.classList.add('pulse');
+      }
+      prevLit = lit;
+      if (s) {
+        moveToken(TOKEN_AT[dir][s.n]);
+      } else {
+        moveToken(HOME[dir]);
+      }
+    }
+    function go(n: number) { step = Math.max(0, Math.min(28, n)); render(); if (step === 28) stop(); }
+    function tick() { if (step >= 28) { stop(); return; } go(step + 1); }
+    function start() {
+      if (timer !== null) return;
+      if (step >= 28) step = 0;
+      play.textContent = 'Pause'; play.setAttribute('aria-pressed', 'true');
+      timer = window.setInterval(tick, interval());
+      tick();
+    }
+    function stop() {
+      if (timer !== null) { clearInterval(timer); timer = null; }
+      play.textContent = step >= 28 ? 'Replay' : 'Play'; play.setAttribute('aria-pressed', 'false');
+      clock.className = `pill ${step === 28 ? 'ok pulse' : 'grey'}`;
+    }
+    play.addEventListener('click', () => (timer === null ? start() : stop()));
+    $('[data-role="prev"]').addEventListener('click', () => { stop(); go(step - 1); });
+    $('[data-role="next"]').addEventListener('click', () => { stop(); go(step + 1); });
+    $('[data-role="reset"]').addEventListener('click', () => { stop(); go(0); play.textContent = 'Play'; });
+    speed.addEventListener('input', () => { if (timer !== null) { clearInterval(timer); timer = window.setInterval(tick, interval()); } });
+    for (const li of rows) {
+      const pick = () => { stop(); go(Number(li.dataset.step)); };
+      li.addEventListener('click', pick);
+      li.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); } });
+    }
+    for (const b of dirButtons) b.addEventListener('click', () => {
+      stop(); dir = b.dataset.dir as 'forward' | 'reverse';
+      for (const x of dirButtons) x.setAttribute('aria-pressed', String(x === b));
+      go(0); play.textContent = 'Play';
+    });
+    // One-shot classes (node pulse, clock pulse) come off when their animation ends.
+    root.addEventListener('animationend', (e) => { const host = (e.target as Element).closest('.pulse'); if (host) host.classList.remove('pulse'); });
+    render();
+  }
+</script>

@@ -1,0 +1,98 @@
+---
+/** One connector, registered on both ledgers: approves a message before it is queued on the sending side, is charged gas plus a margin on the receiving side (design §3.3.1, §3.3.3; spec §3.3). */
+import Figure from '@kse/components/Figure.astro';
+import { design, spec } from '../../../lib/sources';
+---
+<Figure
+  lead="One connector, two moments."
+  caption="Before a message is queued, the connector on the sending ledger says whether it will cover it. After the message runs, the connector on the receiving ledger is charged the gas used plus a margin, and all of it goes to the endpoint that submitted the bundle. No new token, no treasury."
+  source={[
+    { label: 'design §3.3.1', href: design('331-connectors') },
+    { label: 'design §3.3.3', href: design('333-receiving-routing-and-paying') },
+    { label: 'spec §3.3', href: spec('33-connector-authorization-interface') },
+  ]}
+  kind="spec"
+  minWidth={740}
+>
+  <svg viewBox="0 0 740 360" role="img" aria-label="Two ledger frames side by side. On the left, Ledger A: the application asks CLPR Service A to send message 41, the service asks the connector on A to approve it, and the message is queued in the outbound queue. On the right, Ledger B: an endpoint submits the bundle and pays the fee, CLPR Service B runs the application, charges the connector on B the gas used plus a margin, and the whole charge goes to the endpoint. A dashed line joins the two connector boxes: the same identity on both ledgers.">
+    <defs>
+      <marker id="ctj-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--text-3)" /></marker>
+      <marker id="ctj-arrow-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--a)" /></marker>
+      <marker id="ctj-arrow-c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--c)" /></marker>
+      <marker id="ctj-arrow-ok" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--ok)" /></marker>
+      <marker id="ctj-arrow-money" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--money)" /></marker>
+    </defs>
+
+    <!-- Ledger A frame (sending side) -->
+    <rect x="14" y="14" width="332" height="296" rx="12" class="d-a" />
+    <text x="30" y="36" class="t b">Ledger A</text>
+    <text x="30" y="52" class="t small muted">sending side</text>
+
+    <rect x="30" y="68" width="140" height="48" rx="8" class="d-surface" />
+    <text x="100" y="88" class="t b center">Application</text>
+    <text x="100" y="105" class="t small center">wants to send #41</text>
+
+    <rect x="30" y="156" width="140" height="48" rx="8" class="d-surface" />
+    <text x="100" y="176" class="t b center">CLPR Service A</text>
+    <text x="100" y="193" class="t small center">asks before queuing</text>
+
+    <rect x="196" y="156" width="134" height="60" rx="8" class="d-money" />
+    <text x="263" y="176" class="t b center">Connector on A</text>
+    <text x="263" y="193" class="t small center">"cover #41?"</text>
+    <text x="263" y="208" class="t small center ok">yes</text>
+
+    <rect x="30" y="248" width="140" height="48" rx="8" class="d-grey" />
+    <text x="100" y="268" class="t b center">Outbound queue</text>
+    <text x="100" y="285" class="t small center">#41 queued</text>
+
+    <!-- A arrows -->
+    <line x1="100" y1="116" x2="100" y2="153" class="line a" marker-end="url(#ctj-arrow-a)" />
+    <text x="108" y="140" class="t small">1 send</text>
+    <line x1="170" y1="180" x2="193" y2="180" class="line money" marker-end="url(#ctj-arrow-money)" />
+    <text x="183" y="150" class="t small center">2 approve?</text>
+    <path d="M196,204 L182,204 L182,272 L173,272" class="line ok" marker-end="url(#ctj-arrow-ok)" />
+    <text x="250" y="244" class="t small center">3 yes, queue it</text>
+
+    <!-- Ledger B frame (receiving side); the connector sits next to the gap so the two connectors face each other -->
+    <rect x="394" y="14" width="332" height="296" rx="12" class="d-b" />
+    <text x="410" y="36" class="t b">Ledger B</text>
+    <text x="410" y="52" class="t small muted">receiving side</text>
+
+    <rect x="410" y="156" width="134" height="60" rx="8" class="d-money" />
+    <text x="477" y="176" class="t b center">Connector on B</text>
+    <text x="477" y="193" class="t small center">charged the gas used</text>
+    <text x="477" y="208" class="t small center">plus a margin</text>
+
+    <rect x="570" y="68" width="140" height="48" rx="8" class="d-c" />
+    <text x="640" y="88" class="t b center">Endpoint</text>
+    <text x="640" y="105" class="t small center">fronts the fee</text>
+
+    <rect x="570" y="156" width="140" height="48" rx="8" class="d-surface" />
+    <text x="640" y="176" class="t b center">CLPR Service B</text>
+    <text x="640" y="193" class="t small center">runs the application</text>
+
+    <rect x="570" y="248" width="140" height="48" rx="8" class="d-surface" />
+    <text x="640" y="268" class="t b center">Application on B</text>
+    <text x="640" y="285" class="t small center">uses some gas</text>
+
+    <!-- B arrows -->
+    <line x1="640" y1="116" x2="640" y2="153" class="line c" marker-end="url(#ctj-arrow-c)" />
+    <text x="648" y="136" class="t small">4 submit,</text>
+    <text x="648" y="150" class="t small">pay the fee</text>
+    <line x1="640" y1="204" x2="640" y2="245" class="line b" marker-end="url(#ctj-arrow)" />
+    <text x="648" y="230" class="t small">5 run</text>
+    <line x1="570" y1="180" x2="547" y2="180" class="line money" marker-end="url(#ctj-arrow-money)" />
+    <text x="557" y="150" class="t small center">6 charge</text>
+    <path d="M477,156 L477,92 L567,92" class="line money" marker-end="url(#ctj-arrow-money)" />
+    <text x="560" y="112" class="t small end">7 the whole charge,</text>
+    <text x="560" y="126" class="t small end">margin included</text>
+
+    <!-- same identity link -->
+    <line x1="330" y1="186" x2="410" y2="186" class="line money dash" />
+    <text x="370" y="238" class="t small center money">same identity</text>
+    <text x="370" y="252" class="t small center money">on both ledgers</text>
+
+    <!-- takeaway -->
+    <text x="370" y="338" class="t take center">Approved on the sending side, charged on the receiving side; the whole charge goes to the endpoint.</text>
+  </svg>
+</Figure>

@@ -1,0 +1,19 @@
+---
+/**
+ * The actors, in the words a first-time reader needs, with the spec's own definition one click
+ * away. Definitions paraphrase the LFDT-CLPR organization profile "Terminology" list and the
+ * design document §2.1.
+ */
+import data from '../data/cast.json';
+const { detail = false } = Astro.props as { detail?: boolean };
+const cast = data.cast;
+---
+<div class="cards">
+  {cast.map((c) => (
+    <div class="card">
+      <h4><span class="swatch" style={`background:${c.color}`}></span>{c.name}</h4>
+      <p>{detail ? c.spec : c.plain}</p>
+      <details><summary>{detail ? 'in plain words' : 'as the spec puts it'}</summary><div class="more">{detail ? c.plain : c.spec}</div></details>
+    </div>
+  ))}
+</div>

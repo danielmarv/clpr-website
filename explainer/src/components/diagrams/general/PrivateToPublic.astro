@@ -1,0 +1,44 @@
+---
+/** A private network talking to a public one: the private side's endpoints carry no dialable address (design §3.1.2) and always dial out, so a private enterprise network exchanges messages with a public one without opening a door; design §1 lists communication between public and private Hiero networks as a goal. General page section 12. */
+import Figure from '@kse/components/Figure.astro';
+import { design } from '../../../lib/sources';
+---
+<Figure
+  lead="Private to public, without opening a door."
+  caption="A private network lists its endpoints without an address to dial. Its endpoints dial out to the public network's endpoints, which are listed with addresses, and messages then flow both ways over that connection. Nothing on the private side has to be reachable from the internet."
+  source={[{ label: 'design §1', href: design('1-executive-summary') }, { label: 'design §3.1.2', href: design('312-endpoint-manifest') }]}
+  kind="plain"
+  minWidth={720}
+>
+  <svg viewBox="0 0 720 300" role="img" aria-label="On the left, a private network drawn with a dashed border, whose endpoint entry reads no address, dials out only. On the right, a public network whose endpoint entry has an address. A solid arrow from the private endpoint to the public one is labelled dials out; a double-headed dashed line between them is labelled messages both ways.">
+    <!-- private network -->
+    <rect x="20" y="30" width="300" height="220" rx="12" class="d-surface" stroke-dasharray="7 5" />
+    <text x="170" y="58" class="t b center">Private network</text>
+    <text x="170" y="76" class="t small center">an enterprise ledger behind its own walls</text>
+    <rect x="40" y="96" width="260" height="46" rx="8" class="d-a" />
+    <text x="170" y="115" class="t center">CLPR Service</text>
+    <text x="170" y="131" class="t small center">queues, channels, the proofs it checks</text>
+    <rect x="40" y="160" width="260" height="66" rx="8" class="d-c" />
+    <text x="170" y="182" class="t center">endpoint</text>
+    <text x="170" y="199" class="t small center">listed with no address</text>
+    <text x="170" y="214" class="t small center">dials out; is never dialled</text>
+    <!-- public network -->
+    <rect x="400" y="30" width="300" height="220" rx="12" class="d-b" />
+    <text x="550" y="58" class="t b center">Public network</text>
+    <text x="550" y="76" class="t small center">anyone can reach it</text>
+    <rect x="420" y="96" width="260" height="46" rx="8" class="d-surface" />
+    <text x="550" y="115" class="t center">CLPR Service</text>
+    <text x="550" y="131" class="t small center">queues, channels, the proofs it checks</text>
+    <rect x="420" y="160" width="260" height="66" rx="8" class="d-c" />
+    <text x="550" y="182" class="t center">endpoint</text>
+    <text x="550" y="199" class="t small center">listed with an address</text>
+    <text x="550" y="214" class="t small center">accepts the connection</text>
+    <!-- the connection -->
+    <line x1="300" y1="178" x2="420" y2="178" class="line c" />
+    <path d="M412,173 L420,178 L412,183" fill="none" stroke="var(--c)" stroke-width="1.5" />
+    <text x="360" y="170" class="t small center">dials out</text>
+    <line x1="300" y1="206" x2="420" y2="206" class="line a dash" />
+    <text x="360" y="200" class="t small center">messages both ways</text>
+    <text x="360" y="284" class="t take center">The private side is never reachable from outside; the proofs make that safe rather than merely convenient.</text>
+  </svg>
+</Figure>

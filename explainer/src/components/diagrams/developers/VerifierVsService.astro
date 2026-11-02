@@ -1,0 +1,87 @@
+---
+/** One submitBundle call: the verifier does the cryptography, the service runs every other check; spec §4.2 steps 1-6, design §3.2.5. */
+import Figure from '@kse/components/Figure.astro';
+import { design, spec } from '../../../lib/sources';
+---
+<Figure
+  lead="Two jobs, one transaction."
+  caption="The verifier answers one question: is this payload authentically the peer's state under the current trust anchor? Progress, size, contiguity, the running hash, acknowledgements, status transitions and dispatch are the service's own logic and run the same way for every proof system."
+  source={[{ label: 'spec §4.2', href: spec('42-bundle-verification-algorithm') }, { label: 'design §3.2.5', href: design('325-bundle-verification') }]}
+  kind="spec"
+  minWidth={720}
+>
+  <svg viewBox="0 0 720 480" role="img" aria-label="An endpoint submits proof bytes to the verifier contract, which also receives the stored trust anchor and channel context and returns verified contents. The CLPR Service logic checks those contents against the stored channel state, updates the state only if every check passes, and dispatches each message to applications on ledger B.">
+    <defs>
+      <marker id="vvs-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--text-3)" /></marker>
+      <marker id="vvs-arrow-c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--c)" /></marker>
+      <marker id="vvs-arrow-ok" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--ok)" /></marker>
+      <marker id="vvs-arrow-b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--b)" /></marker>
+    </defs>
+
+    <!-- endpoint -->
+    <rect x="260" y="16" width="220" height="64" rx="8" class="d-c" />
+    <text x="370" y="38" class="t b center">Endpoint</text>
+    <text x="370" y="55" class="t mono center">submitBundle(channel_id,</text>
+    <text x="370" y="69" class="t mono center">bundle_payload)</text>
+
+    <line x1="370" y1="80" x2="370" y2="112" class="line c" marker-end="url(#vvs-arrow-c)" />
+    <text x="380" y="100" class="t small">opaque proof bytes</text>
+
+    <!-- verifier -->
+    <rect x="260" y="114" width="220" height="84" rx="8" class="d-ok" />
+    <text x="370" y="136" class="t b center">Verifier contract</text>
+    <text x="370" y="153" class="t mono center">verifyBundle(payload,</text>
+    <text x="370" y="167" class="t mono center">trust_anchor, ctx)</text>
+    <text x="370" y="185" class="t small center">cryptography only</text>
+
+    <!-- channel state -->
+    <rect x="16" y="114" width="180" height="96" rx="8" class="d-grey" />
+    <text x="106" y="136" class="t b center">Channel state</text>
+    <text x="106" y="154" class="t mono center">received_message_id</text>
+    <text x="106" y="168" class="t mono center">acked_message_id</text>
+    <text x="106" y="182" class="t mono center">running hash · manifest</text>
+    <text x="106" y="196" class="t mono center">trust_anchor · ctx</text>
+
+    <line x1="196" y1="150" x2="258" y2="150" class="line dash" marker-end="url(#vvs-arrow)" />
+    <text x="228" y="142" class="t small center">passed in</text>
+
+    <line x1="370" y1="198" x2="370" y2="230" class="line ok" marker-end="url(#vvs-arrow-ok)" />
+    <text x="380" y="218" class="t small">returns, or reverts</text>
+
+    <!-- verified contents -->
+    <rect x="220" y="232" width="300" height="78" rx="8" class="d-surface" />
+    <text x="370" y="254" class="t b center">Verified contents</text>
+    <text x="370" y="271" class="t mono center">sync_data · messages[]</text>
+    <text x="370" y="285" class="t mono center">anchor_message_id · anchor_running_hash</text>
+    <text x="370" y="299" class="t mono center">new_trust_anchor · new_endpoint_manifest</text>
+
+    <line x1="370" y1="310" x2="370" y2="342" class="line b" marker-end="url(#vvs-arrow-b)" />
+    <text x="380" y="330" class="t small">checked against stored state</text>
+
+    <!-- service logic -->
+    <rect x="220" y="344" width="300" height="92" rx="8" class="d-b" />
+    <text x="370" y="366" class="t b center">CLPR Service logic</text>
+    <text x="370" y="383" class="t mono center">1a progress · 1b manifest · 1c anchor</text>
+    <text x="370" y="397" class="t mono center">2 size · 3 replay · 4 running hash</text>
+    <text x="370" y="411" class="t mono center">5 ack / status · 5c lazy config</text>
+    <text x="370" y="425" class="t mono center">6 dispatch, one message at a time</text>
+
+    <!-- state update, only on success -->
+    <path d="M220,400 H106 V212" class="line ok" marker-end="url(#vvs-arrow-ok)" />
+    <text x="114" y="270" class="t small">updated only if</text>
+    <text x="114" y="284" class="t small">every check passes</text>
+
+    <!-- applications -->
+    <rect x="560" y="344" width="144" height="92" rx="8" class="d-b" />
+    <text x="632" y="366" class="t b center">Applications on B</text>
+    <text x="632" y="384" class="t small center">per message:</text>
+    <text x="632" y="398" class="t small center">authorize, pay, call,</text>
+    <text x="632" y="412" class="t small center">enqueue the reply</text>
+
+    <line x1="520" y1="390" x2="558" y2="390" class="line b" marker-end="url(#vvs-arrow-b)" />
+    <text x="539" y="380" class="t small center">step 6</text>
+
+    <text x="360" y="454" class="t take center">The service's checks catch verifier bugs.</text>
+    <text x="360" y="468" class="t take center">They do not catch a compromised verifier, which would return fabricated data with matching hashes.</text>
+  </svg>
+</Figure>

@@ -1,0 +1,96 @@
+{
+  "$comment": "The roles of design §4.1 to §4.6 and the cross-role scenarios of §4.7, one row per heading; check-data.mjs fails when the counts differ. does and risks are the site's short reading of each section; scenario steps follow the document's numbered lists.",
+  "roles": [
+    {
+      "id": "end-user",
+      "name": "End user",
+      "does": "Uses applications. Evaluates an application before using it and watches for degraded service; never touches the protocol directly.",
+      "risks": "Application bugs, poor channel or connector choices, a channel closed while messages are in flight, and finality risk if a verifier accepts proofs below finality. Escrowed assets should be settled before stopping.",
+      "refs": [{ "doc": "design", "anchor": "41-end-user", "label": "design §4.1" }]
+    },
+    {
+      "id": "application-developer",
+      "name": "Application developer",
+      "does": "Sends messages and handles the responses in callbacks, naming a channel and a connector on every send. Keeps both configurable, watches connector health and channel status, and migrates when a proof format changes.",
+      "risks": "Every cross-ledger payload is untrusted input; payloads sit on chain in plaintext unless the application encrypts them; a compromised verifier can mean direct loss of assets.",
+      "refs": [{ "doc": "design", "anchor": "42-application-developer", "label": "design §4.2" }]
+    },
+    {
+      "id": "connector-operator",
+      "name": "Connector operator",
+      "does": "Often also creates the channel: deploys a verifier, registers the channel, then registers as a connector on both ledgers. Keeps a balance to pay for execution and a locked stake that covers fines; may run allow-lists and rate limits.",
+      "risks": "An empty balance fails messages and slashes the stake with escalating penalties; a lapsed registration fails them too; removal is blocked while messages are in flight.",
+      "refs": [{ "doc": "design", "anchor": "43-connector-operator", "label": "design §4.3" }]
+    },
+    {
+      "id": "verifier-developer",
+      "name": "Verifier developer",
+      "does": "An off-chain role with no protocol identity: writes the contract that checks one ledger's proofs. Ledger implementers, connector operators, application developers with high-value flows and auditors all have reasons to.",
+      "risks": "Proof format changes need new implementations; an upgrade key on a verifier is a single point of compromise; the protocol pays nothing for maintenance.",
+      "refs": [{ "doc": "design", "anchor": "44-verifier-developer", "label": "design §4.4" }]
+    },
+    {
+      "id": "endpoint-operator",
+      "name": "Endpoint operator",
+      "does": "On Hiero, nothing: every consensus node is an endpoint automatically. Elsewhere, registers with a bond, is admitted by the service admin, serves every channel on the service, and pre-funds the account that submits bundles.",
+      "risks": "Invalid, failed or duplicate submissions cost unreimbursed fees; misbehaviour means eviction, with the bond returned in full.",
+      "refs": [{ "doc": "design", "anchor": "45-endpoint-operator", "label": "design §4.5" }]
+    },
+    {
+      "id": "service-admin",
+      "name": "CLPR Service admin",
+      "does": "Mostly protective powers: adjusts the ledger's published limits, admits or evicts endpoints, turns the service on or off and closes channels. Cannot create channels, register connectors or take part in the economics.",
+      "risks": "Abuse of power, mitigated by governance; inaction, since a compromised channel left open keeps being exploited; and no in-protocol incentive, a known gap between responsibility and motivation.",
+      "refs": [{ "doc": "design", "anchor": "46-clpr-service-admin", "label": "design §4.6" }]
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "new-route",
+      "name": "Setting up a new cross-ledger route",
+      "steps": [
+        "A verifier developer publishes and audits a verifier for the target proof system.",
+        "A connector operator evaluates it, deploys it, registers the channel on both ledgers, and registers as a connector on both sides.",
+        "An application developer evaluates the channel and the connector and integrates them.",
+        "End users use the application; the trust chain is active from top to bottom."
+      ],
+      "refs": [{ "doc": "design", "anchor": "setting-up-a-new-cross-ledger-route", "label": "design §4.7" }]
+    },
+    {
+      "id": "proof-format-upgrade",
+      "name": "Proof format upgrade",
+      "steps": [
+        "The source ledger announces a proof format upgrade.",
+        "A verifier developer publishes a verifier for the new format.",
+        "A connector operator creates a new channel with it and registers as a connector.",
+        "Application developers migrate to the new channel.",
+        "The source ledger switches formats; the old channel's verifier stops working.",
+        "The service admin closes the old channel. The source ledger keeps the old format alive long enough for the migration."
+      ],
+      "refs": [{ "doc": "design", "anchor": "proof-format-upgrade", "label": "design §4.7" }]
+    },
+    {
+      "id": "compromised-verifier",
+      "name": "Responding to a compromised verifier",
+      "steps": [
+        "A vulnerability is discovered and a security advisory issued.",
+        "The service admin closes the affected channels; their queues drain.",
+        "The verifier developer publishes a patched implementation.",
+        "Connector operators create new channels with the patched verifier.",
+        "Application developers migrate. The window of exposure is between discovery and close."
+      ],
+      "refs": [{ "doc": "design", "anchor": "responding-to-a-compromised-verifier", "label": "design §4.7" }]
+    },
+    {
+      "id": "connector-withdrawal",
+      "name": "Connector withdrawal under load",
+      "steps": [
+        "The connector operator updates its authorization contract to reject all new messages.",
+        "Application developers switch to another connector or notify their users.",
+        "Messages already queued complete normally.",
+        "Once every in-flight message has settled, the operator removes the connector and recovers its funds."
+      ],
+      "refs": [{ "doc": "design", "anchor": "connector-withdrawal-under-load", "label": "design §4.7" }]
+    }
+  ]
+}

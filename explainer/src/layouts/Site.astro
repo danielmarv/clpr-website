@@ -1,0 +1,26 @@
+---
+/**
+ * The engine's page frame wearing the CLPR website's chrome: its header and footer in the full-width
+ * slots, its fonts preloaded, and src/styles/site-theme.css redefining the engine's tokens.
+ */
+import Base from '@kse/layouts/Base.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+import sora from '../assets/fonts/sora-latin-wght-normal.woff2?url';
+import '../styles/site-theme.css';
+
+interface Props {
+  title: string;
+  description: string;
+  sections: { id: string; title: string; num?: string }[];
+  acts?: { id: string; numeral: string; name: string; first: string }[];
+  path: '/' | '/developers/';
+}
+const props = Astro.props;
+---
+<Base {...props}>
+  <link slot="head" rel="preload" href={sora} as="font" type="font/woff2" crossorigin />
+  <SiteHeader slot="header" path={props.path} />
+  <slot />
+  <SiteFooter slot="footer" />
+</Base>

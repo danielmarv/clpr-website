@@ -1,0 +1,33 @@
+---
+import Site from '../layouts/Site.astro';
+import Toc from '@kse/components/Toc.astro';
+import Hero from '@kse/components/Hero.astro';
+import JourneyTrailer from '../components/JourneyTrailer.astro';
+import General from '../content/general.mdx';
+import sections from '../data/sections.json';
+const list = sections.general;
+const acts = sections.acts.general;
+---
+<Site
+  title="The plumbing of CLPR"
+  description="How a message gets from one blockchain to another without trusting anyone in the middle. CLPR, the bridgeless Cross Ledger Protocol, explained from nothing, with simulations."
+  sections={list}
+  acts={acts}
+  path="/"
+>
+  <Hero
+    kicker="An explainer · for everyone · no prior knowledge assumed"
+    lede="How a message gets from one blockchain to another without anyone in the middle being trusted. The Cross Ledger Protocol, explained from nothing."
+    routes={acts.map((a) => ({ href: `#act-${a.id}`, numeral: a.numeral, label: a.name }))}
+  >
+    The <em>plumbing</em> of CLPR
+    <JourneyTrailer slot="trailer" mode="plain" href="#journey" />
+    <Fragment slot="meta">
+      <span>About 25 minutes, with things to play with</span>
+      <span>Repositories and commits are listed at the end of the page</span>
+      <span><a href="developers/">Developer version →</a></span>
+    </Fragment>
+  </Hero>
+  <Toc sections={list} acts={acts} inline />
+  <General />
+</Site>

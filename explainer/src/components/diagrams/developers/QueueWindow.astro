@@ -1,0 +1,92 @@
+---
+/** One outbound queue holding DATA, RESPONSE and CONTROL entries under a single id sequence and one running hash chain, with acked_message_id marking what may be deleted and next_message_id marking where sendMessage writes next. Draws on spec §1.4, spec §4.1 and design §3.2.2. */
+import Figure from '@kse/components/Figure.astro';
+import { design, spec } from '../../../lib/sources';
+---
+<Figure
+  lead="One queue per direction, nothing sorted by kind."
+  caption="Data messages, responses and control messages share the same ids and the same running hash chain. acked_message_id marks what the peer has proven it received and what can be deleted, except Data Messages, which are kept until their response arrives; next_message_id is where sendMessage writes next. Message ids are illustrative."
+  source={[{ label: 'spec §1.4', href: spec('14-message-queue') }, { label: 'spec §4.1', href: spec('41-running-hash-computation') }, { label: 'design §3.2.2', href: design('322-message-storage') }]}
+  kind="spec"
+  minWidth={760}
+>
+  <svg viewBox="0 0 760 374" role="img" aria-label="A row of six queue slots: msg 40 (DATA, acknowledged and deleted), msg 41 (DATA), msg 42 (RESPONSE answering inbound 37), msg 43 (CONTROL, ConfigUpdate), msg 44 (DATA) and an empty slot 45. Above the slots a running hash chain H40 to H44 ends in sent_running_hash, with the formula H44 = SHA-256(H43 concatenated with payload44). Below, acked_message_id = 41 points at slot 41 and says entries up to 41 may be deleted; next_message_id = 45 points at the empty slot where the next sendMessage stores. A note at the bottom gives the storage key (channel_id, message_id).">
+    <defs>
+      <marker id="qw-arrow" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9 Z" fill="var(--text-3)"/></marker>
+      <marker id="qw-arrow-ok" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9 Z" fill="var(--ok)"/></marker>
+    </defs>
+
+    <!-- The running hash chain -->
+    <text x="380" y="28" class="t mono center ok">H44 = SHA-256(H43 ‖ payload44)   ·   H0 = 32 zero bytes</text>
+    <text x="75" y="56" class="t mono center muted">H40</text>
+    <line x1="91" y1="52" x2="181" y2="52" class="line ok" marker-end="url(#qw-arrow-ok)"/>
+    <text x="197" y="56" class="t mono center ok">H41</text>
+    <line x1="213" y1="52" x2="303" y2="52" class="line ok" marker-end="url(#qw-arrow-ok)"/>
+    <text x="319" y="56" class="t mono center ok">H42</text>
+    <line x1="335" y1="52" x2="425" y2="52" class="line ok" marker-end="url(#qw-arrow-ok)"/>
+    <text x="441" y="56" class="t mono center ok">H43</text>
+    <line x1="457" y1="52" x2="547" y2="52" class="line ok" marker-end="url(#qw-arrow-ok)"/>
+    <text x="563" y="56" class="t mono center ok">H44</text>
+    <line x1="579" y1="52" x2="618" y2="52" class="line ok" marker-end="url(#qw-arrow-ok)"/>
+    <text x="626" y="56" class="t mono ok">sent_running_hash</text>
+
+    <!-- The queue, oldest on the left -->
+    <rect x="20" y="80" width="110" height="80" rx="8" class="d-grey"/>
+    <text x="30" y="102" class="t b muted">msg 40</text>
+    <text x="30" y="120" class="t mono muted">DATA</text>
+    <text x="30" y="136" class="t small muted">acknowledged,</text>
+    <text x="30" y="150" class="t small muted">deleted</text>
+
+    <rect x="142" y="80" width="110" height="80" rx="8" class="d-surface"/>
+    <text x="152" y="102" class="t b">msg 41</text>
+    <text x="152" y="120" class="t mono">DATA</text>
+    <text x="152" y="136" class="t mono">ClprMessage</text>
+
+    <rect x="264" y="80" width="110" height="80" rx="8" class="d-surface"/>
+    <text x="274" y="102" class="t b">msg 42</text>
+    <text x="274" y="120" class="t mono">RESPONSE</text>
+    <text x="274" y="136" class="t small">answers inbound 37</text>
+
+    <rect x="386" y="80" width="110" height="80" rx="8" class="d-surface"/>
+    <text x="396" y="102" class="t b">msg 43</text>
+    <text x="396" y="120" class="t mono">CONTROL</text>
+    <text x="396" y="136" class="t mono">ConfigUpdate</text>
+
+    <rect x="508" y="80" width="110" height="80" rx="8" class="d-surface"/>
+    <text x="518" y="102" class="t b">msg 44</text>
+    <text x="518" y="120" class="t mono">DATA</text>
+    <text x="518" y="136" class="t mono">ClprMessage</text>
+
+    <rect x="630" y="80" width="110" height="80" rx="8" class="d-surface" stroke-dasharray="5 4"/>
+    <text x="640" y="102" class="t b muted">slot 45</text>
+    <text x="640" y="120" class="t small muted">empty</text>
+    <text x="640" y="136" class="t small muted">next write</text>
+
+    <!-- Two counters -->
+    <line x1="197" y1="196" x2="197" y2="164" class="line ok" marker-end="url(#qw-arrow-ok)"/>
+    <rect x="20" y="196" width="300" height="80" rx="8" class="d-ok"/>
+    <text x="32" y="216" class="t b">acked_message_id = 41</text>
+    <text x="32" y="234" class="t small">the peer has proven it received up to here;</text>
+    <text x="32" y="250" class="t small">entries ≤ 41 may be deleted, except</text>
+    <text x="32" y="266" class="t small">Data Messages, which wait for their reply</text>
+
+    <text x="380" y="222" class="t mono center">42 … 44</text>
+    <text x="380" y="238" class="t small center muted">unacknowledged,</text>
+    <text x="380" y="252" class="t small center muted">still in the queue</text>
+
+    <line x1="685" y1="196" x2="685" y2="164" class="line" marker-end="url(#qw-arrow)"/>
+    <rect x="440" y="196" width="300" height="80" rx="8" class="d-grey"/>
+    <text x="452" y="216" class="t b">next_message_id = 45</text>
+    <text x="452" y="234" class="t small">the next sendMessage stores here (step 8)</text>
+    <text x="452" y="250" class="t small">then increments the counter (step 9)</text>
+
+    <!-- Storage -->
+    <rect x="20" y="288" width="720" height="48" rx="8" class="d-grey"/>
+    <text x="32" y="308" class="t b">storage key</text>
+    <text x="120" y="308" class="t mono">(channel_id, message_id) · read by id range when building a bundle · deleted once acked</text>
+    <text x="32" y="324" class="t small muted">Merkle state map on Hiero; contract storage on EVM ledgers, where gas makes deletion matter</text>
+
+    <!-- takeaway -->
+    <text x="380" y="358" class="t take center">Three message classes, one id sequence, one hash chain: nothing is sorted by type.</text>
+  </svg>
+</Figure>

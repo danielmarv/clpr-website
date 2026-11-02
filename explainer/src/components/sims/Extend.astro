@@ -1,0 +1,107 @@
+---
+/** Adding a new ledger type, following the eight steps in the LFDT-CLPR organization profile. */
+import Refs from '@kse/components/Refs.astro';
+const { id = 'extend-sim' } = Astro.props as { id?: string };
+const steps = [
+  { t: 'Implement a CLPR Service and CLPR Endpoints for the new ledger type', d: 'The Service can be native to the node or a smart contract; either way it must behave exactly as the specification describes. The Endpoints read the new ledger\'s CLPR state, build state-proven bundles in the ledger\'s own data format, and speak the common sync protocol.' , show: ['svcX', 'epX'], line: 'service + endpoints on the new ledger' },
+  { t: 'Implement a Hiero verifier that runs on the new ledger', d: 'So the new ledger can check proofs coming from Hiero.', show: ['verHonX'], line: 'Hiero verifier, runs on the new ledger' },
+  { t: 'Implement a verifier for the new ledger that runs on Hiero', d: 'So Hiero can check proofs coming from the new ledger. This verifier also translates the new ledger\'s bundle format into what the receiving Service expects.', show: ['verXonH'], line: 'new-ledger verifier, runs on Hiero' },
+  { t: 'Deploy each verifier to the opposite network', d: 'Verifiers are ordinary contracts on the receiving side. Deploying one is permissionless.', show: ['deployed'], line: 'both verifiers deployed' },
+  { t: 'Set up a Channel between the two CLPR Services', d: 'Commit on both ledgers, then reveal on both, naming the verifier each side will use. The verifier is fixed for the channel\'s lifetime.', show: ['channel'], line: 'channel: verifier fixed on each side' },
+  { t: 'Share each network\'s endpoints with the other', d: 'The endpoint list is on-chain state on each side and is proved into the channel at creation; later changes travel inside bundle proofs.', show: ['manifest'], line: 'endpoint lists proved into the channel' },
+  { t: 'Set up a common Connector bonded to the Channel', d: 'The same connector identity is registered on both ledgers: it authorizes on the sending side and pays on the receiving side.', show: ['conX', 'conH'], line: 'one connector, registered on both ledgers' },
+  { t: 'Deploy applications that use the Connector and Channel', d: 'Applications implement two callbacks and never touch proofs, relays or verification.', show: ['appX', 'appH'], line: 'applications on both ledgers' },
+];
+---
+<div class="sim extend" id={id}>
+  <div class="sim__head">
+    <div><span class="kind">Step-through</span><h3>Adding a new ledger type</h3></div>
+    <span class="pill grey" data-role="clock">step 0 / 8</span>
+    <span class="sim__track seg" data-role="track" aria-hidden="true">{steps.map(() => <i></i>)}</span>
+  </div>
+  <div class="sim__body">
+    <div class="sim__scroll">
+      <svg viewBox="0 0 760 300" role="img" aria-label="A new ledger on the left and Hiero on the right; components appear as the steps progress.">
+        <rect x="20" y="20" width="340" height="260" rx="12" class="d-surface" stroke-dasharray="6 5" />
+        <text x="36" y="44" class="t b" style="fill:var(--b)">New ledger type</text>
+        <rect x="400" y="20" width="340" height="260" rx="12" class="d-surface" stroke-dasharray="6 5" />
+        <text x="416" y="44" class="t b" style="fill:var(--a)">Hiero network</text>
+
+        <g data-part="svcX" class="part"><rect x="36" y="60" width="150" height="40" rx="8" class="d-b" /><text x="111" y="85" class="t center b">CLPR Service</text></g>
+        <g data-part="epX" class="part"><rect x="200" y="116" width="144" height="40" rx="8" class="d-c" /><text x="272" y="141" class="t center b">Endpoints</text></g>
+        <g data-part="verHonX" class="part"><rect x="36" y="116" width="150" height="40" rx="8" class="d-a" /><text x="111" y="134" class="t center">Hiero verifier</text><text x="111" y="149" class="t small center">(runs here)</text></g>
+        <g data-part="conX" class="part"><rect x="200" y="180" width="144" height="40" rx="8" class="d-money" /><text x="272" y="205" class="t center b">Connector</text></g>
+        <g data-part="appX" class="part"><rect x="36" y="230" width="150" height="40" rx="8" class="d-b" /><text x="111" y="255" class="t center b">Application</text></g>
+
+        <g><rect x="416" y="60" width="150" height="40" rx="8" class="d-a" /><text x="491" y="85" class="t center b">CLPR Service</text></g>
+        <g><rect x="416" y="116" width="150" height="40" rx="8" class="d-c" /><text x="491" y="134" class="t center b">Endpoints</text><text x="491" y="149" class="t small center muted">(every node)</text></g>
+        <g data-part="verXonH" class="part"><rect x="580" y="116" width="144" height="40" rx="8" class="d-b" /><text x="652" y="134" class="t center">New-ledger verifier</text><text x="652" y="149" class="t small center">(runs here)</text></g>
+        <g data-part="conH" class="part"><rect x="580" y="60" width="144" height="40" rx="8" class="d-money" /><text x="652" y="85" class="t center b">Connector</text></g>
+        <g data-part="appH" class="part"><rect x="416" y="230" width="150" height="40" rx="8" class="d-a" /><text x="491" y="255" class="t center b">Application</text></g>
+
+        <g data-part="deployed" class="part">
+          <rect x="76" y="160" width="70" height="16" rx="8" class="d-ok" /><text x="111" y="172" class="t mono center" style="fill:var(--ok)">deployed</text>
+          <rect x="617" y="160" width="70" height="16" rx="8" class="d-ok" /><text x="652" y="172" class="t mono center" style="fill:var(--ok)">deployed</text>
+        </g>
+        <g data-part="channel" class="part"><line x1="186" y1="80" x2="416" y2="80" pathLength="1" class="line ok" stroke-width="3" /><text x="292" y="72" class="t small center" style="fill:var(--ok)">Channel (verifier fixed on each side)</text></g>
+        <g data-part="manifest" class="part"><path d="M344,136 H416" class="line c dash" /><text x="380" y="170" class="t small center" style="fill:var(--c)">endpoint lists, proved on-chain</text></g>
+      </svg>
+    </div>
+    <p class="sim__scroll-note">Wider than a phone; scroll it sideways if you need to.</p>
+    <div class="step-card" data-role="card" style="--card-min: 160px">
+      <div data-card="0"><div class="phase">Before you start</div><h4>The pattern that makes CLPR extensible</h4><p>Nothing on existing ledgers changes when a new one joins. The alignment between the new ledger's endpoint (which builds bundles in that ledger's format) and the verifier it ships for other ledgers (which reads that format) is the whole trick.</p></div>
+      {steps.map((s, i) => <div data-card={i + 1} hidden><div class="phase">Step {i + 1} of 8</div><h4>{s.t}</h4><p>{s.d}</p></div>)}
+    </div>
+    <Refs refs={[{ doc: 'repo', id: 'org-profile', path: 'profile/README.md', label: 'organization profile README, "Example of Extension Process"' }]} />
+  </div>
+  <div class="sim__controls">
+    <button class="btn" type="button" data-role="prev">◀ Prev</button>
+    <button class="btn primary" type="button" data-role="next">Next ▶</button>
+    <span class="spacer"></span>
+    <button class="btn" type="button" data-role="reset">Reset</button>
+  </div>
+  <div class="sim__log" data-role="log"><span class="line" data-role="line">step 0 / 8 · nothing on existing ledgers changes</span>{steps.map((s, i) => <span class="line" data-line={i + 1} hidden>step {i + 1} / 8 · {s.line}</span>)}</div>
+</div>
+<style>
+  .extend .sim__head .sim__track { flex-basis: 100%; }
+  .extend .part { opacity: 0.12; transform: translateY(6px); transform-box: fill-box; transition: opacity 300ms, transform 300ms; }
+  .extend .part.on { opacity: 1; transform: none; }
+  .sim.extend svg .part.on rect { stroke-width: 1.5; }
+  .sim.extend svg .part.now rect { animation: extend-pop 600ms ease; }
+  @keyframes extend-pop { 50% { stroke-width: 3.5; } }
+  .extend .part.now line { stroke-dasharray: 1; animation: extend-draw 350ms ease-out; }
+  @keyframes extend-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+  .extend .part.now path.dash { animation: extend-march 450ms linear; }
+  @keyframes extend-march { from { stroke-dashoffset: 18; } to { stroke-dashoffset: 0; } }
+  .extend .sim__log .line[hidden] { display: none; }
+  .extend .sim__log { min-height: 2.4em; }
+</style>
+<script>
+  const SHOW: string[][] = [[], ['svcX', 'epX'], ['verHonX'], ['verXonH'], ['deployed'], ['channel'], ['manifest'], ['conX', 'conH'], ['appX', 'appH']];
+  for (const root of Array.from(document.querySelectorAll<HTMLElement>('.sim.extend'))) {
+    const $ = (s: string) => root.querySelector<HTMLElement>(s)!;
+    const segs = Array.from(root.querySelectorAll<HTMLElement>('[data-role="track"] > i'));
+    const lines = Array.from(root.querySelectorAll<HTMLElement>('.sim__log .line'));
+    const prev = $('[data-role="prev"]') as HTMLButtonElement;
+    const next = $('[data-role="next"]') as HTMLButtonElement;
+    const clock = $('[data-role="clock"]');
+    let step = 0;
+    function render() {
+      const on = new Set<string>(SHOW.slice(0, step + 1).flat());
+      const now = new Set<string>(SHOW[step]);
+      for (const p of Array.from(root.querySelectorAll<SVGGElement>('g.part'))) { p.classList.toggle('on', on.has(p.dataset.part!)); p.classList.toggle('now', now.has(p.dataset.part!)); }
+      for (const c of Array.from(root.querySelectorAll<HTMLElement>('[data-card]'))) c.hidden = Number(c.dataset.card) !== step;
+      for (const l of lines) l.hidden = Number(l.dataset.line ?? 0) !== step;
+      segs.forEach((s, i) => { s.className = i < step - 1 ? 'done' : i === step - 1 ? 'now' : ''; });
+      if (step === 8) segs[7].className = 'done';
+      clock.textContent = `step ${step} / 8`;
+      clock.className = 'pill ' + (step === 8 ? 'ok' : 'grey');
+      prev.disabled = step === 0;
+      next.disabled = step === 8;
+    }
+    next.addEventListener('click', () => { step = Math.min(8, step + 1); render(); });
+    prev.addEventListener('click', () => { step = Math.max(0, step - 1); render(); });
+    $('[data-role="reset"]').addEventListener('click', () => { step = 0; render(); });
+    render();
+  }
+</script>

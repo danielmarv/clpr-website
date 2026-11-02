@@ -1,0 +1,233 @@
+{
+  "$comment": "The cast: a plain definition and the protocol definition for each actor, paraphrasing design §2.1 and the organization profile terminology list.",
+  "cast": [
+    {
+      "name": "Application",
+      "color": "var(--a)",
+      "plain": "The program that wants to talk to another ledger. It implements two callbacks: one for when a message arrives, one for when a reply comes back.",
+      "spec": "A contract implementing IClprApplication: onClprMessage and onClprResponse. It sends by calling IClprService.sendMessage.",
+      "refs": [
+        {
+          "doc": "design",
+          "anchor": "21-common-terminology",
+          "label": "design §2.1"
+        },
+        {
+          "doc": "repo",
+          "id": "org-profile",
+          "path": "profile/README.md",
+          "label": "organization profile terminology"
+        }
+      ]
+    },
+    {
+      "name": "CLPR Service",
+      "color": "var(--a)",
+      "plain": "The protocol's own part of each ledger. It keeps the outbound queues, checks the proofs, routes messages to applications, and handles the money.",
+      "spec": "The core on-ledger component: single source of truth for all CLPR state, holder of channels, connectors, endpoint manifests and locked funds. Native to the node on Hiero; a smart contract on EVM ledgers.",
+      "refs": [
+        {
+          "doc": "design",
+          "anchor": "21-common-terminology",
+          "label": "design §2.1"
+        },
+        {
+          "doc": "repo",
+          "id": "org-profile",
+          "path": "profile/README.md",
+          "label": "organization profile terminology"
+        }
+      ]
+    },
+    {
+      "name": "Channel",
+      "color": "var(--a)",
+      "plain": "A standing agreement between two ledgers to exchange messages, with its own numbered queue in each direction and a fixed way of checking the other side's proofs.",
+      "spec": "An on-ledger entity representing a communication path to one specific peer CLPR Service, bound to one verifier contract for its lifetime. Many channels may exist between the same two ledgers.",
+      "refs": [
+        {
+          "doc": "design",
+          "anchor": "21-common-terminology",
+          "label": "design §2.1"
+        },
+        {
+          "doc": "repo",
+          "id": "org-profile",
+          "path": "profile/README.md",
+          "label": "organization profile terminology"
+        }
+      ]
+    },
+    {
+      "name": "Verifier contract",
+      "color": "var(--ok)",
+      "plain": "The specialist that knows how to check one particular ledger's signatures and proofs. Each channel picks one when it is created and can never change it.",
+      "spec": "An immutable contract implementing verifyConfig and verifyBundle. It authenticates state proofs from the peer against the channel's trust anchor and decodes bundle content into the local format.",
+      "refs": [
+        {
+          "doc": "design",
+          "anchor": "21-common-terminology",
+          "label": "design §2.1"
+        },
+        {
+          "doc": "repo",
+          "id": "org-profile",
+          "path": "profile/README.md",
+          "label": "organization profile terminology"
+        }
+      ]
+    },
+    {
+      "name": "Trust anchor",
+      "color": "var(--ok)",
+      "plain": "Who is allowed to sign for the other ledger right now. Stored per channel and only ever updated by a proof that the previous signers approved the change.",
+      "spec": "Opaque, verifier-defined bytes encoding the peer ledger's current signing authority. For Hiero: the ledger_id. For QBFT: the validator set hash plus epoch data. Rotated only through verifyBundle.",
+      "refs": [
+        {
+          "doc": "design",
+          "anchor": "21-common-terminology",
+          "label": "design §2.1"
+        },
+        {
+          "doc": "repo",
+          "id": "org-profile",
+          "path": "profile/README.md",
+          "label": "organization profile terminology"
+        }
+      ]
+    },
+    {
+      "name": "Connector",
+      "color": "var(--money)",
+      "plain": "The account that pays. It approves a message on the sending side and pays for running it on the receiving side. If it breaks that promise, it is fined.",
+      "spec": "An economic entity registered on both ledgers under the same derived id. Authorizes outbound messages, funds inbound execution, and is subject to slashing for connector-attributable failures.",
+      "refs": [
+        {
+          "doc": "design",
+          "anchor": "21-common-terminology",
+          "label": "design §2.1"
+        },
+        {
+          "doc": "repo",
+          "id": "org-profile",
+          "path": "profile/README.md",
+          "label": "organization profile terminology"
+        }
+      ]
+    },
+    {
+      "name": "Endpoint",
+      "color": "var(--c)",
+      "plain": "The program that carries messages between ledgers. It watches its own ledger, collects proofs, talks to endpoints on the other side, and submits what it receives as an ordinary transaction. It cannot forge anything.",
+      "spec": "A node running the sync protocol: exchanging bundles with peer endpoints over gRPC, obtaining state proofs, pre-verifying, and submitting bundles. On Hiero every consensus node is one; elsewhere endpoints register and post a bond.",
+      "refs": [
+        {
+          "doc": "design",
+          "anchor": "21-common-terminology",
+          "label": "design §2.1"
+        },
+        {
+          "doc": "repo",
+          "id": "org-profile",
+          "path": "profile/README.md",
+          "label": "organization profile terminology"
+        }
+      ]
+    },
+    {
+      "name": "Message",
+      "color": "var(--text-2)",
+      "plain": "A parcel of bytes plus an address. Three kinds share one queue: data (what applications send), responses (the answer to a data message), and control (protocol housekeeping).",
+      "spec": "ClprMessagePayload: a oneof of ClprMessage (Data), ClprMessageReply (Response) or ClprControlMessage (Control). Every Data Message produces exactly one Response Message, in order.",
+      "refs": [
+        {
+          "doc": "design",
+          "anchor": "21-common-terminology",
+          "label": "design §2.1"
+        },
+        {
+          "doc": "repo",
+          "id": "org-profile",
+          "path": "profile/README.md",
+          "label": "organization profile terminology"
+        }
+      ]
+    },
+    {
+      "name": "Bundle",
+      "color": "var(--c)",
+      "plain": "A batch of messages that travels together with one proof covering the last of them.",
+      "spec": "An ordered batch of message payloads plus a state proof over the anchor message. The running hash chain extends the proof to every message in the batch.",
+      "refs": [
+        {
+          "doc": "design",
+          "anchor": "21-common-terminology",
+          "label": "design §2.1"
+        },
+        {
+          "doc": "repo",
+          "id": "org-profile",
+          "path": "profile/README.md",
+          "label": "organization profile terminology"
+        }
+      ]
+    },
+    {
+      "name": "State proof",
+      "color": "var(--ok)",
+      "plain": "A sealed receipt from a whole network, showing that a specific piece of data really is in its records.",
+      "spec": "A cryptographic proof that specific data exists in a ledger's committed state, verified against the trust anchor. State proofs are CLPR's sole mechanism of cross-ledger trust.",
+      "refs": [
+        {
+          "doc": "design",
+          "anchor": "21-common-terminology",
+          "label": "design §2.1"
+        },
+        {
+          "doc": "repo",
+          "id": "org-profile",
+          "path": "profile/README.md",
+          "label": "organization profile terminology"
+        }
+      ]
+    },
+    {
+      "name": "Running hash",
+      "color": "var(--text-2)",
+      "plain": "A hash of everything ever sent on a channel, updated with each message so that nothing can be inserted, removed or reordered unnoticed.",
+      "spec": "SHA-256(previous_running_hash ‖ serialized_payload), initialised to 32 zero bytes, kept separately for sent and received messages.",
+      "refs": [
+        {
+          "doc": "design",
+          "anchor": "21-common-terminology",
+          "label": "design §2.1"
+        },
+        {
+          "doc": "repo",
+          "id": "org-profile",
+          "path": "profile/README.md",
+          "label": "organization profile terminology"
+        }
+      ]
+    },
+    {
+      "name": "CLPR Service admin",
+      "color": "var(--text-2)",
+      "plain": "The emergency brake. Can change the ledger's published limits, admit and evict endpoints, and close channels.",
+      "spec": "Exclusively protective authority: configure and close. Cannot create channels, register connectors or take part in economic activity. The network operator or governing body on Hiero; whoever controls the CLPR Service contract on EVM.",
+      "refs": [
+        {
+          "doc": "design",
+          "anchor": "21-common-terminology",
+          "label": "design §2.1"
+        },
+        {
+          "doc": "repo",
+          "id": "org-profile",
+          "path": "profile/README.md",
+          "label": "organization profile terminology"
+        }
+      ]
+    }
+  ]
+}

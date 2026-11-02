@@ -1,0 +1,71 @@
+---
+/** In a relayer, oracle, committee or bridge design, Ledger B only checks a signature from the middleman's key K, never anything from Ledger A; a report A never made passes the same check. Draws on the page's section 3 and the design document's one-line description of such designs in §1. */
+import Figure from '@kse/components/Figure.astro';
+import { design } from '../../../lib/sources';
+---
+<Figure
+  lead="The key is the whole security."
+  caption="Ledger B checks a signature from the middleman's key, not anything from Ledger A. A stolen key, a colluding committee or a buggy signer produces a report that passes exactly the same check as a true one."
+  source={[{ label: 'design §1', href: design('1-executive-summary') }]}
+  kind="plain"
+  minWidth={720}
+>
+  <svg viewBox="0 0 720 330" role="img" aria-label="Ledger A on the left; a middleman holding key K in the middle; Ledger B on the right with 'trust key K' on file. The middleman's report and a message Ledger A never sent both arrive signed with K and both pass Ledger B's only check. A dashed, crossed-out arrow shows Ledger B never consults Ledger A.">
+    <defs>
+      <marker id="wbc-arrow" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9 Z" fill="var(--text-3)"/></marker>
+      <marker id="wbc-arrow-bad" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9 Z" fill="var(--bad)"/></marker>
+    </defs>
+
+    <!-- Ledger A (left, tall) -->
+    <rect x="24" y="30" width="150" height="232" rx="12" class="d-a"/>
+    <text x="99" y="56" class="t b center">Ledger A</text>
+    <text x="99" y="76" class="t small center">its own validators,</text>
+    <text x="99" y="92" class="t small center">its own sealed lines</text>
+    <text x="99" y="236" class="t small center muted">never asked</text>
+
+    <!-- Middleman (top middle) -->
+    <rect x="250" y="30" width="190" height="106" rx="10" class="d-grey"/>
+    <text x="345" y="56" class="t b center">Middleman</text>
+    <text x="345" y="76" class="t small center">relayer, oracle,</text>
+    <text x="345" y="92" class="t small center">committee or bridge</text>
+    <text x="345" y="114" class="t mono center">holds key K</text>
+
+    <!-- A message A never sent (bottom middle) -->
+    <rect x="250" y="160" width="190" height="66" rx="10" class="d-bad"/>
+    <text x="345" y="182" class="t b center">A message A never sent</text>
+    <text x="345" y="200" class="t mono center">"Ann sends 500 to Bo"</text>
+    <text x="345" y="216" class="t small center">also signed with K</text>
+
+    <!-- Ledger B (right, tall) with its two sub-boxes -->
+    <rect x="546" y="30" width="150" height="232" rx="12" class="d-b"/>
+    <text x="621" y="56" class="t b center">Ledger B</text>
+    <rect x="560" y="68" width="122" height="44" rx="8" class="d-surface"/>
+    <text x="621" y="86" class="t small center">on file:</text>
+    <text x="621" y="102" class="t mono center">"trust key K"</text>
+    <rect x="560" y="128" width="122" height="78" rx="8" class="d-ok"/>
+    <text x="621" y="150" class="t b center">B's check</text>
+    <text x="621" y="168" class="t small center">signature</text>
+    <text x="621" y="182" class="t small center">matches K?</text>
+    <text x="621" y="198" class="t small center">yes: accept</text>
+    <text x="621" y="236" class="t small center muted">the only question</text>
+
+    <!-- Arrows -->
+    <!-- A -> middleman: watches A -->
+    <line x1="174" y1="82" x2="248" y2="82" class="line" marker-end="url(#wbc-arrow)"/>
+    <text x="211" y="73" class="t small center muted">watches A</text>
+    <!-- middleman -> B's check: report, signed with K -->
+    <path d="M440,96 C500,96 500,150 558,158" class="line" marker-end="url(#wbc-arrow)"/>
+    <text x="494" y="118" class="t small center muted">report,</text>
+    <text x="494" y="132" class="t small center muted">signed with K</text>
+    <!-- forged -> B's check: also signed with K -->
+    <path d="M440,193 C500,193 500,178 558,176" class="line bad" marker-end="url(#wbc-arrow-bad)"/>
+    <!-- B -> A: never consulted (dashed, crossed out) -->
+    <line x1="546" y1="246" x2="176" y2="246" class="line bad dash" marker-end="url(#wbc-arrow-bad)"/>
+    <line x1="338" y1="239" x2="352" y2="253" class="line bad"/>
+    <line x1="338" y1="253" x2="352" y2="239" class="line bad"/>
+    <text x="345" y="280" class="t small center bad">Ledger B never consults Ledger A, so it cannot tell the two apart.</text>
+
+    <!-- takeaway -->
+    <text x="360" y="312" class="t take center">Ledger B is only ever as safe as key K, whoever holds it today.</text>
+  </svg>
+</Figure>

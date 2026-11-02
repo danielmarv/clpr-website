@@ -1,0 +1,26 @@
+# Builds the explainer and runs every one of its gates (content checks, upstream anchors,
+# simulations in Chromium, overflow at phone width) when its source or dependencies change.
+name: Explainer
+
+on:
+  pull_request:
+    paths: ['explainer/**', 'pnpm-lock.yaml', '.github/workflows/explainer.yml']
+  push:
+    branches: [main]
+    paths: ['explainer/**', 'pnpm-lock.yaml', '.github/workflows/explainer.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+      - run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter clpr-explainer exec playwright install --with-deps chromium
+      - run: pnpm --filter clpr-explainer run verify

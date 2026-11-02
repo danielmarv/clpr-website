@@ -1,0 +1,73 @@
+---
+/** Three kinds of failure and their three outcomes: endpoint trouble rejects a bundle, replies out of order pause the channel, a connector's broken promise is fined (spec §4.2, §4.5, §4.6; design §5). */
+import Figure from '@kse/components/Figure.astro';
+import { design, spec } from '../../../lib/sources';
+---
+<Figure
+  lead="Reject, pause, or fine."
+  caption="Nearly every failure is answered by rejecting a bundle and changing nothing. One is treated as corruption and pauses the channel; only the connector's failures carry a price."
+  source={[
+    { label: 'spec §4.2', href: spec('42-bundle-verification-algorithm') },
+    { label: 'spec §4.5', href: spec('45-response-ordering-verification') },
+    { label: 'spec §4.6', href: spec('46-slashing-decision') },
+    { label: 'design §5', href: design('5-recovery-scenarios') },
+  ]}
+  kind="spec"
+  minWidth={720}
+>
+  <svg viewBox="0 0 720 320" role="img" aria-label="Three horizontal lanes. Top: endpoint trouble, such as a tampered, replayed or oversized bundle or every endpoint offline, leads to the bundle being rejected and nothing changing. Middle: replies out of order, the one failure treated as corruption, leads to the channel being paused. Bottom: a connector's broken promise, not registered on the other side or out of funds, leads to a fine from its locked stake, paid to whoever submitted the bundle.">
+    <defs>
+      <marker id="ftr-arrow-c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--c)" /></marker>
+      <marker id="ftr-arrow-bad" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--bad)" /></marker>
+      <marker id="ftr-arrow-money" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--money)" /></marker>
+    </defs>
+
+    <text x="134" y="30" class="t small center muted">what went wrong</text>
+    <text x="586" y="30" class="t small center muted">what the protocol does</text>
+
+    <!-- Lane 1: endpoint trouble -->
+    <rect x="14" y="44" width="240" height="70" rx="8" class="d-c" />
+    <text x="134" y="68" class="t b center">Endpoint trouble</text>
+    <text x="134" y="86" class="t small center">tampered · replayed · oversized</text>
+    <text x="134" y="102" class="t small center">all endpoints offline</text>
+
+    <line x1="254" y1="79" x2="463" y2="79" class="line c" marker-end="url(#ftr-arrow-c)" />
+    <text x="360" y="72" class="t small center">the next honest bundle goes through</text>
+
+    <rect x="466" y="44" width="240" height="70" rx="8" class="d-grey" />
+    <text x="586" y="68" class="t b center">Bundle rejected, nothing changes</text>
+    <text x="586" y="86" class="t small center">channel stays ACTIVE</text>
+    <text x="586" y="102" class="t small center">an endpoint can lose the fee it pays to submit</text>
+
+    <!-- Lane 2: replies out of order -->
+    <rect x="14" y="134" width="240" height="70" rx="8" class="d-bad" />
+    <text x="134" y="158" class="t b center">Replies out of order</text>
+    <text x="134" y="176" class="t small center">the one failure treated as</text>
+    <text x="134" y="192" class="t small center">corruption, not noise</text>
+
+    <line x1="254" y1="169" x2="463" y2="169" class="line bad" marker-end="url(#ftr-arrow-bad)" />
+    <text x="360" y="162" class="t small center">paused instead of guessing</text>
+
+    <rect x="466" y="134" width="240" height="70" rx="8" class="d-bad" />
+    <text x="586" y="158" class="t b center">Channel PAUSED</text>
+    <text x="586" y="176" class="t small center">no new sends</text>
+    <text x="586" y="192" class="t small center">resumes on a correctly ordered bundle</text>
+
+    <!-- Lane 3: connector's broken promise -->
+    <rect x="14" y="224" width="240" height="70" rx="8" class="d-money" />
+    <text x="134" y="248" class="t b center">Connector's broken promise</text>
+    <text x="134" y="266" class="t small center">not registered on the other side</text>
+    <text x="134" y="282" class="t small center">out of funds</text>
+
+    <line x1="254" y1="259" x2="463" y2="259" class="line money" marker-end="url(#ftr-arrow-money)" />
+    <text x="360" y="252" class="t small center">priced, not ignored</text>
+
+    <rect x="466" y="224" width="240" height="70" rx="8" class="d-money" />
+    <text x="586" y="248" class="t b center">Fined from locked stake</text>
+    <text x="586" y="266" class="t small center">the fine reimburses whoever</text>
+    <text x="586" y="282" class="t small center">submitted the bundle</text>
+
+    <!-- takeaway -->
+    <text x="360" y="312" class="t take center">Endpoints can only cause delay. A broken promise costs the connector part of its stake; a rejected bundle costs its submitter.</text>
+  </svg>
+</Figure>

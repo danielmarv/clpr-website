@@ -1,0 +1,160 @@
+---
+/**
+ * The whole system on one map: the specification, the two CLPR Service implementations, the
+ * verifiers, the endpoints, connectors, applications and the lab. Tap a component to read what it
+ * is and where its code lives (pinned links). Same component on both pages; `detail` adds the
+ * implementation-level notes.
+ */
+import catalog from '../../data/catalog.json';
+import { refHref, type Ref } from '../../lib/sources';
+const { id = 'architecture-sim', detail = false } = Astro.props as { id?: string; detail?: boolean };
+
+const parts = catalog.components.map((c) => ({ ...c, links: c.refs.map((r) => ({ label: r.label, href: refHref(r as Ref) })) }));
+---
+<div class="sim archmap" id={id}>
+  <div class="sim__head"><div><span class="kind">Map</span><h3>Everything CLPR is made of. Tap a piece.</h3></div><span class="pill grey" data-role="which">nothing selected</span></div>
+  <div class="sim__body">
+    <div class="sim__scroll">
+    <svg viewBox="0 0 940 470" role="img" aria-label="Map of the CLPR system: the specification above, two ledgers with their CLPR Services, verifiers, connectors and applications, the endpoints between them, and the lab below.">
+      <g data-part="spec" data-tone="ok" class="part" tabindex="0" role="button" aria-label="The specification">
+        <rect x="20" y="16" width="900" height="54" rx="10" class="d-ok" />
+        <text x="470" y="38" class="t b center">The specification</text>
+        <text x="470" y="56" class="t small center">design document · protocol specification · verifier specs (Hiero, QBFT) · decision records</text>
+      </g>
+      <line x1="190" y1="70" x2="190" y2="90" class="line dash" /><line x1="750" y1="70" x2="750" y2="90" class="line dash" />
+
+      <!-- Ledger A -->
+      <rect x="20" y="90" width="340" height="290" rx="14" class="d-surface" stroke-dasharray="6 5" />
+      <text x="36" y="112" class="t b" style="fill:var(--a)">Hiero network</text>
+      <g data-part="appB" data-tone="a" class="part" tabindex="0" role="button" aria-label="Applications on Hiero">
+        <rect x="36" y="122" width="144" height="40" rx="8" class="d-a" /><text x="108" y="147" class="t center b">Applications</text>
+      </g>
+      <g data-part="conB" data-tone="money" class="part" tabindex="0" role="button" aria-label="Connectors on Hiero">
+        <rect x="196" y="122" width="148" height="40" rx="8" class="d-money" /><text x="270" y="147" class="t center b">Connectors</text>
+      </g>
+      <g data-part="svcA" data-tone="a" class="part" tabindex="0" role="button" aria-label="CLPR Service, native">
+        <rect x="36" y="174" width="308" height="86" rx="10" class="d-a" />
+        <text x="190" y="196" class="t center b">CLPR Service · native service</text>
+        <text x="190" y="214" class="t small center">channels · queues · connectors · locked funds</text>
+        <text x="190" y="232" class="t small center">inside the consensus node, state in the Merkle tree</text>
+        <text x="190" y="250" class="t small center mono">system address 0x…016e</text>
+      </g>
+      <g data-part="verB" data-tone="ok" class="part" tabindex="0" role="button" aria-label="Verifiers on Hiero">
+        <rect x="36" y="272" width="308" height="34" rx="8" class="d-ok" /><text x="190" y="294" class="t small center">Verifiers for peers' proofs (system contract / native)</text>
+      </g>
+      <g data-part="epA" data-tone="c" class="part" tabindex="0" role="button" aria-label="Endpoints on Hiero">
+        <rect x="36" y="318" width="308" height="48" rx="8" class="d-c" />
+        <text x="190" y="338" class="t center b">Endpoints · every consensus node</text>
+        <text x="190" y="356" class="t small center">fetch the proofs the node already built</text>
+      </g>
+
+      <!-- Ledger B -->
+      <rect x="580" y="90" width="340" height="290" rx="14" class="d-surface" stroke-dasharray="6 5" />
+      <text x="596" y="112" class="t b" style="fill:var(--b)">EVM network (e.g. Besu / QBFT)</text>
+      <g data-part="appB" data-tone="b" class="part" tabindex="0" role="button" aria-label="Applications on the EVM network">
+        <rect x="596" y="122" width="144" height="40" rx="8" class="d-b" /><text x="668" y="147" class="t center b">Applications</text>
+      </g>
+      <g data-part="conB" data-tone="money" class="part" tabindex="0" role="button" aria-label="Connectors on the EVM network">
+        <rect x="756" y="122" width="148" height="40" rx="8" class="d-money" /><text x="830" y="147" class="t center b">Connectors</text>
+      </g>
+      <g data-part="svcB" data-tone="b" class="part" tabindex="0" role="button" aria-label="CLPR Service, contract">
+        <rect x="596" y="174" width="308" height="86" rx="10" class="d-b" />
+        <text x="750" y="196" class="t center b">CLPR Service · Solidity contracts</text>
+        <text x="750" y="214" class="t small center">ClprService.sol router → logic modules</text>
+        <text x="750" y="232" class="t small center">channels · messaging · bundles · connectors · admin</text>
+        <text x="750" y="250" class="t small center mono">clpr-smart-contracts</text>
+      </g>
+      <g data-part="verB" data-tone="ok" class="part" tabindex="0" role="button" aria-label="Verifier contracts on the EVM network">
+        <rect x="596" y="272" width="308" height="34" rx="8" class="d-ok" /><text x="750" y="294" class="t small center">Verifier contracts: HieroVerifier, QBFTVerifier, …</text>
+      </g>
+      <g data-part="epB" data-tone="c" class="part" tabindex="0" role="button" aria-label="Endpoint relay">
+        <rect x="596" y="318" width="308" height="48" rx="8" class="d-c" />
+        <text x="750" y="338" class="t center b">Endpoint · separate Java relay</text>
+        <text x="750" y="356" class="t small center mono">clpr-endpoint · JSON-RPC to the node</text>
+      </g>
+
+      <!-- wire -->
+      <g data-part="wire" data-tone="c" class="part" tabindex="0" role="button" aria-label="The sync protocol">
+        <rect x="376" y="312" width="188" height="60" rx="8" class="d-surface" />
+        <line x1="344" y1="342" x2="376" y2="342" class="line c" /><line x1="564" y1="342" x2="596" y2="342" class="line c" />
+        <text x="470" y="334" class="t center b">gRPC sync</text>
+        <text x="470" y="350" class="t small center">gRPC sync · one stream per cycle</text>
+        <text x="470" y="364" class="t small center">unproven requests, proven bundles</text>
+      </g>
+      <text x="470" y="206" class="t small center muted">a Channel on each side: same id,</text>
+      <text x="470" y="222" class="t small center muted">own verifier, own queue, own running hash</text>
+      <line x1="344" y1="236" x2="596" y2="236" class="line dash" data-role="channel" />
+
+      <!-- lab -->
+      <g data-part="lab" data-tone="grey" class="part" tabindex="0" role="button" aria-label="The lab">
+        <rect x="20" y="400" width="900" height="54" rx="10" class="d-grey" />
+        <text x="470" y="422" class="t b center">LF Decentralized Trust lab · github.com/LFDT-CLPR</text>
+        <text x="470" y="440" class="t small center">clpr-spec · clpr-smart-contracts · clpr-endpoint · governance · .github · Apache-2.0, DCO, Labs charter</text>
+      </g>
+    </svg>
+    </div>
+    <p class="sim__scroll-note">Wider than a phone; scroll it sideways if you need to.</p>
+    <div class="result" data-role="card" style={`margin-top:12px; --card-min: ${detail ? 436 : 260}px`}>
+      {parts.map((p, i) => (
+        <div data-card={p.k} data-where={p.where} hidden={i !== 0}>
+          <h4>{p.name}</h4>
+          <p class="small" style="margin:0 0 8px"><strong>Where:</strong> {p.where}</p>
+          <p>{p.plain}</p>
+          {detail && <p class="small">{p.detail}</p>}
+          <p class="small" style="margin:0">Pinned: {p.links.map((l, j) => (<><a href={l.href} rel="noopener">{l.label}</a>{j < p.links.length - 1 ? ' · ' : ''}</>))}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+  <div class="sim__log" data-role="log"><span class="line">selected: spec · LFDT-CLPR/clpr-spec</span></div>
+</div>
+<style>
+  .archmap .part { cursor: pointer; }
+  .archmap .part { transition: opacity 200ms; }
+  .archmap .part rect { transition: fill 200ms, stroke 200ms, stroke-width 150ms, filter 150ms, opacity 200ms; }
+  .archmap .part text { transition: fill 200ms, opacity 200ms; }
+  .archmap .part:hover rect { stroke-width: 2.5; }
+  .archmap .part:not(.on):hover rect { filter: brightness(1.04); }
+  :global(:root[data-theme="dark"]) .archmap .part:not(.on):hover rect { filter: brightness(1.15); }
+  @media (prefers-color-scheme: dark) { :global(:root:not([data-theme="light"])) .archmap .part:not(.on):hover rect { filter: brightness(1.15); } }
+  /* Selection: the tapped piece keeps full colour with a thicker stroke and a halo mixed from the
+     text colour (so it shows on both themes); once the reader has tapped, the rest steps back. */
+  .archmap .part.on rect { stroke-width: 3; filter: drop-shadow(0 0 3px color-mix(in srgb, var(--text) 35%, transparent)); }
+  .archmap.has-sel .part:not(.on) { opacity: 0.55; }
+  .archmap.has-sel .part:not(.on):hover, .archmap.has-sel .part:not(.on):focus-visible { opacity: 1; }
+  .archmap .part:focus-visible { outline: none; }
+  .archmap .part:focus-visible rect { stroke: var(--focus); stroke-width: 2.5; }
+  .archmap .sim__scroll > svg { min-width: 940px; }
+  .archmap [data-role="channel"] { transition: stroke 250ms, stroke-width 150ms; }
+  .archmap [data-role="channel"].ok { stroke-width: 2.5; }
+  @media (min-width: 720px) { .archmap .result { min-height: var(--card-min, 0); } }
+</style>
+<script>
+  for (const root of Array.from(document.querySelectorAll<HTMLElement>('.sim.archmap'))) {
+    const parts = Array.from(root.querySelectorAll<SVGGElement>('g.part'));
+    const cards = Array.from(root.querySelectorAll<HTMLElement>('[data-card]'));
+    const which = root.querySelector<HTMLElement>('[data-role="which"]')!;
+    const logLine = root.querySelector<HTMLElement>('[data-role="log"] .line')!;
+    const channel = root.querySelector<SVGLineElement>('[data-role="channel"]')!;
+    which.addEventListener('animationend', () => which.classList.remove('pulse'));
+    // Pieces that are one end of a Channel light the dashed line between the two ledgers.
+    const ON_CHANNEL = new Set(['svcA', 'svcB', 'wire']);
+    function select(k: string, tone: string, byUser: boolean) {
+      for (const p of parts) p.classList.toggle('on', p.dataset.part === k);
+      for (const c of cards) c.hidden = c.dataset.card !== k;
+      const card = cards.find((c) => c.dataset.card === k);
+      const name = card?.querySelector('h4')?.textContent ?? '';
+      which.textContent = name;
+      which.className = `pill ${tone}`;
+      if (byUser) { root.classList.add('has-sel'); which.classList.add('pulse'); }
+      channel.classList.toggle('ok', ON_CHANNEL.has(k));
+      logLine.textContent = `selected: ${k} · ${card?.dataset.where ?? ''}`;
+    }
+    for (const p of parts) {
+      const pick = () => select(p.dataset.part!, p.dataset.tone ?? 'grey', true);
+      p.addEventListener('click', pick);
+      p.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); } });
+    }
+    select('spec', 'ok', false);
+  }
+</script>

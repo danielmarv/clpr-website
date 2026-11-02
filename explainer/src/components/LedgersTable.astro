@@ -1,0 +1,29 @@
+---
+/** The kinds of ledger CLPR can connect, from src/data/ledgers.json: how each one's proofs are checked, where its CLPR Service runs, who its endpoints are, and whether the verifier is documented, code only, or a stand-in. */
+import data from '../data/ledgers.json';
+import Refs from '@kse/components/Refs.astro';
+import type { Ref } from '../lib/sources';
+const status: Record<string, { label: string; cls: string }> = {
+  documented: { label: 'documented and built', cls: 'ok' },
+  code: { label: 'verifier code only', cls: 'b' },
+  mock: { label: 'stand-in only', cls: 'grey' },
+};
+const refs = data.ledgers.flatMap((l) => l.refs) as Ref[];
+---
+<div class="table-wrap">
+<table>
+<thead><tr><th class="wrap">Kind of ledger</th><th class="wrap">What its proof is</th><th class="wrap">Its CLPR Service</th><th class="wrap">Its endpoints</th><th>Status</th></tr></thead>
+<tbody>
+  {data.ledgers.map((l) => (
+    <tr>
+      <td class="wrap"><strong>{l.name}</strong></td>
+      <td class="wrap">{l.proof}</td>
+      <td class="wrap">{l.service}</td>
+      <td class="wrap">{l.endpoint}</td>
+      <td><span class={`pill ${status[l.status].cls}`}>{status[l.status].label}</span></td>
+    </tr>
+  ))}
+</tbody>
+</table>
+</div>
+<Refs refs={refs} />

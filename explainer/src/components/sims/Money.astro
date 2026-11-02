@@ -1,0 +1,178 @@
+---
+/**
+ * Connector economics on the destination ledger, per spec §4.6 and design §3.3.3–3.3.4:
+ *   charge = actual_gas_used × (1 + margin_percent/100), paid in full to the bundle submitter;
+ *   CONNECTOR_UNDERFUNDED → destination connector's locked stake is slashed, submitter reimbursed,
+ *   and the source connector is slashed when the failure reply arrives home;
+ *   CONNECTOR_NOT_FOUND → no destination stake to slash; submitter absorbs the cost; source slashed on reply.
+ * Fine amounts and minimum stakes are platform-specific in the spec, so the fine here is illustrative.
+ */
+const { id = 'money-sim', detail = false } = Astro.props as { id?: string; detail?: boolean };
+// The defaults, rendered at build time so the card is complete before the script runs.
+// The script's render() produces the same strings for the same inputs; keep the two in step.
+const DEF = { gas: 4, margin: 10, balance: 20 };
+const defCost = DEF.gas; // 400k gas at 100,000 gas per unit
+const defCharge = +(defCost * (1 + DEF.margin / 100)).toFixed(2);
+const defFill = `${(Math.min(defCharge, DEF.balance) / Math.max(DEF.balance, defCharge, 1)) * 100}%`;
+---
+<div class="sim money" id={id}>
+  <div class="sim__head"><div><span class="kind">Simulation</span><h3>A message arrives on Ledger B. Who pays whom?</h3></div><span class="pill ok" data-role="status">SUCCESS</span></div>
+  <div class="sim__body">
+    <div class="steps two" style="--l:.9fr;--r:1.1fr">
+      <div class="money__inputs">
+        <p class="small" style="margin:0">Amounts are in "units" of Ledger B's native token. One unit buys 100,000 gas.</p>
+        <label class="range"><span>Gas the application uses</span><input type="range" min="1" max="20" value={DEF.gas} data-in="gas" id={`${id}-gas`} /><output data-out="gas" for={`${id}-gas`}>{DEF.gas * 100}k gas</output></label>
+        <label class="range"><span>Connector margin</span><input type="range" min="0" max="50" value={DEF.margin} data-in="margin" id={`${id}-margin`} /><output data-out="margin" for={`${id}-margin`}>{DEF.margin}%</output></label>
+        <label class="range"><span>Destination connector balance</span><input type="range" min="0" max="40" value={DEF.balance} data-in="balance" id={`${id}-balance`} /><output data-out="balance" for={`${id}-balance`}>{DEF.balance} units</output></label>
+        <label class="range money__check"><input type="checkbox" data-in="missing" /><span>the connector was never registered on Ledger B</span></label>
+        {detail && <p class="small money__formula">charge = gas × (1 + margin/100)</p>}
+      </div>
+      <div class="result" data-role="result">
+        <h4 data-role="title">Happy path</h4>
+        <div data-role="meter">
+          <div class="money__meter" aria-hidden="true"><i class="track" style="width:100%"></i><i class="fill" style={`width:${defFill}`}></i><i class="over" style="left:100%;width:0"></i></div>
+          <p class="money__meter-cap" data-out="meter">charge {defCharge} · balance {DEF.balance}</p>
+        </div>
+        <div class="row"><b>execution cost</b><span data-out="cost">{defCost} units (the submitter already paid this to Ledger B as the transaction fee)</span></div>
+        <div class="row"><b>connector charged</b><span data-out="charge">{defCharge} units = {defCost} × (1 + {DEF.margin}/100)</span></div>
+        <div class="row"><b>submitter receives</b><span data-out="paid">{defCharge} units, all of it</span></div>
+        <div class="row"><b>submitter's net</b><span data-out="net"><span class="money__pos">+{(defCharge - defCost).toFixed(2)} units</span>; the margin</span></div>
+        <div class="row"><b>balance after</b><span data-out="after">{(DEF.balance - defCharge).toFixed(2)} units</span></div>
+        <div class="row"><b>reply to Ledger A</b><span data-out="reply"><span class="pill ok">SUCCESS</span> (or APPLICATION_ERROR if the application reverted; no penalty either way)</span></div>
+        <div class="row"><b>back on Ledger A</b><span data-out="source">the reply is delivered to the sending application; no fine</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="sim__controls">
+    <button class="btn" type="button" data-role="reset">Reset to defaults</button>
+  </div>
+  <div class="sim__log sim__log--tall" data-role="log">
+    <span class="line" data-role="line">charge = {defCost} × (1 + {DEF.margin}/100) = {defCharge} units</span>
+    <span data-role="prose">The submitter fronted the transaction fee and is repaid with a margin on top. There is no protocol treasury and nobody on the sending side is paid. The margin is the profit for whoever runs the endpoint; drag the balance down to see what happens when the promise to pay is broken.</span>
+  </div>
+</div>
+
+<style>
+  .money__inputs { display: grid; gap: 10px; align-content: start; }
+  .money .range { display: flex; flex-wrap: wrap; gap: 4px 8px; }
+  .money .range > span { flex: 1 1 100%; }
+  .money .range input[type="range"] { flex: 1 1 140px; width: auto; }
+  .money .range output { min-width: 7ch; text-align: right; }
+  .money .money__check { flex-wrap: nowrap; align-items: start; }
+  .money .money__check > span { flex: 1 1 auto; }
+  .money__formula { font-family: var(--mono); font-size: 0.8rem; margin: 0; }
+  .money .result { border-left: 4px solid var(--ok); }
+  .money .result.bad { border-left-color: var(--bad); }
+  .money .row span { font-variant-numeric: tabular-nums; }
+  /* The shared phone rule for .result .row is overridden by a later rule of equal specificity in global.css. */
+  @media (max-width: 520px) { .money .result .row { grid-template-columns: 1fr; gap: 2px; } }
+  .money__meter { position: relative; height: 8px; margin: 2px 0; border-radius: 4px; overflow: hidden; }
+  .money__meter > i { position: absolute; top: 0; bottom: 0; left: 0; display: block; border-radius: 4px; transition: width 250ms, left 250ms; }
+  .money__meter > .track { background: var(--grey-soft); }
+  .money__meter > .fill { background: var(--money); }
+  .money__meter > .over { background: var(--bad); }
+  .money__meter-cap { font-family: var(--mono); font-size: 0.75rem; color: var(--text-3); margin: 0 0 8px; }
+  .money__pos { color: var(--ok); }
+  .money__neg { color: var(--bad); }
+  .money [data-out] { border-radius: 3px; }
+  .money [data-out].changed { animation: money-flash 600ms ease-out; }
+  @keyframes money-flash { from { background-color: var(--a-soft); } }
+</style>
+
+<script>
+  for (const root of Array.from(document.querySelectorAll<HTMLElement>('.sim.money'))) {
+    const $ = (s: string) => root.querySelector<HTMLElement>(s)!;
+    const inp = (n: string) => root.querySelector<HTMLInputElement>(`[data-in="${n}"]`)!;
+    const out = (n: string) => root.querySelector<HTMLElement>(`[data-out="${n}"]`)!;
+    const STAKE = 20; const FINE = 5;
+    const DEFAULTS: Record<string, string> = { gas: '4', margin: '10', balance: '20' };
+    const status = $('[data-role="status"]');
+    const result = $('[data-role="result"]');
+    const title = $('[data-role="title"]');
+    const meter = $('[data-role="meter"]');
+    const mTrack = meter.querySelector<HTMLElement>('.track')!;
+    const mFill = meter.querySelector<HTMLElement>('.fill')!;
+    const mOver = meter.querySelector<HTMLElement>('.over')!;
+    const line = $('[data-role="line"]');
+    const prose = $('[data-role="prose"]');
+    const signed = (v: number) => `${v < 0 ? '-' : '+'}${Math.abs(v).toFixed(2)}`;
+    let silent = true; // no flashes on the first render: it only confirms the server-rendered defaults
+
+    // Write a value and flash it when it actually changed.
+    function set(name: string, html: string) {
+      const el = out(name);
+      const before = el.innerHTML;
+      el.innerHTML = html;
+      if (silent || el.innerHTML === before) return;
+      el.classList.remove('changed'); void el.offsetWidth; el.classList.add('changed');
+    }
+    function setStatus(text: string, kind: 'ok' | 'bad') {
+      if (status.textContent === text) return;
+      status.textContent = text; status.className = `pill ${kind}`;
+      if (!silent) status.classList.add('pulse');
+    }
+    function drawMeter(charge: number, balance: number, missing: boolean) {
+      meter.hidden = missing;
+      const scale = Math.max(balance, charge, 1);
+      mTrack.style.width = `${(balance / scale) * 100}%`;
+      mFill.style.width = `${(Math.min(charge, balance) / scale) * 100}%`;
+      mOver.style.left = `${(balance / scale) * 100}%`;
+      mOver.style.width = `${(Math.max(0, charge - balance) / scale) * 100}%`;
+      set('meter', `${balance < charge ? 'needed' : 'charge'} ${charge} · balance ${balance}`);
+    }
+    function render() {
+      const gasK = Number(inp('gas').value) * 100; // thousands
+      const margin = Number(inp('margin').value);
+      const balance = Number(inp('balance').value);
+      const missing = inp('missing').checked;
+      set('gas', `${gasK}k gas`); set('margin', `${margin}%`); set('balance', `${balance} units`);
+      const cost = gasK / 100; const charge = +(cost * (1 + margin / 100)).toFixed(2);
+      set('cost', `${cost} units (the submitter already paid this to Ledger B as the transaction fee)`);
+      drawMeter(charge, balance, missing);
+      result.classList.toggle('bad', missing || balance < charge);
+      if (missing) {
+        title.textContent = 'Connector not found';
+        set('charge', 'nothing; there is no connector to charge');
+        set('paid', '0');
+        set('net', `<span class="money__neg">${signed(-cost)} units</span> (absorbed; nothing on Ledger B can reimburse it)`);
+        set('after', 'none');
+        set('reply', '<span class="pill bad">CONNECTOR_NOT_FOUND</span>');
+        set('source', `the source connector that authorized the message is fined from its locked stake, and the fine goes to whoever submitted the reply bundle on Ledger A`);
+        setStatus('CONNECTOR_NOT_FOUND', 'bad');
+        line.textContent = `no connector on Ledger B; nothing charged; submitter absorbs ${cost} units`;
+        prose.textContent = 'The message was authorized on Ledger A by a connector with no counterpart on Ledger B. The message still gets a deterministic answer, and the source connector pays for having promised something it could not deliver. The uncompensated destination submitter is a known limitation.';
+      } else if (balance < charge) {
+        title.textContent = 'Connector underfunded';
+        set('charge', `${charge} units needed, only ${balance} available`);
+        set('paid', `${FINE} units from the connector's locked stake (fine size is set per platform)`);
+        set('net', `<span class="${FINE - cost >= 0 ? 'money__pos' : 'money__neg'}">${signed(FINE - cost)} units</span>`);
+        set('after', `balance ${balance}, stake ${STAKE - FINE} (was ${STAKE})`);
+        set('reply', '<span class="pill bad">CONNECTOR_UNDERFUNDED</span>');
+        set('source', 'the source connector is fined too, paid to the Ledger A submitter. Repeated failures escalate to a ban and forfeited stake.');
+        setStatus('CONNECTOR_UNDERFUNDED', 'bad');
+        line.textContent = `charge = ${cost} × (1 + ${margin}/100) = ${charge} units > balance ${balance}; fine ${FINE} from stake`;
+        prose.textContent = 'The application is not called, or only with the gas the connector can afford. The connector promised to pay and cannot, so its stake is slashed to compensate the submitter, and the failure travels home as the reply. Whether the fine fully covers the submitter depends on how the platform sizes stakes: this is the stake-to-exposure invariant as something each platform must calibrate.';
+      } else {
+        title.textContent = 'Happy path';
+        set('charge', `${charge} units = ${cost} × (1 + ${margin}/100)`);
+        set('paid', `${charge} units, all of it`);
+        set('net', `<span class="money__pos">${signed(charge - cost)} units</span>; the margin`);
+        set('after', `${(balance - charge).toFixed(2)} units`);
+        set('reply', '<span class="pill ok">SUCCESS</span> (or APPLICATION_ERROR if the application reverted; no penalty either way)');
+        set('source', 'the reply is delivered to the sending application; no fine');
+        setStatus('SUCCESS', 'ok');
+        line.textContent = `charge = ${cost} × (1 + ${margin}/100) = ${charge} units`;
+        prose.textContent = 'The submitter fronted the transaction fee and is repaid with a margin on top. There is no protocol treasury and nobody on the sending side is paid. The margin is the profit for whoever runs the endpoint; drag the balance down to see what happens when the promise to pay is broken.';
+      }
+    }
+    for (const el of Array.from(root.querySelectorAll('input'))) el.addEventListener('input', render);
+    $('[data-role="reset"]').addEventListener('click', () => {
+      for (const k of Object.keys(DEFAULTS)) inp(k).value = DEFAULTS[k];
+      inp('missing').checked = false;
+      render();
+    });
+    root.addEventListener('animationend', (e) => { const host = (e.target as Element).closest('.pulse'); if (host) host.classList.remove('pulse'); });
+    render();
+    silent = false;
+  }
+</script>
