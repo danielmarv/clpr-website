@@ -19,10 +19,6 @@ website's `pnpm build` (`embed.mjs` runs Astro with `BASE_PATH=/plumbing/`); see
 | **`/`** | Anyone. No prior knowledge assumed. | What a ledger is, why ledgers cannot see each other, why bridges fail, proof instead of trust, the cast, the 28-step round trip in both directions, the running-hash chain, who pays, what can go wrong, channels, couriers, verifiers, the six roles, a tappable map of every piece of software, adding a ledger, limits, how the spec changes, the LFDT lab |
 | **`/developers/`** | Developers. No prior knowledge of CLPR; comfort with ledgers, hashes and contracts. | The same arc at full depth: trust model, four layers, identity and throttles, channels (commit-reveal, lifecycle), endpoints and manifests, the sync protocol, queue and running hash, bundles and progress, the bundle verification algorithm with fault injection, response ordering, connectors and slashing, verifiers and trust-anchor rotation, the application API, roles, recovery, security, the reference implementations and their divergences, the ADRs, governance, glossary |
 
-<p align="center"><img src="docs/images/general-hero.png" width="420" alt="The general page opening: title, lede and the journey trailer"> <img src="docs/images/journey.png" width="420" alt="The 28-step message journey simulation"></p>
-<p align="center"><img src="docs/images/figure-endpoint.png" width="420" alt="A captioned figure: the endpoint carries the seal, Ledger B checks it"> <img src="docs/images/architecture-map.png" width="420" alt="The tappable system map"></p>
-<p align="center"><img src="docs/images/bundle-verify.png" width="420" alt="Bundle verification step-through with a tampered payload"></p>
-
 ## What makes it trustworthy
 
 - **Pinned, not linked to `main`.** [`src/data/sources.json`](src/data/sources.json) records the
