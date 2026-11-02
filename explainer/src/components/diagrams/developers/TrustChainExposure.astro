@@ -8,68 +8,68 @@ import { design } from '../../../lib/sources';
   caption="Each role vets the one below it before committing value. The connector operator carries the most exposure; the verifier developer, whose code every channel depends on, has none inside the protocol; the admin and the endpoint operator sit outside the chain."
   source={[{ label: 'design §2.4', href: design('24-participant-roles') }]}
   kind="spec"
-  minWidth={740}
+  minWidth={760}
 >
-  <svg viewBox="0 0 740 366" role="img" aria-label="A chain of vetting: the end user vets the application developer, who vets the connector operator, who vets the channel and its verifier, which is built by the verifier developer, who vets the distributed ledger. Each box notes the role's exposure: application-level for the end user; fees and users' assets for the application developer; balance and slashable stake for the connector operator; none in-protocol for the verifier developer. Outside the chain sit the endpoint operator, who serves every channel and fronts the fees, and the CLPR Service admin, who can configure and close but has no economic incentive.">
+  <svg viewBox="0 0 760 382" role="img" aria-label="A chain of vetting: the end user vets the application developer, who vets the connector operator, who vets the channel and its verifier, which is built by the verifier developer, who vets the distributed ledger. Each box notes the role's exposure: application-level for the end user; fees and users' assets for the application developer; balance and slashable stake for the connector operator; none in-protocol for the verifier developer. Outside the chain sit the endpoint operator, who serves every channel and fronts the fees, and the CLPR Service admin, who can configure and close but has no economic incentive.">
     <defs>
       <marker id="tce-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--text-3)" /></marker>
     </defs>
 
     <!-- the chain -->
-    <rect x="26" y="16" width="170" height="52" rx="8" class="d-grey" />
-    <text x="111" y="38" class="t b center">End User</text>
-    <text x="111" y="56" class="t small center">exposure: application-level</text>
+    <rect x="20" y="16" width="172" height="52" rx="8" class="d-grey" />
+    <text x="106" y="38" class="t b center">End User</text>
+    <text x="106" y="56" class="t small center">exposure: application-level</text>
 
-    <path d="M111,68 L160,86" class="line" marker-end="url(#tce-arrow)" />
-    <text x="168" y="80" class="t small muted">vets</text>
+    <path d="M106,68 L154,94" class="line" marker-end="url(#tce-arrow)" />
+    <text x="162" y="85" class="t small muted">vets</text>
 
-    <rect x="136" y="86" width="190" height="52" rx="8" class="d-a" />
-    <text x="231" y="108" class="t b center">Application Developer</text>
-    <text x="231" y="126" class="t small center">exposure: fees, users' assets</text>
+    <rect x="130" y="94" width="190" height="52" rx="8" class="d-a" />
+    <text x="225" y="116" class="t b center">Application Developer</text>
+    <text x="225" y="134" class="t small center">exposure: fees, users' assets</text>
 
-    <path d="M231,138 L270,156" class="line" marker-end="url(#tce-arrow)" />
-    <text x="278" y="150" class="t small muted">vets</text>
+    <path d="M225,146 L260,172" class="line" marker-end="url(#tce-arrow)" />
+    <text x="268" y="163" class="t small muted">vets</text>
 
-    <rect x="246" y="156" width="190" height="52" rx="8" class="d-money" />
-    <text x="341" y="178" class="t b center">Connector Operator</text>
-    <text x="341" y="196" class="t small center">exposure: balance, stake (slashable)</text>
+    <rect x="236" y="172" width="220" height="52" rx="8" class="d-money" />
+    <text x="346" y="194" class="t b center">Connector Operator</text>
+    <text x="346" y="212" class="t small center">exposure: balance, stake (slashable)</text>
 
-    <path d="M341,208 L380,226" class="line" marker-end="url(#tce-arrow)" />
-    <text x="388" y="220" class="t small muted">vets</text>
+    <path d="M346,224 L384,250" class="line" marker-end="url(#tce-arrow)" />
+    <text x="392" y="241" class="t small muted">vets</text>
 
-    <rect x="346" y="226" width="190" height="52" rx="8" class="d-ok" />
-    <text x="441" y="248" class="t b center">Channel (verifier)</text>
-    <text x="441" y="266" class="t small center">verifier code, peer legitimacy</text>
+    <rect x="360" y="250" width="190" height="52" rx="8" class="d-ok" />
+    <text x="455" y="272" class="t b center">Channel (verifier)</text>
+    <text x="455" y="290" class="t small center">verifier code, peer legitimacy</text>
 
-    <path d="M536,252 L600,210" class="line" marker-end="url(#tce-arrow)" />
-    <text x="552" y="268" class="t small muted">built by</text>
+    <path d="M550,276 L620,226" class="line" marker-end="url(#tce-arrow)" />
+    <text x="566" y="292" class="t small muted">built by</text>
 
-    <rect x="556" y="156" width="168" height="52" rx="8" class="d-surface" />
-    <text x="640" y="178" class="t b center">Verifier Developer</text>
-    <text x="640" y="196" class="t small center">exposure: none in-protocol</text>
+    <rect x="576" y="172" width="174" height="52" rx="8" class="d-surface" />
+    <text x="663" y="194" class="t b center">Verifier Developer</text>
+    <text x="663" y="212" class="t small center">exposure: none in-protocol</text>
 
-    <path d="M640,156 L640,110" class="line" marker-end="url(#tce-arrow)" />
-    <text x="648" y="136" class="t small muted">vets</text>
+    <path d="M663,172 L663,126" class="line" marker-end="url(#tce-arrow)" />
+    <text x="671" y="152" class="t small muted">vets</text>
 
-    <rect x="556" y="56" width="168" height="52" rx="8" class="d-grey" />
-    <text x="640" y="78" class="t b center">Distributed Ledger</text>
-    <text x="640" y="96" class="t small center">proof system, cryptography</text>
+    <rect x="576" y="72" width="174" height="52" rx="8" class="d-grey" />
+    <text x="663" y="94" class="t b center">Distributed Ledger</text>
+    <text x="663" y="112" class="t small center">proof system, cryptography</text>
 
     <!-- outside the chain -->
-    <rect x="12" y="218" width="308" height="96" rx="12" class="line dash" />
-    <text x="22" y="232" class="t small muted">outside the chain</text>
+    <rect x="10" y="234" width="326" height="96" rx="12" class="line dash" />
+    <text x="20" y="248" class="t small muted">outside the chain</text>
 
-    <rect x="20" y="240" width="140" height="66" rx="8" class="d-c" />
-    <text x="90" y="262" class="t b center">Endpoint Operator</text>
-    <text x="90" y="280" class="t small center">serves every channel;</text>
-    <text x="90" y="294" class="t small center">fronts the fees</text>
+    <rect x="18" y="256" width="144" height="66" rx="8" class="d-c" />
+    <text x="90" y="278" class="t b center">Endpoint Operator</text>
+    <text x="90" y="296" class="t small center">serves every channel;</text>
+    <text x="90" y="310" class="t small center">fronts the fees</text>
 
-    <rect x="172" y="240" width="140" height="66" rx="8" class="d-grey" />
-    <text x="242" y="262" class="t b center">CLPR Service Admin</text>
-    <text x="242" y="280" class="t small center">configure, close;</text>
-    <text x="242" y="294" class="t small center">no economic incentive</text>
+    <rect x="174" y="256" width="154" height="66" rx="8" class="d-grey" />
+    <text x="251" y="278" class="t b center">CLPR Service Admin</text>
+    <text x="251" y="296" class="t small center">configure, close;</text>
+    <text x="251" y="310" class="t small center">no economic incentive</text>
 
-    <text x="370" y="336" class="t take center">The party with economic exposure does the vetting.</text>
-    <text x="370" y="352" class="t take center">The verifier developer has none in-protocol; the admin has power but no economic incentive.</text>
+    <text x="380" y="352" class="t take center">The party with economic exposure does the vetting.</text>
+    <text x="380" y="368" class="t take center">The verifier developer has none in-protocol; the admin has power but no economic incentive.</text>
   </svg>
 </Figure>

@@ -10,70 +10,74 @@ import { design, spec } from '../../../lib/sources';
   kind="plain"
   minWidth={760}
 >
-  <svg viewBox="0 0 760 262" role="img" aria-label="Five boxes in a row: Ledger A one transaction (steps 1 to 6), endpoints off-chain (7 to 11), Ledger B one transaction (12 to 19), endpoints off-chain (20 to 21), Ledger A back on chain (22 to 28). Arrows from each endpoint box lead to a re-checked badge above the next on-chain box.">
+  <svg viewBox="0 0 760 222" role="img" aria-label="Five boxes in a row: Ledger A one transaction (steps 1 to 6), endpoints off-chain (7 to 11), Ledger B one transaction (12 to 19), endpoints off-chain (20 to 21), Ledger A back on chain (22 to 28). Arrows from each endpoint box lead to a re-checked badge above the next on-chain box.">
     <defs>
       <marker id="jws-arrow-c" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9 Z" fill="var(--c)"/></marker>
       <marker id="jws-arrow-ok" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9 Z" fill="var(--ok)"/></marker>
     </defs>
 
     <!-- re-check badges -->
-    <rect x="316" y="14" width="130" height="22" rx="11" class="d-ok"/>
-    <text x="381" y="29" class="t mono center">re-checked: 13-14</text>
-    <rect x="612" y="14" width="130" height="22" rx="11" class="d-ok"/>
-    <text x="677" y="29" class="t mono center">re-checked: 23-24</text>
+    <rect x="313" y="14" width="130" height="22" rx="11" class="d-ok"/>
+    <text x="378" y="29" class="t mono center">re-checked: 13-14</text>
+    <rect x="620" y="14" width="128" height="22" rx="11" class="d-ok"/>
+    <text x="684" y="29" class="t mono center">re-checked: 23-24</text>
 
     <!-- span 1: Ledger A, one transaction -->
-    <rect x="16" y="52" width="124" height="104" rx="10" class="d-a"/>
+    <rect x="10" y="52" width="136" height="120" rx="10" class="d-a"/>
     <text x="78" y="76" class="t b center">Ledger A</text>
     <text x="78" y="92" class="t mono center">steps 1-6</text>
     <text x="78" y="112" class="t small center">one transaction:</text>
-    <text x="78" y="128" class="t small center">checks, payer says yes,</text>
-    <text x="78" y="144" class="t small center">queue + running hash</text>
+    <text x="78" y="128" class="t small center">checks,</text>
+    <text x="78" y="144" class="t small center">payer says yes,</text>
+    <text x="78" y="160" class="t small center">queue + running hash</text>
 
     <!-- span 2: endpoints, off-chain -->
-    <rect x="162" y="52" width="124" height="104" rx="10" class="d-c"/>
-    <text x="224" y="76" class="t b center">Endpoints</text>
-    <text x="224" y="92" class="t mono center">steps 7-11</text>
-    <text x="224" y="112" class="t small center">off-chain:</text>
-    <text x="224" y="128" class="t small center">fetch the proof, send</text>
-    <text x="224" y="144" class="t small center">the bundle, dry-run</text>
+    <rect x="168" y="52" width="124" height="120" rx="10" class="d-c"/>
+    <text x="230" y="76" class="t b center">Endpoints</text>
+    <text x="230" y="92" class="t mono center">steps 7-11</text>
+    <text x="230" y="112" class="t small center">off-chain:</text>
+    <text x="230" y="128" class="t small center">fetch the proof,</text>
+    <text x="230" y="144" class="t small center">send the bundle,</text>
+    <text x="230" y="160" class="t small center">dry-run</text>
 
     <!-- span 3: Ledger B, one transaction -->
-    <rect x="308" y="52" width="146" height="104" rx="10" class="d-b"/>
-    <text x="381" y="76" class="t b center">Ledger B</text>
-    <text x="381" y="92" class="t mono center">steps 12-19</text>
-    <text x="381" y="112" class="t small center">one transaction:</text>
-    <text x="381" y="128" class="t small center">check the proof, pay the</text>
-    <text x="381" y="144" class="t small center">endpoint, run the app, reply</text>
+    <rect x="314" y="52" width="128" height="120" rx="10" class="d-b"/>
+    <text x="378" y="76" class="t b center">Ledger B</text>
+    <text x="378" y="92" class="t mono center">steps 12-19</text>
+    <text x="378" y="112" class="t small center">one transaction:</text>
+    <text x="378" y="128" class="t small center">check the proof,</text>
+    <text x="378" y="144" class="t small center">pay the endpoint,</text>
+    <text x="378" y="160" class="t small center">run the app, reply</text>
 
     <!-- span 4: endpoints, off-chain -->
-    <rect x="476" y="52" width="124" height="104" rx="10" class="d-c"/>
-    <text x="538" y="76" class="t b center">Endpoints</text>
-    <text x="538" y="92" class="t mono center">steps 20-21</text>
-    <text x="538" y="112" class="t small center">off-chain:</text>
-    <text x="538" y="128" class="t small center">build the return proof,</text>
-    <text x="538" y="144" class="t small center">send it back, dry-run</text>
+    <rect x="464" y="52" width="140" height="120" rx="10" class="d-c"/>
+    <text x="534" y="76" class="t b center">Endpoints</text>
+    <text x="534" y="92" class="t mono center">steps 20-21</text>
+    <text x="534" y="112" class="t small center">off-chain:</text>
+    <text x="534" y="128" class="t small center">build the return proof,</text>
+    <text x="534" y="144" class="t small center">send it back,</text>
+    <text x="534" y="160" class="t small center">dry-run</text>
 
     <!-- span 5: Ledger A, back on chain -->
-    <rect x="620" y="52" width="124" height="104" rx="10" class="d-a"/>
-    <text x="682" y="76" class="t b center">Ledger A</text>
-    <text x="682" y="92" class="t mono center">steps 22-28</text>
-    <text x="682" y="112" class="t small center">back on chain:</text>
-    <text x="682" y="128" class="t small center">check the reply, call</text>
-    <text x="682" y="144" class="t small center">the app, delete original</text>
+    <rect x="626" y="52" width="124" height="120" rx="10" class="d-a"/>
+    <text x="688" y="76" class="t b center">Ledger A</text>
+    <text x="688" y="92" class="t mono center">steps 22-28</text>
+    <text x="688" y="112" class="t small center">back on chain:</text>
+    <text x="688" y="128" class="t small center">check the reply,</text>
+    <text x="688" y="144" class="t small center">call the app,</text>
+    <text x="688" y="160" class="t small center">delete original</text>
 
     <!-- flow arrows between spans -->
-    <line x1="140" y1="104" x2="160" y2="104" class="line c" marker-end="url(#jws-arrow-c)"/>
-    <line x1="286" y1="104" x2="306" y2="104" class="line c" marker-end="url(#jws-arrow-c)"/>
-    <line x1="454" y1="104" x2="474" y2="104" class="line c" marker-end="url(#jws-arrow-c)"/>
-    <line x1="600" y1="104" x2="618" y2="104" class="line c" marker-end="url(#jws-arrow-c)"/>
+    <line x1="146" y1="112" x2="166" y2="112" class="line c" marker-end="url(#jws-arrow-c)"/>
+    <line x1="292" y1="112" x2="312" y2="112" class="line c" marker-end="url(#jws-arrow-c)"/>
+    <line x1="442" y1="112" x2="462" y2="112" class="line c" marker-end="url(#jws-arrow-c)"/>
+    <line x1="604" y1="112" x2="624" y2="112" class="line c" marker-end="url(#jws-arrow-c)"/>
 
     <!-- off-chain work -> re-checked badge -->
-    <path d="M224,52 C224,25 260,25 314,25" class="line ok" marker-end="url(#jws-arrow-ok)"/>
-    <path d="M538,52 C538,25 570,25 610,25" class="line ok" marker-end="url(#jws-arrow-ok)"/>
-
+    <path d="M230,52 C230,25 264,25 311,25" class="line ok" marker-end="url(#jws-arrow-ok)"/>
+    <path d="M534,52 C534,25 568,25 618,25" class="line ok" marker-end="url(#jws-arrow-ok)"/>
 
     <!-- takeaway -->
-    <text x="380" y="246" class="t take center">Steps 7-11 and 20-21 happen off-chain; nothing counts until 13-14 and 23-24 have checked it.</text>
+    <text x="380" y="206" class="t take center">Steps 7-11 and 20-21 happen off-chain; nothing counts until 13-14 and 23-24 have checked it.</text>
   </svg>
 </Figure>
