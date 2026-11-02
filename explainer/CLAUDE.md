@@ -75,15 +75,18 @@ Conventions every sim follows — copy `ChannelLife.astro` or `RunningHash.astro
 - `pnpm run build` — build to `dist/` (Astro).
 - `pnpm run check` — provenance, internal links, vocabulary, data rows, the generated content map and
   orphan components (run after every content change).
-- `pnpm run verify` — build, then every gate: check, anchors, browser, dark-theme sims, overflow at
-  400px on both pages. The command to run before calling anything done.
+- `pnpm run verify` — build, then every gate: check, anchors, browser, dark-theme sims, diagram text,
+  overflow at 400px on both pages. The command to run before calling anything done.
+- `node checks/browser/check-diagram-text.mjs` — after a build, every label in every figure and
+  simulation stays inside its box and the drawing, in the fonts the pages ship.
 - `pnpm exec kse check-scroll` — neither page scrolls by itself after load (a simulation once did).
 - `pnpm run check:anchors` — every upstream reference resolves in `.upstream/` (after a sync fetch).
 - `pnpm test` — build then check.
 - `pnpm exec kse shot <path> <out.png> [width] [fullPage] [clickSelector|…]` — screenshot a
   built page; look at the PNG before calling layout done. `DARK=1` for the dark theme;
   `pnpm exec kse overflow <path> 400` for phone overflow;
-  `pnpm exec kse preview-diagram <Figure.astro> <out-prefix>` for a figure without a build.
+  `pnpm exec kse preview-diagram <Figure.astro> <out-prefix>` for a figure without a build (in the
+  engine's fonts, which are narrower than the site's Sora: confirm with the diagram text check).
   The browser scripts use the preinstalled Linux Chromium when it exists and Playwright's own
   otherwise (`pnpm exec playwright install chromium` once on a new machine).
 - `pnpm run content-map` — regenerate `docs/content-map.md` after changing a `refs` entry.

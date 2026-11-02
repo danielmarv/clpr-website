@@ -58,3 +58,10 @@ writes light, dark and phone-width PNGs and prints any text under 11px and any e
 the `viewBox`. Look at the PNGs. After placing the figure in the MDX, `pnpm run build`,
 `pnpm run check` (every source link must be pinned) and, with `.upstream/` fetched,
 `pnpm run check:anchors` (every anchor must exist upstream).
+
+The preview draws in the engine's own fonts. The pages set diagram text in Sora, which runs wider,
+so a label that fits in the preview can still spill out of its box on the site. After the build,
+`node checks/browser/check-diagram-text.mjs` renders both pages in the site theme and fails when a
+label runs past its box or the drawing's edge, runs into another box, or sits on another label; it
+also runs in `pnpm run verify`. It cannot see a line drawn through a label, so still look at the
+figure on the built page.
