@@ -2,6 +2,14 @@
 
 Newest first. Each sync entry lists the upstream commit range it was reviewed against.
 
+## 2026-11-02 — footer matches the website's
+
+Same upstream pins, content unchanged. The footer now draws everything the website's footer does:
+the channel along its top edge, the partner logos (the website's `public/logos/` files, inlined as
+data URLs) instead of their names, the CLPR wordmark that follows the pointer, the website's arrow
+icons and its spacing. The explainer's status and licence lines moved into the legal line at the
+bottom.
+
 ## 2026-11-01 — moved into the CLPR website repository
 
 Same upstream pins, content unchanged. The source now lives in `explainer/` of the website

@@ -1,11 +1,16 @@
 ---
 /**
- * The CLPR website's footer (src/components/SiteFooter.tsx there) as static HTML, with the
- * explainer's own status and licence lines (pack.json `footer`) above the legal line. The partner
- * logos are text links here: the website's logo files are not part of this build.
+ * The CLPR website's footer (src/components/SiteFooter.tsx there) as static HTML: channel edge,
+ * link columns, partner logos, wordmark and legal line, with the explainer's own status and licence
+ * lines (pack.json `footer`) above the legal line. The logos are the website's public/logos/ files,
+ * inlined as data URLs so a standalone build and the single-file export carry them too.
  */
 import ClprMark from './ClprMark.astro';
 import { SOURCES, PACK } from '../lib/sources';
+import lfdt from '../../../public/logos/lfdt-horizontal-white.svg?raw';
+import hashgraph from '../../../public/logos/hashgraph-black.svg?raw';
+import hedera from '../../../public/logos/hedera-lockup-black.svg?raw';
+import hiero from '../../../public/logos/hiero.svg?raw';
 
 const year = new Date().getFullYear();
 const columns = [
@@ -29,9 +34,44 @@ const columns = [
   ] },
 ];
 const external = (href: string) => /^https?:\/\//.test(href);
+const dataUrl = (svg: string) => `data:image/svg+xml,${encodeURIComponent(svg)}`;
+// Heights and the white treatment of the dark marks follow the website's footer.
+const backing = [
+  { label: 'Stewarded by', logos: [
+    { name: 'LF Decentralized Trust', href: 'https://www.lfdecentralizedtrust.org/', src: dataUrl(lfdt), width: 698.7, height: 39.1, class: 'lfdt' },
+  ] },
+  { label: 'Contributed by', logos: [
+    { name: 'Hashgraph', href: 'https://hashgraph.com/clpr/', src: dataUrl(hashgraph), width: 654.62, height: 141.73, class: 'hashgraph invert' },
+    { name: 'Hedera', href: 'https://hedera.com', src: dataUrl(hedera), width: 448.29, height: 138.93, class: 'hedera invert' },
+  ] },
+  { label: 'Built natively into', logos: [
+    { name: 'Hiero', href: 'https://hiero.org', src: dataUrl(hiero), width: 64, height: 20, class: 'hiero invert' },
+  ] },
+];
+const hexagon = 'M0 -8.5L7.4 -4.25V4.25L0 8.5L-7.4 4.25V-4.25Z';
 ---
 <footer class="site-footer">
-  <div class="shell">
+  <div class="shell site-footer__edge" aria-hidden="true">
+    <svg class="hex" viewBox="-10 -10 20 20" fill="none"><path d={hexagon} fill="var(--bg)" stroke="var(--signal-glow)" stroke-width="1.4" /></svg>
+    <div class="channel">
+      <svg viewBox="0 0 1000 20" preserveAspectRatio="none" fill="none">
+        <defs>
+          <linearGradient id="footer-channel" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="var(--signal-glow)" />
+            <stop offset="1" stop-color="var(--proof-glow)" />
+          </linearGradient>
+        </defs>
+        {[-2, -1, 0, 1, 2].map((k) => (
+          <path d={`M0 10C330 ${10 + k * 4} 670 ${10 - k * 4} 1000 10`} stroke="url(#footer-channel)" stroke-opacity="0.7" stroke-width="1" vector-effect="non-scaling-stroke" />
+        ))}
+      </svg>
+      <span class="packet"></span>
+      <span class="packet back"></span>
+    </div>
+    <svg class="hex" viewBox="-10 -10 20 20" fill="none"><path d={hexagon} fill="var(--bg)" stroke="var(--proof-glow)" stroke-width="1.4" /></svg>
+  </div>
+
+  <div class="shell site-footer__main">
     <div class="site-footer__top">
       <div class="site-footer__brand">
         <a href="/" aria-label="CLPR home"><ClprMark /><span>CLPR</span></a>
@@ -45,7 +85,7 @@ const external = (href: string) => /^https?:\/\//.test(href);
             <ul>
               {column.links.map((item) => (
                 <li>{external(item.href)
-                  ? <a href={item.href} target="_blank" rel="noreferrer">{item.label}<span class="ext" aria-hidden="true">↗</span></a>
+                  ? <a href={item.href} target="_blank" rel="noreferrer">{item.label}<svg class="ext" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10v10" /><path d="M7 17 17 7" /></svg><span class="visually-hidden"> (opens in a new tab)</span></a>
                   : <a href={item.href}>{item.label}</a>}</li>
               ))}
             </ul>
@@ -54,16 +94,56 @@ const external = (href: string) => /^https?:\/\//.test(href);
       </nav>
     </div>
     <section class="site-footer__backing" aria-label="Who is behind CLPR">
-      <div><p class="faint">Stewarded by</p><a href="https://www.lfdecentralizedtrust.org/" target="_blank" rel="noreferrer">LF Decentralized Trust</a></div>
-      <div><p class="faint">Contributed by</p><a href="https://hashgraph.com/clpr/" target="_blank" rel="noreferrer">Hashgraph</a> · <a href="https://hedera.com" target="_blank" rel="noreferrer">Hedera</a></div>
-      <div><p class="faint">Built natively into</p><a href="https://hiero.org" target="_blank" rel="noreferrer">Hiero</a></div>
+      {backing.map((group) => (
+        <div>
+          <p>{group.label}</p>
+          <div class="logos">
+            {group.logos.map((logo) => (
+              <a href={logo.href} target="_blank" rel="noreferrer">
+                <img src={logo.src} alt={`${logo.name} (opens in a new tab)`} width={logo.width} height={logo.height} class={logo.class} />
+              </a>
+            ))}
+          </div>
+        </div>
+      ))}
     </section>
-    <div class="site-footer__about">
-      {PACK.footer.map((html) => <p set:html={html.replace('{{orgUrl}}', SOURCES.org.url).replace('{{labUrl}}', SOURCES.org.labUrl ?? '')} />)}
-    </div>
+  </div>
+
+  <div class="shell" aria-hidden="true">
+    <p class="site-footer__wordmark" data-pointer-glow>CLPR</p>
+  </div>
+
+  <div class="shell">
     <div class="site-footer__legal">
-      <p>© {year} CLPR contributors. Code is licensed under Apache-2.0; the specification under the Community Specification License 1.0. LF Decentralized Trust is a project of The Linux Foundation.</p>
-      <a href="#main">Back to top ↑</a>
+      <div>
+        {PACK.footer.map((html) => <p class="about" set:html={html.replace('{{orgUrl}}', SOURCES.org.url).replace('{{labUrl}}', SOURCES.org.labUrl ?? '')} />)}
+        <p>© {year} CLPR contributors. Code is licensed under Apache-2.0; the specification under the Community Specification License 1.0. LF Decentralized Trust is a project of The Linux Foundation.</p>
+      </div>
+      <a href="#main">Back to top<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 7-7 7 7" /><path d="M12 19V5" /></svg></a>
     </div>
   </div>
 </footer>
+
+<script>
+  // The wordmark's light follows the mouse, as on the website (SiteMotion.tsx there); without a
+  // mouse the CSS sweeps it on its own.
+  const glows = document.querySelectorAll<HTMLElement>('[data-pointer-glow]');
+  let pointer: { x: number; y: number } | null = null;
+  const track = () => {
+    if (!pointer) return;
+    const { x, y } = pointer;
+    glows.forEach((glow) => {
+      const rect = glow.getBoundingClientRect();
+      if (rect.bottom < -200 || rect.top > window.innerHeight + 200) return;
+      glow.style.setProperty('--mx', `${x - rect.left}px`);
+      glow.style.setProperty('--my', `${y - rect.top}px`);
+    });
+  };
+  document.addEventListener('pointermove', (event) => {
+    if (event.pointerType !== 'mouse') return;
+    pointer = { x: event.clientX, y: event.clientY };
+    track();
+  }, { passive: true });
+  // A still pointer over a scrolling page keeps the glow under it.
+  window.addEventListener('scroll', track, { passive: true });
+</script>
