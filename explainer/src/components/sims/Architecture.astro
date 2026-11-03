@@ -118,7 +118,7 @@ const parts = catalog.components.map((c) => ({ ...c, links: c.refs.map((r) => ({
   .archmap .part:hover rect { stroke-width: 2.5; }
   .archmap .part:not(.on):hover rect { filter: brightness(1.04); }
   :global(:root[data-theme="dark"]) .archmap .part:not(.on):hover rect { filter: brightness(1.15); }
-  @media (prefers-color-scheme: dark) { :global(:root:not([data-theme="light"])) .archmap .part:not(.on):hover rect { filter: brightness(1.15); } }
+  @media (prefers-color-scheme: dark) { :global(:root[data-theme="system"]) .archmap .part:not(.on):hover rect { filter: brightness(1.15); } }
   /* Selection: the tapped piece keeps full colour with a thicker stroke and a halo mixed from the
      text colour (so it shows on both themes); once the reader has tapped, the rest steps back. */
   .archmap .part.on rect { stroke-width: 3; filter: drop-shadow(0 0 3px color-mix(in srgb, var(--text) 35%, transparent)); }

@@ -7,11 +7,12 @@ import { seeded } from "@/components/sceneGraphs";
 
 export type Tone = "violet" | "pink" | "warm" | "mist";
 
+// CSS variables from globals.css, so each drawing follows the light or dark theme.
 export const TONES: Record<Tone, string> = {
-  violet: "#9d8bff",
-  pink: "#f27fbd",
-  warm: "#ffb49a",
-  mist: "#d4cff0",
+  violet: "var(--tone-violet)",
+  pink: "var(--tone-pink)",
+  warm: "var(--tone-warm)",
+  mist: "var(--tone-mist)",
 };
 
 export const round = (value: number) => Math.round(value * 10) / 10;
@@ -69,7 +70,7 @@ export function Glows({ id }: { id: string }) {
     <defs>
       {(Object.entries(TONES) as [Tone, string][]).map(([tone, color]) => (
         <radialGradient key={tone} id={`${id}-${tone}`}>
-          <stop offset="0" stopColor="#fff" />
+          <stop offset="0" stopColor="var(--star-core)" />
           <stop offset="0.14" stopColor={color} stopOpacity="0.95" />
           <stop offset="0.42" stopColor={color} stopOpacity="0.25" />
           <stop offset="1" stopColor={color} stopOpacity="0" />
@@ -101,7 +102,7 @@ export function Star({ id, tone, r, x = 0, y = 0 }: { id: string; tone: Tone; r:
   return (
     <g transform={`translate(${round(x)} ${round(y)})`}>
       <circle r={r} fill={`url(#${id}-${tone})`} />
-      <path d={`M${-r} 0L0 ${-ray}L${r} 0L0 ${ray}ZM0 ${-r}L${ray} 0L0 ${r}L${-ray} 0Z`} fill="#fff" fillOpacity={0.65} />
+      <path d={`M${-r} 0L0 ${-ray}L${r} 0L0 ${ray}ZM0 ${-r}L${ray} 0L0 ${r}L${-ray} 0Z`} fill="var(--star-core)" fillOpacity={0.65} />
     </g>
   );
 }
@@ -183,9 +184,9 @@ export function Endpoint({ x, y, tone, offline = false }: { x: number; y: number
   return (
     <path
       d={hexagon(x, y, 9)}
-      fill="#0b0a13"
+      fill="var(--art-fill)"
       fillOpacity={0.7}
-      stroke={offline ? "#fff" : TONES[tone]}
+      stroke={offline ? "var(--fg)" : TONES[tone]}
       strokeOpacity={offline ? 0.3 : 0.85}
       strokeWidth={1.2}
       strokeDasharray={offline ? "2.5 2.5" : undefined}

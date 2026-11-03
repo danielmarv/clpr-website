@@ -11,11 +11,11 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "border-transparent bg-primary text-primary-foreground shadow-[0_0_0_1px_rgb(255_255_255/0.1),0_8px_30px_-8px_rgb(157_139_255/0.55)] hover:bg-white/90",
+          "border-transparent bg-primary text-primary-foreground shadow-[0_0_0_1px_rgb(255_255_255/0.1),0_8px_30px_-8px_rgb(157_139_255/0.55)] hover:bg-fg/90",
         secondary:
-          "border-white/10 bg-white/5 text-white backdrop-blur-md hover:border-white/20 hover:bg-white/9",
-        ghost: "border-transparent text-white/80 hover:bg-white/6 hover:text-white",
-        outline: "border-white/20 bg-transparent text-white hover:border-white/40 hover:bg-white/6",
+          "border-fg/10 bg-fg/5 text-fg backdrop-blur-md hover:border-fg/20 hover:bg-fg/9",
+        ghost: "border-transparent text-fg/80 hover:bg-fg/6 hover:text-fg",
+        outline: "border-fg/20 bg-transparent text-fg hover:border-fg/40 hover:bg-fg/6",
       },
       size: {
         default: "h-10 px-5 text-[0.9375rem]",

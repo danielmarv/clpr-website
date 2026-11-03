@@ -1,12 +1,12 @@
-import Image from "next/image";
 import Link from "next/link";
 import { ArrowUp, ArrowUpRight } from "lucide-react";
 
 import { ClprMark } from "@/components/ClprMark";
-import { footer, links, origins, site } from "@/content/site";
+import { PartnerLogo } from "@/components/PartnerLogo";
+import { footer, origins, site } from "@/content/site";
 import { format, isExternal } from "@/lib/utils";
 
-const [hashgraph, hedera, hiero] = origins.logos;
+const [hashgraph, hedera, hiero, lfdt] = origins.logos;
 
 function Hexagon({ tone }: { tone: string }) {
   return (
@@ -40,7 +40,7 @@ function ChannelEdge() {
               />
             ))}
           </svg>
-          <span className="footer-packet absolute top-1/2 size-1.5 rounded-full bg-white shadow-[0_0_10px_3px_rgb(157_139_255/0.8)]" />
+          <span className="footer-packet absolute top-1/2 size-1.5 rounded-full bg-fg shadow-[0_0_10px_3px_rgb(157_139_255/0.8)]" />
           <span className="footer-packet footer-packet-back absolute top-1/2 size-1.5 rounded-full bg-peach shadow-[0_0_10px_3px_rgb(255_180_154/0.6)]" />
         </div>
         <Hexagon tone="var(--proof-glow)" />
@@ -50,7 +50,7 @@ function ChannelEdge() {
 }
 
 function FooterLink({ href, label }: { href: string; label: string }) {
-  const className = "group text-[0.9375rem] leading-snug text-white/55 transition-colors hover:text-white";
+  const className = "group text-[0.9375rem] leading-snug text-fg/55 transition-colors hover:text-fg";
   // The explainer under /plumbing/ is static HTML served beside the app, not a route of it.
   if (href.startsWith("/plumbing/")) {
     return (
@@ -71,7 +71,7 @@ function FooterLink({ href, label }: { href: string; label: string }) {
       {label}
       {/* Inline, so it stays with the last word when the label wraps. */}
       <ArrowUpRight
-        className="ml-1 inline-block size-3.5 align-[-0.15em] text-white/30 transition-[color,transform] group-hover:-translate-y-px group-hover:translate-x-px group-hover:text-white"
+        className="ml-1 inline-block size-3.5 align-[-0.15em] text-fg/30 transition-[color,transform] group-hover:-translate-y-px group-hover:translate-x-px group-hover:text-fg"
         aria-hidden="true"
       />
       <span className="sr-only"> ({footer.newTab})</span>
@@ -79,15 +79,10 @@ function FooterLink({ href, label }: { href: string; label: string }) {
   );
 }
 
-function Logo({ href, src, alt, width, height, className }: { href: string; src: string; alt: string; width: number; height: number; className: string }) {
+function Logo({ logo }: { logo: (typeof origins.logos)[number] }) {
   return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noreferrer"
-      className="flex min-h-10 items-center opacity-60 transition-opacity hover:opacity-100 focus-visible:opacity-100"
-    >
-      <Image src={src} alt={`${alt} (${footer.newTab})`} width={width} height={height} className={className} />
+    <a href={logo.href} target="_blank" rel="noreferrer" className="flex min-h-10 items-center transition-opacity hover:opacity-75">
+      <PartnerLogo logo={logo} alt={`${logo.name} (${footer.newTab})`} />
     </a>
   );
 }
@@ -97,7 +92,7 @@ export function SiteFooter() {
   const { backing } = footer;
 
   return (
-    <footer className="relative z-10 overflow-x-clip border-t border-white/7 bg-background/85 text-white/70 backdrop-blur-xl">
+    <footer className="relative z-10 overflow-x-clip border-t border-fg/7 bg-background/85 text-fg/70 backdrop-blur-xl">
       <ChannelEdge />
       <div
         aria-hidden="true"
@@ -107,18 +102,18 @@ export function SiteFooter() {
       <div className="shell relative pt-16 lg:pt-20">
         <div className="grid gap-12 lg:grid-cols-12 lg:gap-8">
           <div className="lg:col-span-4">
-            <Link href="/" aria-label={site.homeLabel} className="inline-flex items-center gap-2.5 text-white">
+            <Link href="/" aria-label={site.homeLabel} className="inline-flex items-center gap-2.5 text-fg">
               <ClprMark className="h-6" />
               <span className="text-xl font-semibold tracking-[-0.01em]">{site.name}</span>
             </Link>
-            <p className="mt-2 text-[0.875rem] text-white/50">{site.expansion}</p>
-            <p className="mt-5 max-w-xs text-[0.9375rem] leading-relaxed text-white/70">{footer.tagline}</p>
+            <p className="mt-2 text-[0.875rem] text-fg/50">{site.expansion}</p>
+            <p className="mt-5 max-w-xs text-[0.9375rem] leading-relaxed text-fg/70">{footer.tagline}</p>
           </div>
 
           <nav aria-label="Footer" className="grid grid-cols-2 gap-x-8 gap-y-10 sm:grid-cols-3 lg:col-span-8">
             {footer.columns.map((column) => (
               <div key={column.title}>
-                <h2 className="text-[0.8125rem] font-medium text-white">{column.title}</h2>
+                <h2 className="text-[0.8125rem] font-medium text-fg">{column.title}</h2>
                 <ul className="mt-4 space-y-2.5">
                   {column.links.map((item) => (
                     <li key={item.label}>
@@ -133,31 +128,23 @@ export function SiteFooter() {
 
         <section
           aria-label={backing.label}
-          className="mt-14 grid gap-6 border-t border-white/7 pt-8 sm:grid-cols-3 lg:mt-16"
+          className="mt-14 grid gap-6 border-t border-fg/7 pt-8 sm:grid-cols-3 lg:mt-16"
         >
           <div>
             <p className="text-[0.75rem] text-faint">{backing.stewardedBy}</p>
-            <Logo href={links.lfdt} src="/logos/lfdt-horizontal-white.svg" alt="LF Decentralized Trust" width={698.7} height={39.1} className="h-3.5 w-auto" />
+            <Logo logo={lfdt} />
           </div>
           <div>
             <p className="text-[0.75rem] text-faint">{backing.contributedBy}</p>
             <div className="flex flex-wrap items-center gap-x-6">
               {[hashgraph, hedera].map((logo) => (
-                <Logo
-                  key={logo.name}
-                  href={logo.href}
-                  src={logo.src}
-                  alt={logo.name}
-                  width={logo.width}
-                  height={logo.height}
-                  className={`${logo.className} brightness-0 invert`}
-                />
+                <Logo key={logo.name} logo={logo} />
               ))}
             </div>
           </div>
           <div>
             <p className="text-[0.75rem] text-faint">{backing.builtInto}</p>
-            <Logo href={hiero.href} src={hiero.src} alt={hiero.name} width={hiero.width} height={hiero.height} className={`${hiero.className} brightness-0 invert`} />
+            <Logo logo={hiero} />
           </div>
         </section>
       </div>
@@ -169,9 +156,9 @@ export function SiteFooter() {
       </div>
 
       <div className="shell relative">
-        <div className="flex flex-col gap-4 border-t border-white/7 py-6 text-[0.8125rem] text-white/45 md:flex-row md:items-center md:justify-between md:gap-10">
+        <div className="flex flex-col gap-4 border-t border-fg/7 py-6 text-[0.8125rem] text-fg/45 md:flex-row md:items-center md:justify-between md:gap-10">
           <p className="max-w-3xl">{format(footer.legal, { year })}</p>
-          <a href="#main" className="inline-flex shrink-0 items-center gap-1.5 text-white/70 transition-colors hover:text-white">
+          <a href="#main" className="inline-flex shrink-0 items-center gap-1.5 text-fg/70 transition-colors hover:text-fg">
             {footer.backToTop}
             <ArrowUp className="size-3.5" aria-hidden="true" />
           </a>

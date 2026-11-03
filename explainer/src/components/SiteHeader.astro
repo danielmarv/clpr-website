@@ -1,13 +1,15 @@
 ---
 /**
- * The CLPR website's header (src/components/SiteHeader.tsx there), as static HTML: brand, the
- * site's pill navigation with the explainer as the current item, GitHub and the call to action.
+ * The CLPR website's header (src/components/SiteHeader.tsx there), as static HTML: brand (without
+ * the "Cross Ledger Protocol" line, which no longer fits beside the theme switch in the 76rem row), the
+ * site's pill navigation with the explainer as the current item, the colour-theme switch (Light,
+ * Dark, System), GitHub and the call to action.
  * Below it a bar for the explainer's two pages. Site links are root-relative, so they resolve on
  * the website and on a standalone preview alike.
  */
 import ClprMark from './ClprMark.astro';
 import GitHubMark from './GitHubMark.astro';
-import { SOURCES } from '../lib/sources';
+import { PACK, SOURCES } from '../lib/sources';
 
 interface Props { path: '/' | '/developers/' }
 const { path } = Astro.props;
@@ -19,14 +21,19 @@ const nav = [
   { label: 'Code', href: '/#code' },
   { label: 'Explainer', href: base, current: true },
 ];
+// The website's three choices, with lucide's sun, moon and monitor.
+const themes = [
+  { value: 'light', label: 'Light', icon: '<circle cx="12" cy="12" r="4" /><path d="M12 2v2" /><path d="M12 20v2" /><path d="m4.93 4.93 1.41 1.41" /><path d="m17.66 17.66 1.41 1.41" /><path d="M2 12h2" /><path d="M20 12h2" /><path d="m6.34 17.66-1.41 1.41" /><path d="m19.07 4.93-1.41 1.41" />' },
+  { value: 'dark', label: 'Dark', icon: '<path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401" />' },
+  { value: 'system', label: 'System', icon: '<rect width="20" height="14" x="2" y="3" rx="2" /><line x1="8" x2="16" y1="21" y2="21" /><line x1="12" x2="12" y1="17" y2="21" />' },
+];
+const themeColor = (PACK as { themeColor: { light: string; dark: string } }).themeColor;
 ---
 <header class="site-header">
   <div class="shell">
     <a class="brand" href="/" aria-label="CLPR home">
       <ClprMark />
       <span class="name">CLPR</span>
-      <span class="sep" aria-hidden="true"></span>
-      <span class="expansion">Cross Ledger Protocol</span>
     </a>
     <nav class="site-nav" aria-label="Main">
       <ul>
@@ -36,6 +43,13 @@ const nav = [
       </ul>
     </nav>
     <div class="actions">
+      <div class="theme-switch" role="group" aria-label="Color theme" data-light-color={themeColor.light} data-dark-color={themeColor.dark}>
+        {themes.map((theme) => (
+          <button type="button" data-theme-choice={theme.value} aria-label={theme.label} title={theme.label} aria-pressed={theme.value === 'light' ? 'true' : 'false'}>
+            <svg viewBox="0 0 24 24" aria-hidden="true" set:html={theme.icon} />
+          </button>
+        ))}
+      </div>
       <a class="site-btn ghost" href={SOURCES.org.url} target="_blank" rel="noreferrer"><GitHubMark /> GitHub</a>
       <a class="site-btn primary" href="/#get-involved">Get involved</a>
     </div>
@@ -48,3 +62,36 @@ const nav = [
     <a href={base + 'developers/'} aria-current={path === '/developers/' ? 'page' : undefined}>For developers</a>
   </div>
 </nav>
+
+<script>
+  // The colour-theme switch, as on the website: the choice (light, dark or system) goes on
+  // <html data-theme> and into localStorage `theme`, which Site.astro restores before first paint.
+  // Dark applies for `dark`, and for `system` while the system is dark; anything else is light.
+  // The CSS marks the current choice from the attribute; this keeps aria-pressed and the browser's
+  // theme colour in step with it.
+  const root = document.documentElement;
+  const systemDark = window.matchMedia('(prefers-color-scheme: dark)');
+  const buttons = document.querySelectorAll<HTMLButtonElement>('[data-theme-choice]');
+  const colours = document.querySelector<HTMLElement>('.theme-switch')?.dataset;
+  const choice = () => {
+    const theme = root.getAttribute('data-theme');
+    return theme === 'dark' || theme === 'system' ? theme : 'light';
+  };
+  const sync = () => {
+    const current = choice();
+    const dark = current === 'dark' || (current === 'system' && systemDark.matches);
+    const colour = dark ? colours?.darkColor : colours?.lightColor;
+    if (colour) document.querySelectorAll('meta[name="theme-color"]').forEach((meta) => meta.setAttribute('content', colour));
+    buttons.forEach((button) => button.setAttribute('aria-pressed', String(button.dataset.themeChoice === current)));
+  };
+  buttons.forEach((button) => {
+    button.addEventListener('click', () => {
+      const next = button.dataset.themeChoice ?? 'light';
+      root.setAttribute('data-theme', next);
+      try { localStorage.setItem('theme', next); } catch (e) {}
+      sync();
+    });
+  });
+  systemDark.addEventListener('change', sync);
+  sync();
+</script>

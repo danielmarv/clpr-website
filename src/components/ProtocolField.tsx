@@ -7,6 +7,7 @@ import { createNetworkLayer, HERO_SCENE, STORY_SCENE, type NetworkLayer } from "
 import { buildForms, FORM_TEXTURE_WIDTH, FORMS, seeded, type FormName } from "@/components/sceneForms";
 import { formGraph, heroGraph, storyGraph, type Graph } from "@/components/sceneGraphs";
 import { CAMERA_Z, FOCAL, SCENE_GLSL } from "@/components/sceneMotion";
+import { currentTheme, watchTheme } from "@/lib/theme";
 
 /*
  * The page background: aurora, particles and networkLayer.ts on one WebGL2 canvas.
@@ -863,8 +864,11 @@ export function ProtocolField() {
       draw();
     };
 
+    // The light theme hides the canvas (globals.css); it only keeps measuring, for the story's labels.
+    const dark = () => currentTheme() === "dark";
+
     const sync = () => {
-      const shouldRun = !reducedMotion.matches && !document.hidden;
+      const shouldRun = !reducedMotion.matches && !document.hidden && dark();
       if (shouldRun && !running) {
         running = true;
         last = 0;
@@ -873,16 +877,16 @@ export function ProtocolField() {
         running = false;
         cancelAnimationFrame(frame);
       }
-      if (reducedMotion.matches) drawStill();
+      if (reducedMotion.matches && dark()) drawStill();
     };
 
     const onScroll = () => {
-      if (reducedMotion.matches) drawStill();
+      if (reducedMotion.matches && dark()) drawStill();
     };
 
     const resizeObserver = new ResizeObserver(() => {
       resize();
-      if (!running) drawStill();
+      if (!running && dark()) drawStill();
     });
     resizeObserver.observe(canvas);
 
@@ -900,6 +904,7 @@ export function ProtocolField() {
     canvas.addEventListener("webglcontextlost", onContextLost);
     reducedMotion.addEventListener("change", sync);
     document.addEventListener("visibilitychange", sync);
+    const stopWatchingTheme = watchTheme(sync);
     resize();
     sync();
 
@@ -913,6 +918,7 @@ export function ProtocolField() {
       canvas.removeEventListener("webglcontextlost", onContextLost);
       reducedMotion.removeEventListener("change", sync);
       document.removeEventListener("visibilitychange", sync);
+      stopWatchingTheme();
       root.classList.remove("has-webgl");
     };
   }, []);
