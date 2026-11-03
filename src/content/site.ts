@@ -443,33 +443,60 @@ export const issueExplorer = {
   kicker: "Contribute",
   title: "Issue Explorer",
   lead: "Every open CLPR issue that nobody has picked up yet. Filter by how much you want to take on, or by the repository you already know.",
-  // The repositories the explorer covers; the others keep their issues on GitHub (see closing).
-  repositories: ["clpr-spec", "clpr-smart-contracts", "clpr-endpoint"],
   chips: { open: "Open", unassigned: "Unassigned", repositories: "{count} repositories" },
   counter: "{count} open issues",
   counterOne: "1 open issue",
   refreshed: "Refreshed {time} from GitHub",
   unavailable: "GitHub could not be reached when this page was built. The issues are all on GitHub itself.",
-  search: { label: "Search issues", placeholder: "Search by title, repository or label" },
-  repositoryFilter: { label: "Repository", all: "All repositories" },
+  // The repositories the explorer covers, as tiles that also filter the board; the others keep their
+  // issues on GitHub (see closing).
+  repositoriesLabel: "Repositories",
+  repositories: [
+    { name: "clpr-spec", body: "The specification, its decision records and the verifier documents." },
+    { name: "clpr-smart-contracts", body: "The Solidity CLPR Service and Verifier Contracts for EVM ledgers." },
+    { name: "clpr-endpoint", body: "The Java CLPR Endpoint for EVM ledgers: sync, proofs and bundle submission." },
+  ],
+  openOne: "1 open",
+  openMany: "{count} open",
+  search: { label: "Search issues", placeholder: "Search titles, repositories, labels…" },
   sort: { label: "Sort", updated: "Recently active", created: "Newest", comments: "Most discussed" },
   difficultyLabel: "Difficulty",
-  // Each level is a label on the issue; "Everything" shows them all.
+  // In priority order: an issue labelled both "good first issue" and "beginner" shows as the first. A label
+  // matches a level when, lower-cased and without a "skill:"-style prefix, it is one of the level's names.
   levels: [
-    { label: "Everything", githubLabel: null, body: null },
-    { label: "Good first issue", githubLabel: "good first issue", body: "Ideal for first-time contributors new to the project." },
-    { label: "Beginner", githubLabel: "beginner", body: "Straightforward tasks that need light domain knowledge." },
-    { label: "Intermediate", githubLabel: "intermediate", body: "Moderately complex issues for developers gaining experience." },
-    { label: "Advanced", githubLabel: "advanced", body: "Challenging issues requiring deep technical expertise." },
+    { id: "good-first-issue", label: "Good first issue", names: ["good first issue", "first timers only", "first issue"], body: "Ideal for first-time contributors new to the project." },
+    { id: "beginner", label: "Beginner", names: ["beginner", "starter", "easy"], body: "Straightforward tasks that need light domain knowledge." },
+    { id: "intermediate", label: "Intermediate", names: ["intermediate"], body: "Moderately complex issues for developers gaining experience." },
+    { id: "advanced", label: "Advanced", names: ["advanced", "hard", "expert"], body: "Challenging issues requiring deep technical expertise." },
   ],
-  empty: "No open issue matches these filters.",
-  comments: "{count} comments",
-  opened: "opened {date}",
-  updated: "updated {date}",
-  contributing: {
-    text: "Code is Apache-2.0 and every commit needs a DCO sign-off.",
-    link: { label: "Read the contribution guidelines", href: links.contributing },
+  everything: "Everything",
+  tally: { none: "No matching issues", one: "1 issue", many: "{count} issues", page: "page {page} of {total}" },
+  status: "{count} issues match the current filters.",
+  statusOne: "1 issue matches the current filters.",
+  clear: "Clear filters",
+  empty: {
+    title: "Nothing matches those filters",
+    body: "Try a broader search, or clear the filters to see every open issue.",
   },
+  failed: {
+    title: "The issues could not be loaded",
+    body: "GitHub did not answer when this page was last built. It tries again within the hour, and every open issue is always on GitHub itself.",
+  },
+  issueName: "{title}, issue {number} in {repository}",
+  ages: { today: "today", yesterday: "yesterday", days: "{count} days ago", weeks: "{count} weeks ago", months: "{count} months ago", year: "a year ago", years: "{count} years ago" },
+  comments: "{count} comments",
+  pager: { label: "Issue pages", previous: "Previous page", next: "Next page", page: "Page {page}" },
+  // From CONTRIBUTING.md in the org profile and the Committers' role in GOVERNANCE.md.
+  steps: {
+    title: "How to pick one up",
+    items: [
+      { name: "Claim it", body: "Say on the issue that you would like to take it. A Committer of the repository can assign it to you." },
+      { name: "Fork and branch", body: "Fork the repository, create a branch, and build and test your change locally." },
+      { name: "Sign every commit", body: "Sign off for the Developer Certificate of Origin and GPG-sign: git commit --signoff -S." },
+      { name: "Open a pull request", body: "The repository's Committers review it and merge it once it meets the project's standards." },
+    ],
+  },
+  contributing: { label: "Read the contribution guidelines", href: links.contributing },
   closing: {
     title: "Looking further afield?",
     body: "The explorer covers the main CLPR repositories. The governance and organization repositories keep their open issues on GitHub.",

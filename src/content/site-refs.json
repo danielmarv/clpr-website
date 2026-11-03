@@ -357,6 +357,12 @@
           "id": "governance",
           "path": "teams.yml",
           "label": "governance teams.yml"
+        },
+        {
+          "doc": "repo",
+          "id": "governance",
+          "path": "GOVERNANCE.md",
+          "label": "governance GOVERNANCE.md"
         }
       ]
     },

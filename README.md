@@ -96,7 +96,7 @@ src/
     PostBody.tsx       A post's Markdown (react-markdown, GitHub flavoured), styled by .post-prose
     ArticleContents.tsx  ShareButtons.tsx
                        The rail beside a post: its contents (three or more sections) and plain share links
-    IssueList.tsx      The Issue Explorer's search, filters, difficulty tabs and list (client side)
+    IssueBoard.tsx     The Issue Explorer board: repository tiles, search, sort, difficulty levels, issue cards; filters in the URL
     GetInvolved.tsx  SiteHeader.tsx  SiteFooter.tsx  SectionHeading.tsx  CopyCommand.tsx
     ui/                shadcn/ui-style primitives (button, input)
   content/
