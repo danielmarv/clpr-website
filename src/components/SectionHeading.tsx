@@ -1,17 +1,11 @@
-import type { ReactNode } from "react";
-
 import { cn } from "@/lib/utils";
 
-/** `illustrated` keeps a slot free for the WebGL illustration, or for the section's own `illustration`. */
 export function SectionHeading({
   id,
   eyebrow,
   title,
   lead,
   split = false,
-  illustrated = false,
-  illustration,
-  wide = false,
   className,
 }: {
   id?: string;
@@ -19,47 +13,8 @@ export function SectionHeading({
   title: string;
   lead?: string;
   split?: boolean;
-  illustrated?: boolean;
-  illustration?: ReactNode;
-  /** Gives the illustration the wider column, for short headings. */
-  wide?: boolean;
   className?: string;
 }) {
-  const heading = (
-    <>
-      {eyebrow && (
-        <p className="mb-5 inline-flex items-center gap-2.5 text-[0.8125rem] font-medium text-muted-foreground">
-          <span className="h-px w-6 bg-linear-to-r from-signal-glow to-proof-glow" aria-hidden="true" />
-          {eyebrow}
-        </p>
-      )}
-      <h2
-        id={id}
-        className="text-headline text-[clamp(2rem,4.2vw,3.25rem)] font-light leading-[1.1] tracking-[-0.035em] text-balance"
-      >
-        {title}
-      </h2>
-    </>
-  );
-
-  if (illustrated) {
-    return (
-      <div data-motion-reveal className={cn("grid lg:grid-cols-12 lg:items-center lg:gap-12", className)}>
-        <div
-          data-form-slot
-          aria-hidden="true"
-          className={cn("h-56 sm:h-72 lg:order-last", wide ? "sm:h-96 lg:col-span-7 lg:h-[28rem]" : "lg:col-span-5 lg:h-[24rem]")}
-        >
-          {illustration}
-        </div>
-        <div className={wide ? "lg:col-span-5" : "lg:col-span-7"}>
-          {heading}
-          {lead && <p className="mt-6 max-w-[56ch] text-[1.0625rem] leading-[1.7] text-muted-foreground">{lead}</p>}
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div
       data-motion-reveal
@@ -68,12 +23,22 @@ export function SectionHeading({
         className,
       )}
     >
-      <div className={cn(split && "lg:col-span-7")}>{heading}</div>
+      <div className={cn(split && "lg:col-span-6")}>
+        {eyebrow && (
+          <p className="mb-4 font-mono text-[0.75rem] uppercase tracking-[0.12em] text-signal-ink">{eyebrow}</p>
+        )}
+        <h2
+          id={id}
+          className="text-headline text-[clamp(1.875rem,3.6vw,2.75rem)] font-normal leading-[1.12] tracking-[-0.03em] text-balance"
+        >
+          {title}
+        </h2>
+      </div>
       {lead && (
         <p
           className={cn(
-            "max-w-[60ch] text-[1.0625rem] leading-[1.7] text-muted-foreground",
-            split ? "lg:col-span-5 lg:pb-1.5" : "mt-6",
+            "max-w-[58ch] text-[1.0625rem] leading-[1.7] text-muted-foreground",
+            split ? "lg:col-span-6 lg:pb-1" : "mt-5",
           )}
         >
           {lead}

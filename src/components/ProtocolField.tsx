@@ -301,9 +301,9 @@ void main() {
   p.x *= uResolution.x / uResolution.y;
   float t = uTime * 0.05;
 
-  // #0f0c26 at the bottom to #1a1540 at the top, as in the html.no-webgl fallback.
-  vec3 color = mix(vec3(0.059, 0.047, 0.149), vec3(0.102, 0.082, 0.251), smoothstep(0.0, 1.0, uv.y));
-  color += vec3(0.08, 0.05, 0.26) * smoothstep(1.7, 0.0, length(p - vec2(0.0, 1.35))) * 0.75;
+  // #0a0918 at the bottom to #13112c at the top, around the page's --bg (#0c0b1d).
+  vec3 color = mix(vec3(0.039, 0.035, 0.094), vec3(0.075, 0.067, 0.173), smoothstep(0.0, 1.0, uv.y));
+  color += vec3(0.08, 0.05, 0.26) * smoothstep(1.7, 0.0, length(p - vec2(0.0, 1.35))) * 0.45;
   color += glow(p + 0.05 * vec2(sin(t * 3.0), cos(t * 2.0)), uGlowViolet, vec3(0.38, 0.22, 1.0));
   color += glow(p + 0.06 * vec2(cos(t * 2.4), sin(t * 3.1)), uGlowMagenta, vec3(0.9, 0.18, 0.58));
   color += glow(p, uGlowIndigo, vec3(0.16, 0.08, 0.5));
@@ -735,7 +735,8 @@ export function ProtocolField() {
       const indexA = Math.min(Math.floor(current.form), last);
       const indexB = Math.min(indexA + 1, last);
       const formMix = Math.min(1, Math.max(0, current.form - indexA));
-      const fallback: FormTarget = { form: 0, place: [0, 0, 0, 1], focus: -1 };
+      // With no illustrated section, the particles leave below the screen once the story ends.
+      const fallback: FormTarget = { form: 0, place: [0, -3 * halfHeight, 0, 0], focus: -1 };
       const { form: formA, place: placeA, focus: focusA } = sceneForms[indexA] ?? fallback;
       const { form: formB, place: placeB, focus: focusB } = sceneForms[indexB] ?? fallback;
       const formAt = projectAspect(mix(placeA[0], placeB[0], formMix), mix(placeA[1], placeB[1], formMix), 0);
@@ -748,15 +749,15 @@ export function ProtocolField() {
         mix(mix(logoAt[1] + 0.1, aAt[1], ledgerWeight), formAt[1] + 0.2, fieldWeight),
         mix(mix(0.95, 0.7, ledgerWeight), 1.1, fieldWeight),
         // Dimmer behind the hero illustration, so its warm colors read true.
-        0.34 * logoWeight * (heroArt ? mix(0.55, 1, outro) : 1) + 0.3 * ledgerWeight + 0.16 * fieldWeight,
+        0.26 * logoWeight * (heroArt ? mix(0.55, 1, outro) : 1) + 0.3 * ledgerWeight + 0.16 * fieldWeight,
       ];
       const magenta: Vec4 = [
         mix(mix(logoAt[0] + 0.45, bAt[0], ledgerWeight), formAt[0] + 0.5, fieldWeight),
         mix(mix(logoAt[1] - 0.45, bAt[1], ledgerWeight), formAt[1] - 0.4, fieldWeight),
         mix(mix(0.8, 0.7, ledgerWeight), 0.9, fieldWeight),
-        0.22 * logoWeight + (0.16 + 0.22 * proof) * ledgerWeight + 0.09 * fieldWeight,
+        0.14 * logoWeight + (0.16 + 0.22 * proof) * ledgerWeight + 0.09 * fieldWeight,
       ];
-      const indigo: Vec4 = [0, -1.45, 1.5, 0.55 - 0.25 * fieldWeight];
+      const indigo: Vec4 = [0, -1.45, 1.5, 0.4 - 0.2 * fieldWeight];
 
       gl.disable(gl.BLEND);
       gl.useProgram(auroraProgram);

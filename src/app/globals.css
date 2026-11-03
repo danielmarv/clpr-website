@@ -1,12 +1,12 @@
 @import "tailwindcss";
 
-/* Brand range from hashgraph.com/clpr: violet for messages, magenta for state proofs, peach for highlights only. */
+/* Brand range from hashgraph.com/clpr: violet for messages, magenta for state proofs, peach for highlights only.
+   The page itself is a quiet ink, so the brand colours read as accents. */
 :root {
-  --bg: #120f2c;
-  --bg-raised: #17143a;
-  --surface: #1a1740;
-  --surface-2: #211d4c;
-  --paper: #f4f3fa;
+  --bg: #0c0b1d;
+  --bg-raised: #111025;
+  --surface: #16152e;
+  --surface-2: #1d1b3b;
 
   --signal: #8b7bff;
   --signal-wash: rgb(139 123 255 / 0.14);
@@ -29,12 +29,6 @@
   --night-line: rgb(255 255 255 / 0.1);
   --night-text: #c6c4d4;
 
-  --gradient-brand: linear-gradient(100deg, #9d8bff 0%, #d56ad8 42%, #ff6fa5 70%, #ffb49a 100%);
-}
-
-/* Text and hairline colors for the dark page; .theme-dark brings them back inside a light band. */
-:root,
-.theme-dark {
   --ink: #f4f3f8;
   --ink-soft: #a3a1b8;
   --ink-faint: #8f8cab;
@@ -44,23 +38,8 @@
   --signal-ink: #b5abff;
   --proof-ink: #ff8cc0;
   --headline: #ffffff;
-  --headline-fade: rgb(214 210 240 / 0.62);
-}
 
-/* A full-bleed light section. Its diagrams stay on dark cards, made opaque so the paper doesn't wash them out. */
-.band-light {
-  --ink: #120f2c;
-  --ink-soft: #4f4c69;
-  --ink-faint: #67647f;
-  --line: rgb(18 15 44 / 0.1);
-  --line-strong: rgb(18 15 44 / 0.2);
-  --mist: rgb(18 15 44 / 0.035);
-  --signal-ink: #5b45e0;
-  --proof-ink: #c0267a;
-  --headline: #120f2c;
-  --headline-fade: rgb(63 34 215 / 0.8);
-  --panel-fill: var(--bg-raised);
-  border-image: conic-gradient(var(--paper) 0 0) fill 0 // 0 100vmax;
+  --gradient-brand: linear-gradient(100deg, #9d8bff 0%, #d56ad8 42%, #ff6fa5 70%, #ffb49a 100%);
 }
 
 @theme inline {
@@ -139,10 +118,7 @@
 }
 
 @utility text-headline {
-  background-image: linear-gradient(180deg, var(--headline) 30%, var(--headline-fade) 110%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--headline);
 }
 
 @utility text-brand {
@@ -155,24 +131,13 @@
 @utility panel {
   border: 1px solid var(--line);
   border-radius: var(--radius-panel);
-  background:
-    linear-gradient(180deg, rgb(255 255 255 / 0.035), rgb(255 255 255 / 0.012)),
-    var(--panel-fill, rgb(22 18 50 / 0.8));
-  box-shadow: 0 1px 0 rgb(255 255 255 / 0.04) inset;
-  @media (width >= 48rem) {
-    background:
-      linear-gradient(180deg, rgb(255 255 255 / 0.04), rgb(255 255 255 / 0.012)),
-      var(--panel-fill, rgb(22 18 50 / 0.55));
-    -webkit-backdrop-filter: blur(18px) saturate(1.4);
-    backdrop-filter: blur(18px) saturate(1.4);
-  }
+  background: rgb(255 255 255 / 0.025);
 }
 
-@utility panel-light {
-  border: 1px solid var(--line);
-  border-radius: var(--radius-panel);
-  background: #fff;
-  box-shadow: 0 1px 2px rgb(18 15 44 / 0.05);
+/* A full-width section set a step above the page, with hairlines above and below. */
+@utility band {
+  border-block: 1px solid var(--line);
+  background: var(--bg-raised);
 }
 
 @utility shell {
@@ -193,18 +158,18 @@
     background: var(--bg);
   }
 
+  /* One soft glow at the top of the page, behind the hero; the rest stays flat. */
   body {
-    background: var(--bg);
+    background:
+      radial-gradient(ellipse 72rem 44rem at 82% -14rem, rgb(63 34 215 / 0.3), transparent 70%),
+      radial-gradient(ellipse 48rem 32rem at 104% 6rem, rgb(200 42 128 / 0.12), transparent 70%),
+      var(--bg);
+    background-repeat: no-repeat;
     color: var(--color-foreground);
     font-family: var(--font-sans);
     font-size: 1.0625rem;
     line-height: 1.65;
     text-rendering: optimizeLegibility;
-  }
-
-  .band-light,
-  .theme-dark {
-    color: var(--ink);
   }
 
   ::selection {
@@ -247,15 +212,7 @@
   pointer-events: none;
 }
 
-/* Without WebGL2 the page keeps a still version of the aurora. */
-.no-webgl body {
-  background:
-    radial-gradient(ellipse 60% 50% at 78% 22%, rgb(108 55 235 / 0.28), transparent 70%),
-    radial-gradient(ellipse 50% 40% at 90% 45%, rgb(200 42 128 / 0.16), transparent 70%),
-    radial-gradient(ellipse 90% 50% at 50% 0%, rgb(33 18 113 / 0.5), transparent 70%),
-    linear-gradient(180deg, #1a1540, #0f0c26);
-  background-attachment: fixed;
-}
+/* Without WebGL2 the body's own glow is the still version of the aurora. */
 .no-webgl .protocol-field {
   display: none;
 }
@@ -268,48 +225,6 @@
 }
 .hero-mesh canvas {
   will-change: transform;
-}
-
-/* Pointer spotlight */
-
-[data-spotlight] {
-  position: relative;
-  isolation: isolate;
-  --mx: 50%;
-  --my: -20%;
-}
-[data-spotlight]::before,
-[data-spotlight]::after {
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  content: "";
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 400ms ease;
-}
-[data-spotlight]::before {
-  z-index: -1;
-  background: radial-gradient(420px circle at var(--mx) var(--my), rgb(139 123 255 / 0.1), transparent 45%);
-}
-/* Brighter ring on the border, masked to 1px. */
-[data-spotlight]::after {
-  padding: 1px;
-  background: radial-gradient(320px circle at var(--mx) var(--my), rgb(181 171 255 / 0.55), transparent 45%);
-  -webkit-mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  mask-composite: exclude;
-}
-[data-spotlight]:hover::before,
-[data-spotlight]:hover::after,
-[data-spotlight]:focus-within::before,
-[data-spotlight]:focus-within::after {
-  opacity: 1;
 }
 
 /* Footer wordmark */
@@ -413,127 +328,21 @@
   transform: none;
 }
 
-/* Architecture layer stack */
-
-.layer-stack {
-  perspective: 1600px;
-  perspective-origin: 50% 30%;
-}
-.layer-stack-inner {
-  position: relative;
-  transform-style: preserve-3d;
-  transform: rotateX(58deg) rotateZ(-40deg);
-}
-.layer-plate {
-  position: absolute;
-  inset: 0;
-  transform-style: preserve-3d;
-  transform: translateZ(calc(var(--z) * var(--spread, 64px)));
-  transition:
-    transform 900ms var(--ease-out-expo),
-    opacity 500ms ease,
-    border-color 400ms ease,
-    box-shadow 400ms ease,
-    background-color 400ms ease;
-}
-.layer-plate[data-active="true"] {
-  transform: translateZ(calc(var(--z) * var(--spread, 64px) + 22px));
-}
-.layer-message {
-  transform: translate(-50%, -50%);
-  opacity: 0;
-}
-@keyframes layer-drop {
-  0% {
-    transform: translate(-50%, -50%) translateZ(calc(3 * var(--spread, 64px) + 70px));
-    opacity: 0;
-  }
-  12%,
-  82% {
-    opacity: 1;
-  }
-  100% {
-    transform: translate(-50%, -50%) translateZ(0px);
-    opacity: 0;
-  }
-}
-@media (prefers-reduced-motion: no-preference) {
-  .layer-stack[data-collapsed="true"] {
-    --spread: 10px;
-  }
-  .layer-stack[data-collapsed="false"] .layer-message {
-    animation: layer-drop 3.4s cubic-bezier(0.65, 0, 0.35, 1) 1s infinite;
-  }
-}
-
-/* MessageJourney */
-
-/* Messages ride the route (offset-path given inline) and travel to their next
-   stop when the step changes; a long jump moves them without travelling. */
-.journey-move {
-  offset-rotate: 0deg;
-  transition:
-    offset-distance 1.6s cubic-bezier(0.65, 0, 0.35, 1),
-    opacity 0.5s ease;
-}
-[data-jump] .journey-move {
-  transition: opacity 0.3s ease;
-}
-
-.journey-ping {
-  opacity: 0;
-  transform-box: fill-box;
-  transform-origin: center;
-}
-@media (prefers-reduced-motion: no-preference) {
-  .journey-ping {
-    animation: journey-ping 1.4s 1.2s ease-out both;
-  }
-}
-@keyframes journey-ping {
-  0% {
-    opacity: 0;
-    transform: scale(0.6);
-  }
-  15% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-    transform: scale(2.2);
-  }
-}
-
-@keyframes step-progress {
-  from {
-    transform: scaleX(0);
-  }
-  to {
-    transform: scaleX(1);
-  }
-}
-.step-progress {
-  transform-origin: left;
-  animation: step-progress linear forwards;
-}
-
-/* PropertyArt */
+/* Diagram motion (ComparisonArt, ComponentArt) */
 
 /* Moving parts ride the offset-path given inline; without motion they rest at
    their inline offset-distance. Timing comes from --duration and --delay. */
 .prop-move {
   offset-rotate: 0deg;
 }
-.prop-pop,
-.prop-spin {
+.prop-pop {
   transform-box: fill-box;
   transform-origin: center;
 }
 
 @media (prefers-reduced-motion: no-preference) {
   .prop-move,
-  .prop-pop,
-  .prop-fade {
+  .prop-pop {
     animation-duration: var(--duration, 4.8s);
     animation-delay: var(--delay, 0s);
     animation-iteration-count: infinite;
@@ -552,32 +361,11 @@
   .prop-relay {
     animation-name: prop-relay;
   }
-  .prop-pulse {
-    animation-name: prop-pulse;
-  }
-  .prop-clpr {
-    animation-name: prop-clpr;
-  }
-  .prop-bridge {
-    animation-name: prop-bridge;
-  }
-  .prop-wait {
-    animation-name: prop-wait;
-  }
   .prop-ring {
     animation-name: prop-ring;
   }
   .prop-bead {
     animation-name: prop-bead;
-  }
-  .prop-tamper {
-    animation-name: prop-tamper;
-  }
-  .prop-untamper {
-    animation-name: prop-untamper;
-  }
-  .prop-spin {
-    animation: prop-spin 2.4s linear infinite;
   }
 }
 
@@ -644,88 +432,6 @@
     opacity: 0;
   }
 }
-@keyframes prop-pulse {
-  0% {
-    offset-distance: 0%;
-    opacity: 0;
-  }
-  3%,
-  38% {
-    opacity: 1;
-  }
-  40%,
-  100% {
-    offset-distance: 100%;
-    opacity: 0;
-  }
-}
-@keyframes prop-clpr {
-  0% {
-    offset-distance: 0%;
-    opacity: 0;
-    animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
-  }
-  3% {
-    opacity: 1;
-  }
-  38% {
-    offset-distance: 100%;
-    opacity: 1;
-  }
-  44%,
-  100% {
-    offset-distance: 100%;
-    opacity: 0;
-  }
-}
-@keyframes prop-bridge {
-  0% {
-    offset-distance: 0%;
-    opacity: 0;
-  }
-  3% {
-    opacity: 1;
-  }
-  14%,
-  32% {
-    offset-distance: 33.333%;
-  }
-  46%,
-  64% {
-    offset-distance: 66.667%;
-  }
-  82% {
-    offset-distance: 100%;
-    opacity: 1;
-  }
-  88%,
-  100% {
-    offset-distance: 100%;
-    opacity: 0;
-  }
-}
-@keyframes prop-wait {
-  0% {
-    offset-distance: 0%;
-    opacity: 0;
-  }
-  3% {
-    opacity: 1;
-  }
-  18%,
-  58% {
-    offset-distance: 50%;
-  }
-  80% {
-    offset-distance: 100%;
-    opacity: 1;
-  }
-  86%,
-  100% {
-    offset-distance: 100%;
-    opacity: 0;
-  }
-}
 @keyframes prop-ring {
   0% {
     opacity: 0;
@@ -749,35 +455,6 @@
   }
   3% {
     transform: scale(1.45);
-  }
-}
-@keyframes prop-tamper {
-  0%,
-  55%,
-  92%,
-  100% {
-    opacity: 0;
-  }
-  60%,
-  86% {
-    opacity: 1;
-  }
-}
-@keyframes prop-untamper {
-  0%,
-  55%,
-  92%,
-  100% {
-    opacity: 1;
-  }
-  60%,
-  86% {
-    opacity: 0;
-  }
-}
-@keyframes prop-spin {
-  to {
-    transform: rotate(360deg);
   }
 }
 
@@ -808,29 +485,8 @@
   }
 }
 
-@keyframes dash-flow {
-  to {
-    stroke-dashoffset: -24;
-  }
-}
-
-@keyframes scroll-cue {
-  0% {
-    transform: translateY(-100%);
-  }
-  100% {
-    transform: translateY(200%);
-  }
-}
-
 @media (prefers-reduced-motion: no-preference) {
   .proof-travel {
     animation: proof-travel 3.6s cubic-bezier(0.65, 0, 0.35, 1) infinite alternate;
-  }
-  .dash-flow {
-    animation: dash-flow 1.2s linear infinite;
-  }
-  .scroll-cue {
-    animation: scroll-cue 2.2s cubic-bezier(0.65, 0, 0.35, 1) infinite;
   }
 }

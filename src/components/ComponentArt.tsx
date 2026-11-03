@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { Bundle, Endpoint, fibre, Glows, LaneGradient, Mover, Pulse, Star, TONES } from "@/components/fibreSvg";
 import { extensibility } from "@/content/site";
 
-// Decorative diagrams for the three components a new ledger type needs, with the same motion as PropertyArt.
+// Decorative diagrams for the three components a new ledger type needs, with the same motion as ComparisonArt.
 
 const WIDTH = 320;
 const HEIGHT = 168;
