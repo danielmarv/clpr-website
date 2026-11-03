@@ -130,10 +130,10 @@ Version 2 is dark first. Layout, spacing and type follow linear.app; the scroll 
 Apple product pages; the interactive particle logo follows lusion.co. The brand colors still come
 from the CLPR presentation on [hashgraph.com/clpr](https://hashgraph.com/clpr/).
 
-- **Story of the page.** Hero (a network of ledgers draws itself) → pinned story (two ledgers
-  form, a Channel opens, proofs cross) → guarantees → walkthrough → why bridgeless →
-  architecture → chain-agnostic → code → terminology → get involved → closing call to
-  action (the CLPR spiral as a ribbon of light).
+- **Story of the page.** An overview; the explainer under `/plumbing/` carries the detail. Hero (a
+  network of ledgers draws itself) → pinned story as How it works (two ledgers form, a Channel
+  opens, proofs cross) → why bridgeless → architecture → code → get involved, which closes with
+  the CLPR spiral as a ribbon of light. Each section links into the explainer where it stops.
 - **Background.** `ProtocolField` is one fixed WebGL2 canvas behind all content: an aurora
   shader, 9,000 (mobile) to 20,000 particles, and a network layer (`networkLayer.ts`) that
   draws real network topology on top: links as bundles of fine fibres that meet at both ends
@@ -161,52 +161,16 @@ from the CLPR presentation on [hashgraph.com/clpr](https://hashgraph.com/clpr/).
   or the closing section tells `ProtocolField` to hide its particle version of that scene
   (the spiral, or the two ledgers and their Channel). The 404 page
   has none, so it still shows the particle spiral.
-- **Protocol properties.** A bento grid: the ordered chain gets a wide tile, the race against
-  a bridge a full-width timeline. Each property has its own small looping diagram
-  (`PropertyArt`, plain SVG rendered on the server) in the fibre language and the site's color
-  meanings: a running-hash chain that is computed link by link and then shows a changed
-  message in every hash after it; one message and exactly one response; a Channel running
-  straight through an empty zero; a proof delivered by whoever is around while the Endpoint is
-  offline; different payloads on one Channel; a bridge message waiting at every hop while the
-  CLPR message arrives first. Motion is CSS (`prop-*` in `globals.css`) along `offset-path`, and
-  only runs without `prefers-reduced-motion`; otherwise every part rests at a telling point. The
-  wide diagrams have a shorter variant on phones.
-- **How it works.** `MessageJourney` draws both ledgers as membranes with the seven stops on one
-  route (Application → CLPR Service with its queue → Endpoint, the Channel, then Endpoint →
-  Verifier Contract → Service → Application). Three queued messages ride the route as the steps
-  change (CSS `offset-path`, transitions on `offset-distance`): they gather into a bundle with a
-  dashed proof ring, cross, the ring turns solid at the Verifier, they are delivered in order and
-  three responses travel back. A seven-point timeline with play, pause and arrow keys drives
-  it; on phones the same route runs top to bottom.
-- **Why bridgeless.** Two panels, the same two ledgers in each: joined through a bridge in the
-  middle (muted grey) and directly by a CLPR Channel. Each aspect has its own pair of diagrams
-  (`ComparisonArt`) on the same clock: validators in the middle vs. a proof checked by B's
-  Verifier; assets held in custody (a red target ring) vs. no pooled assets; an offline bridge
-  vs. anyone delivering the proof; an extra layer in the path vs. no extra rounds; value or
-  messages through the intermediary vs. any payload.
-- **Architecture.** The CSS 3D layer stack stays in view while the visitor reads the four
-  layers beside it; the layer being read lights up its plate and the plates above it step
-  back, so its drawing (`LayerArt`) shows through. A plate can be clicked to jump to its
-  layer. The terms of each layer link to their definitions in the glossary (`showTerm` in
-  `lib/glossary.ts`). The mesh floor fits under the stack, clear of the text.
-- **Chain-agnostic.** Under the three component diagrams, "Connecting a new ledger to Hiero" is
-  a stepper (`LedgerOnboarding`, sharing `useStepper` with the walkthrough) beside a drawing that
-  builds up: Hiero is native from the start; the new ledger gains its Service and Endpoints,
-  the two Verifier Contracts are built (each in the color of the ledger whose proofs it
-  checks) and move into the opposite network, the Channel opens, the Endpoints peer, a
-  Connector is bonded and applications start sending messages.
-- **Open source.** The specification spans the row above its three implementations, joined
-  by "Implemented by" fibres. Each implementation card lists the CLPR components it implements
-  (with the site's symbols: star, hexagon, diamond), what it runs on and, where the sources say
-  so, its status. Governance and the two licenses share the last row.
-- **Terminology.** The glossary speaks the site's visual language: every term has an icon (the
-  star, hexagon, diamond, proof ring and coin of the illustrations) in the list, in the related
-  terms and on the Open source cards, and a small looping diagram above its definition
-  (`TermArt`). Beside the heading, `TermMap` draws all terms as a map: each with its icon and
-  name, joined by fibres where one definition mentions another. The selected term and its
-  relations light up in step with the explorer; hovering shows a term's neighbours and a click
-  selects it. Terms that appear in an illustrated section link to it ("See it in …",
-  `glossary.seeIn`), the reverse of the term links in Architecture.
+- **Why bridgeless.** Two cards, the same two ledgers in each: joined through a bridge in the
+  middle (muted grey) and directly by a CLPR Channel whose proof B's Verifier checks
+  (`ComparisonArt`, both on the same clock). Below each drawing the five aspects (trust, custody,
+  going offline, speed, what moves) line up across the cards on a shared CSS subgrid.
+- **Architecture.** The three components a ledger needs (Service, Endpoints, Verifier
+  Contracts), each with a small looping diagram (`ComponentArt`), then the note on Hiero's
+  native service and a link to how a ledger is added in the explainer.
+- **Open source.** The specification spans the row above its three implementations. Each
+  implementation card lists the CLPR components it implements, what it runs on and, where the
+  sources say so, its status. Governance and the project facts share the last row.
 - **Header.** The nav sits exactly in the middle of the bar and a marker slides to the section
   being read (`aria-current`). From `xl` the brand reads "CLPR | Cross Ledger Protocol". The
   mobile menu fills the screen, locks scrolling and closes on Escape.
@@ -220,27 +184,26 @@ from the CLPR presentation on [hashgraph.com/clpr](https://hashgraph.com/clpr/).
   carries a magenta proof ring, B's Verifier lights up and the verified state spreads through
   B's validators. Scroll decides what is shown; time only moves the traffic. The ledgers sit
   where `ProtocolField` publishes them (`--ledger-a-x` …), so the aurora glows behind them.
-- **Section illustrations.** From Architecture on, each section gets its own network
+- **Section illustrations.** `ProtocolField` can give a section its own network
   (`data-form`, defined in `sceneGraphs.ts`; the particles in `sceneForms.ts` add dust, block
   state, the floor grid and the land): a triangulated mesh floor under the layer stack (architecture), validators in real cities on a
   dot-matrix Earth with Channels between four ledgers (chain-agnostic), a git history with
   contributors pushing commits (code) and a scale-free contributor
   network (get involved). Each drawing sits in its section heading's `data-form-slot` and
   scrolls with it; one network takes itself apart as the next one builds itself, and the
-  particles flow between them. Cards use frosted glass (`panel`), so the drawings glow through
-  them.
-- **Color.** A deep indigo ink (`--bg` `#120f2c`; the aurora runs from `#0f0c26` at the bottom
-  to `#1a1540` at the top), hairline white borders, white text fading to lavender in
-  headlines (`text-headline`). Violet `#9d8bff` marks messages in transit; magenta `#f27fbd` is
-  reserved for state proofs and verification. The hero illustration carries the warm end of the
-  range; headlines stay in `text-headline`.
+  particles flow between them. The home page uses none at present: once the story ends, the
+  particles leave the screen.
+- **Color.** A quiet ink (`--bg` `#0c0b1d`; the aurora runs from `#0a0918` at the bottom to
+  `#13112c` at the top, softer outside the story), hairline white borders, plain white headlines
+  (`text-headline`). Violet `#9d8bff` marks messages in transit; magenta `#f27fbd` is reserved
+  for state proofs and verification. The hero illustration carries the warm end of the range.
 - **Type.** Sora (OFL) as a free stand-in for Styrene A, the licensed typeface on
   hashgraph.com/clpr: the same wide, round geometric letterforms. Like Styrene there, large
   headlines are set light (300) with tight tracking (−0.035 to −0.04em); text stays regular.
   IBM Plex Mono only for real code, indices and hashes. If a Styrene A web license is
   available, swap the font in `src/app/layout.tsx`.
-- **Shape.** Pill buttons (solid white primary, translucent secondary), frosted `panel`
-  surfaces with hairline borders, cards that light up under the pointer (`data-spotlight`).
+- **Shape.** Pill buttons (solid white primary, translucent secondary), flat `panel` surfaces
+  with hairline borders, and `band` sections a step lighter than the page.
 - **Footer.** Its top edge is a Channel: two Endpoints joined by a twisted fibre bundle, with
   a message crossing one way and its response the other (CSS, still with reduced motion).
   Links are grouped by intent (Explore the page, Build with the repositories, how the Project
@@ -249,8 +212,7 @@ from the CLPR presentation on [hashgraph.com/clpr](https://hashgraph.com/clpr/).
   wordmark lights up in the spiral's colors under the pointer (`data-pointer-glow`); on touch
   screens the light sweeps across it on its own.
 - **Motion and accessibility.** With `prefers-reduced-motion` the background holds still and
-  only changes when the visitor scrolls, the walkthrough waits for the visitor, and CSS
-  animations stop. The canvas pauses while the tab is hidden. Without WebGL2 the page falls back
+  only changes when the visitor scrolls, and CSS animations stop. The canvas pauses while the tab is hidden. Without WebGL2 the page falls back
   to a CSS gradient (`html.no-webgl`). All story text is in the DOM in reading order.
 - **Tokens.** All colors are defined once in `globals.css`. Components use semantic classes
   (`text-muted-foreground`, `text-faint`, `text-signal-ink`, `panel` …).
