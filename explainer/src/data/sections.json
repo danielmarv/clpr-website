@@ -14,6 +14,7 @@
     {
       "id": "islands",
       "title": "Ledgers cannot see each other",
+      "illustration": true,
       "refs": [
         {
           "doc": "design",
@@ -24,7 +25,7 @@
     },
     {
       "id": "bridges",
-      "title": "The usual fixes, and why they keep failing",
+      "title": "Why a trusted party in the middle is the weak point",
       "illustration": true,
       "refs": [
         {
@@ -58,6 +59,21 @@
           "doc": "design",
           "anchor": "23-trust-model",
           "label": "design §2.3"
+        },
+        {
+          "doc": "spec",
+          "anchor": "88-upgradeable-verifier-contracts",
+          "label": "spec §8.8"
+        },
+        {
+          "doc": "spec",
+          "anchor": "810-endpoint-pre-funding",
+          "label": "spec §8.10"
+        },
+        {
+          "doc": "design",
+          "anchor": "315-verifier-contracts",
+          "label": "design §3.1.5"
         }
       ]
     },
@@ -80,6 +96,16 @@
           "id": "org-profile",
           "path": "profile/README.md",
           "label": "organization profile"
+        },
+        {
+          "doc": "design",
+          "anchor": "310-the-clpr-service",
+          "label": "design §3.1.0"
+        },
+        {
+          "doc": "design",
+          "anchor": "315-verifier-contracts",
+          "label": "design §3.1.5"
         }
       ]
     },
@@ -97,6 +123,16 @@
           "id": "org-profile",
           "path": "profile/README.md",
           "label": "organization profile"
+        },
+        {
+          "doc": "design",
+          "anchor": "310-the-clpr-service",
+          "label": "design §3.1.0"
+        },
+        {
+          "doc": "design",
+          "anchor": "331-connectors",
+          "label": "design §3.3.1"
         }
       ]
     },
@@ -108,6 +144,11 @@
           "doc": "design",
           "anchor": "22-high-level-message-flow",
           "label": "design §2.2"
+        },
+        {
+          "doc": "design",
+          "anchor": "333-receiving-routing-and-paying",
+          "label": "design §3.3.3"
         }
       ]
     },
@@ -124,6 +165,17 @@
           "doc": "design",
           "anchor": "322-message-storage",
           "label": "design §3.2.2"
+        },
+        {
+          "doc": "spec",
+          "anchor": "42-bundle-verification-algorithm",
+          "label": "spec §4.2"
+        },
+        {
+          "doc": "repo",
+          "id": "clpr-smart-contracts",
+          "path": "src/libraries/service/BundleLib.sol",
+          "label": "BundleLib.sol"
         }
       ]
     },
@@ -161,6 +213,11 @@
           "doc": "design",
           "anchor": "328-response-ordering-and-correlation",
           "label": "design §3.2.8"
+        },
+        {
+          "doc": "design",
+          "anchor": "334-failure-consequences-and-slashing",
+          "label": "design §3.3.4"
         }
       ]
     },
@@ -195,6 +252,11 @@
           "doc": "design",
           "anchor": "312-endpoint-manifest",
           "label": "design §3.1.2"
+        },
+        {
+          "doc": "design",
+          "anchor": "315-verifier-contracts",
+          "label": "design §3.1.5"
         }
       ]
     },
@@ -260,6 +322,17 @@
           "doc": "design",
           "anchor": "335-open-economic-design-issues",
           "label": "design §3.3.5"
+        },
+        {
+          "doc": "design",
+          "anchor": "315-verifier-contracts",
+          "label": "design §3.1.5"
+        },
+        {
+          "doc": "repo",
+          "id": "org-profile",
+          "path": "profile/README.md",
+          "label": "org profile"
         }
       ]
     },
@@ -283,6 +356,18 @@
           "doc": "design",
           "anchor": "1-executive-summary",
           "label": "design §1"
+        },
+        {
+          "doc": "repo",
+          "id": "governance",
+          "path": "lf-decentralized-trust-labs_Charter.pdf",
+          "label": "Labs charter"
+        },
+        {
+          "doc": "repo",
+          "id": "clpr-smart-contracts",
+          "path": "docs/lifecycle.md",
+          "label": "contracts docs/lifecycle.md"
         }
       ]
     }
@@ -435,6 +520,12 @@
           "id": "clpr-spec",
           "path": "ADR/2026-07-17-queue-metadata-and-partial-bundle-proofs.md",
           "label": "ADR 2026-07-17"
+        },
+        {
+          "doc": "repo",
+          "id": "clpr-smart-contracts",
+          "path": "src/verifiers/evm/common/ClprEvmBundleVerifier.sol",
+          "label": "ClprEvmBundleVerifier.sol"
         }
       ]
     },
@@ -457,6 +548,12 @@
           "id": "clpr-smart-contracts",
           "path": "docs/bundle-flow.md",
           "label": "contracts docs/bundle-flow.md"
+        },
+        {
+          "doc": "repo",
+          "id": "clpr-smart-contracts",
+          "path": "src/libraries/service/BundleLib.sol",
+          "label": "BundleLib.sol"
         }
       ]
     },
@@ -607,6 +704,24 @@
           "id": "clpr-spec",
           "path": "verifiers/README.md",
           "label": "verifiers/"
+        },
+        {
+          "doc": "repo",
+          "id": "clpr-smart-contracts",
+          "path": "src/verifiers/hiero/HieroVerifier.sol",
+          "label": "HieroVerifier.sol"
+        },
+        {
+          "doc": "repo",
+          "id": "clpr-smart-contracts",
+          "path": "src/verifiers/evm/qbft/QBFTVerifier.sol",
+          "label": "QBFTVerifier.sol"
+        },
+        {
+          "doc": "repo",
+          "id": "clpr-spec",
+          "path": "ADR/2026-07-02-channel-context-verifier-interface.md",
+          "label": "ADR 2026-07-02"
         }
       ]
     },
@@ -638,6 +753,12 @@
           "doc": "spec",
           "anchor": "63-connector-management",
           "label": "spec §6.3"
+        },
+        {
+          "doc": "repo",
+          "id": "clpr-smart-contracts",
+          "path": "src/libraries/service/BundleLib.sol",
+          "label": "BundleLib.sol"
         }
       ]
     },
@@ -743,6 +864,18 @@
           "doc": "design",
           "anchor": "315-verifier-contracts",
           "label": "design §3.1.5"
+        },
+        {
+          "doc": "repo",
+          "id": "clpr-endpoint",
+          "path": "clpr-relay-sync/src/main/java/org/hiero/clpr/relay/sync/PeerSelector.java",
+          "label": "PeerSelector.java"
+        },
+        {
+          "doc": "repo",
+          "id": "org-profile",
+          "path": "profile/README.md",
+          "label": "org profile"
         }
       ]
     },
@@ -785,6 +918,12 @@
           "id": "org-profile",
           "path": "profile/README.md",
           "label": "organization profile"
+        },
+        {
+          "doc": "repo",
+          "id": "governance",
+          "path": "GOVERNANCE.md",
+          "label": "governance/GOVERNANCE.md"
         }
       ]
     },

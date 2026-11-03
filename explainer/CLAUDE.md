@@ -44,7 +44,9 @@ documentation is in `docs/` (start at `docs/README.md`); this file is the short 
    `.upstream/` present, fails when upstream has a verifier directory, ADR or heading the data
    does not. `docs/content-map.md` is generated from those refs (`pnpm run content-map`); never
    edit it by hand.
-8. **Figures are components.** A static drawing lives in `src/components/diagrams/<page>/` inside
+8. **Figures are components, drawn in the website's vocabulary.** Ledgers, endpoints, verifiers,
+   connectors and channels take the landing page's shapes (`.claude/skills/clpr-figure/`,
+   `docs/figures.md`). A static drawing lives in `src/components/diagrams/<page>/` inside
    `<Figure lead caption source kind>` and is placed in the MDX after the paragraph it
    illustrates; conventions in `docs/figures.md`. Simulations never scroll the window (use
    `scrollListTo` from `@kse/lib/scroll` for a list) and never rely on the `hidden` attribute

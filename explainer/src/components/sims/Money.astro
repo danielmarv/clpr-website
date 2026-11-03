@@ -39,7 +39,7 @@ const defFill = `${(Math.min(defCharge, DEF.balance) / Math.max(DEF.balance, def
         <div class="row"><b>submitter's net</b><span data-out="net"><span class="money__pos">+{(defCharge - defCost).toFixed(2)} units</span>; the margin</span></div>
         <div class="row"><b>balance after</b><span data-out="after">{(DEF.balance - defCharge).toFixed(2)} units</span></div>
         <div class="row"><b>reply to Ledger A</b><span data-out="reply"><span class="pill ok">SUCCESS</span> (or APPLICATION_ERROR if the application reverted; no penalty either way)</span></div>
-        <div class="row"><b>back on Ledger A</b><span data-out="source">the reply is delivered to the sending application; no fine</span></div>
+        <div class="row"><b>back on Ledger A</b><span data-out="source">the reply is delivered to the sending application; the source connector is charged as for any message, and there is no fine</span></div>
       </div>
     </div>
   </div>
@@ -48,7 +48,7 @@ const defFill = `${(Math.min(defCharge, DEF.balance) / Math.max(DEF.balance, def
   </div>
   <div class="sim__log sim__log--tall" data-role="log">
     <span class="line" data-role="line">charge = {defCost} × (1 + {DEF.margin}/100) = {defCharge} units</span>
-    <span data-role="prose">The submitter fronted the transaction fee and is repaid with a margin on top. There is no protocol treasury and nobody on the sending side is paid. The margin is the profit for whoever runs the endpoint; drag the balance down to see what happens when the promise to pay is broken.</span>
+    <span data-role="prose">The submitter fronted the transaction fee and is repaid with a margin on top. There is no protocol treasury: each charge is paid to whoever submitted the bundle, and when the reply arrives the source connector is charged and the Ledger A submitter paid in the same way. The margin is the profit for whoever runs the endpoint; drag the balance down to see what happens when the promise to pay is broken.</span>
   </div>
 </div>
 
@@ -137,7 +137,7 @@ const defFill = `${(Math.min(defCharge, DEF.balance) / Math.max(DEF.balance, def
         set('net', `<span class="money__neg">${signed(-cost)} units</span> (absorbed; nothing on Ledger B can reimburse it)`);
         set('after', 'none');
         set('reply', '<span class="pill bad">CONNECTOR_NOT_FOUND</span>');
-        set('source', `the source connector that authorized the message is fined from its locked stake, and the fine goes to whoever submitted the reply bundle on Ledger A`);
+        set('source', `the source connector that authorized the message is fined from its locked stake, and the Ledger A submitter is reimbursed from the slash`);
         setStatus('CONNECTOR_NOT_FOUND', 'bad');
         line.textContent = `no connector on Ledger B; nothing charged; submitter absorbs ${cost} units`;
         prose.textContent = 'The message was authorized on Ledger A by a connector with no counterpart on Ledger B. The message still gets a deterministic answer, and the source connector pays for having promised something it could not deliver. The uncompensated destination submitter is a known limitation.';
@@ -148,10 +148,10 @@ const defFill = `${(Math.min(defCharge, DEF.balance) / Math.max(DEF.balance, def
         set('net', `<span class="${FINE - cost >= 0 ? 'money__pos' : 'money__neg'}">${signed(FINE - cost)} units</span>`);
         set('after', `balance ${balance}, stake ${STAKE - FINE} (was ${STAKE})`);
         set('reply', '<span class="pill bad">CONNECTOR_UNDERFUNDED</span>');
-        set('source', 'the source connector is fined too, paid to the Ledger A submitter. Repeated failures escalate to a ban and forfeited stake.');
+        set('source', 'the source connector is fined too, and the Ledger A submitter is reimbursed. Repeated failures may lead to a ban and forfeited stake.');
         setStatus('CONNECTOR_UNDERFUNDED', 'bad');
         line.textContent = `charge = ${cost} × (1 + ${margin}/100) = ${charge} units > balance ${balance}; fine ${FINE} from stake`;
-        prose.textContent = 'The application is not called, or only with the gas the connector can afford. The connector promised to pay and cannot, so its stake is slashed to compensate the submitter, and the failure travels home as the reply. Whether the fine fully covers the submitter depends on how the platform sizes stakes: this is the stake-to-exposure invariant as something each platform must calibrate.';
+        prose.textContent = 'The application is not called. (The EVM contracts differ: they call it with only the gas the connector can afford, and reply CONNECTOR_UNDERFUNDED only when it can afford none.) The connector promised to pay and cannot, so its stake is slashed to compensate the submitter, and the failure travels home as the reply. Whether the fine fully covers the submitter depends on how the platform sizes stakes: this is the stake-to-exposure invariant as something each platform must calibrate.';
       } else {
         title.textContent = 'Happy path';
         set('charge', `${charge} units = ${cost} × (1 + ${margin}/100)`);
@@ -159,10 +159,10 @@ const defFill = `${(Math.min(defCharge, DEF.balance) / Math.max(DEF.balance, def
         set('net', `<span class="money__pos">${signed(charge - cost)} units</span>; the margin`);
         set('after', `${(balance - charge).toFixed(2)} units`);
         set('reply', '<span class="pill ok">SUCCESS</span> (or APPLICATION_ERROR if the application reverted; no penalty either way)');
-        set('source', 'the reply is delivered to the sending application; no fine');
+        set('source', 'the reply is delivered to the sending application; the source connector is charged as for any message, and there is no fine');
         setStatus('SUCCESS', 'ok');
         line.textContent = `charge = ${cost} × (1 + ${margin}/100) = ${charge} units`;
-        prose.textContent = 'The submitter fronted the transaction fee and is repaid with a margin on top. There is no protocol treasury and nobody on the sending side is paid. The margin is the profit for whoever runs the endpoint; drag the balance down to see what happens when the promise to pay is broken.';
+        prose.textContent = 'The submitter fronted the transaction fee and is repaid with a margin on top. There is no protocol treasury: each charge is paid to whoever submitted the bundle, and when the reply arrives the source connector is charged and the Ledger A submitter paid in the same way. The margin is the profit for whoever runs the endpoint; drag the balance down to see what happens when the promise to pay is broken.';
       }
     }
     for (const el of Array.from(root.querySelectorAll('input'))) el.addEventListener('input', render);

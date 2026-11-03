@@ -75,7 +75,7 @@ Now take two of these networks. Each is a world of its own. Nothing written in o
 
 <TwoIslands />
 
-That blindness is by design. A ledger only writes a line if every validator can check it on its own. "Go and look at the other network" fails that test: hundreds of machines cannot all look and be sure they saw the same thing at the same moment. So the two islands stay islands.
+That blindness follows from how ledgers work. In general, a ledger only writes a line if every validator can check it on its own. "Go and look at the other network" fails that test: hundreds of machines cannot all look and be sure they saw the same thing at the same moment. So the two islands stay islands.
 
 <ValidatorsCannotLook />
 
@@ -104,7 +104,7 @@ Ledger B never sees Ledger A. It sees a signature from whoever holds the key.
 Adding more keys raises the price of the attack. It does not change its shape: there is still a party in the middle whose failure Ledger B cannot detect, and every message is exactly as safe as that party. CLPR sets out to remove the party altogether.
 
 <Callout kind="plain">
-A bridge makes every message as safe as the bridge. The goal is to make every message as safe as the two ledgers themselves, and not one bit less.
+A design with a trusted party in the middle makes every message only as safe as that party. The goal is to make every message depend only on the two ledgers, their CLPR Services and the channel's verifier, with no trusted party in between.
 </Callout>
 
 <Check q="In the committee design, what exactly does Ledger B check when a message arrives?">
@@ -115,16 +115,16 @@ Only that three of the five committee keys signed it. It never sees anything fro
 
 <Section id="proof" page="general">
 
-CLPR ("Clipper", for **C**ross **L**edger **PR**otocol) starts from the trick in <SecRef id="ledger" />. Ledger A's validators already sign summaries of their ledger as part of sealing lines. So instead of asking a middleman "what happened on A?", Ledger B is handed a **state proof**: the validators' signature on a summary, plus the path from that summary down to the exact line that says "Ann's program sent this message". Ledger B checks that the signature really is Ledger A's, using the signing identity it keeps on file for A. Then it follows the path down to the line. Only when both hold does it believe the message.
+CLPR ("Clipper", for **C**ross **L**edger **PR**otocol) starts from the trick in <SecRef id="ledger" />. Ledger A's validators already sign summaries of their ledger as part of sealing lines. So instead of asking a middleman "what happened on A?", Ledger B is handed a **state proof**: typically the validators' signature on a summary, plus the path from that summary down to the exact line that says "Ann's program sent this message". Ledger B checks that the signature really is Ledger A's, using the signing identity it keeps on file for A. Then it follows the path down to the line. Only when both hold, and its own checks on numbering and hashes pass, does it believe the message.
 
 <EndpointCarriesProof />
 
-The party carrying the proof is still there; CLPR calls it an **endpoint**: a program that moves messages and their proofs between ledgers. But look at what it can and cannot do. It can deliver, delay, or refuse. It cannot forge a message, because none of its own keys mean anything to Ledger B. It cannot change a message either, because the changed message would no longer match the proof that came with it. Even with dishonest endpoints, no fabricated message can be accepted; whether messages keep arriving at all depends on at least one honest endpoint on each side.
+The party carrying the proof is still there; CLPR calls it an **endpoint**: a program that moves messages and their proofs between ledgers. But look at what it can and cannot do. It can deliver, delay, or refuse. It cannot forge a message, because none of its own keys can make Ledger B accept one. It cannot change a message either, because the changed message would no longer match the proof that came with it. Even with dishonest endpoints, no fabricated message can be accepted; whether messages keep arriving at all depends on at least one honest endpoint on each side.
 
 <Callout kind="term">
 A **state proof** is a cryptographic proof that a specific piece of data really is in a ledger's sealed record. In CLPR, state proofs carry the evidence of what is in another ledger's record; trust also rests on the verifier chosen for the channel.
 
-A **verifier** is the specialist on the receiving ledger that knows how to check one particular kind of proof. A Hiero network and a Besu network running QBFT (a different way for validators to agree) sign things in completely different ways, so each needs its own verifier. Every channel picks one verifier when it is created and can never swap it.
+A **verifier** is the specialist on the receiving ledger that knows how to check one particular kind of proof. A Hiero network and an EVM ledger running QBFT (a different way for validators to agree) sign things in completely different ways, so each needs its own verifier. Every channel names one verifier when it is created and keeps that address for life, though the contract at that address may be upgradeable.
 
 The **trust anchor** is what the verifier checks against: the current signing identity of the other ledger, stored per channel. It changes in one way only: the current signers sign a proof that names their replacements.
 </Callout>
@@ -134,7 +134,7 @@ The **trust anchor** is what the verifier checks against: the current signing id
 Compare a bank that keeps your signature card on file. A cheque is accepted because the signature on it matches the card, not because the person who brought it in seems trustworthy. The endpoint is the person who brought it in. The trust anchor is the bank's card.
 </Callout>
 
-Removing the middleman does not remove trust. It shrinks it to a short list you can read. An application using a channel trusts its own ledger, the CLPR software on both ledgers, the other ledger's validators, the application on the other side, and the verifier the channel was created with. That last one deserves attention, because anyone can create a channel with any verifier they like. A channel existing does not mean its verifier is honest. Choosing a channel means choosing to trust its verifier, and applications, and whoever pays for their messages, are expected to check it before using the channel.
+Removing the middleman does not remove trust. It shrinks it to a short list you can read. For its messages to be genuine, an application using a channel trusts its own ledger, the CLPR software on both ledgers, the other ledger's validators, the application on the other side, and the verifier the channel was created with. That last one deserves attention, because anyone can create a channel with any verifier they like. A channel existing does not mean its verifier is honest. Choosing a channel means choosing to trust its verifier, and applications, and whoever pays for their messages, are expected to check it before using the channel. Endpoints, and the accounts called connectors that pay for messages, are not on the list because they cannot forge anything; but messages only move while at least one honest endpoint on each side carries them and a connector pays.
 
 <TrustList />
 
@@ -143,7 +143,7 @@ The endpoint can delay a message. It cannot invent one, and it cannot change one
 </Callout>
 
 <Check q="An endpoint's server is hacked and its private keys are stolen. What can the attacker now make Ledger B believe?">
-Nothing new. The endpoint's keys are only used to talk to other endpoints. What Ledger B verifies is Ledger A's validators' signature, which the attacker does not have. The worst the attacker can do is stop or slow deliveries from that endpoint, and any other endpoint can take over.
+Nothing new. What Ledger B verifies is Ledger A's validators' signature, which the attacker does not have. The stolen keys let the attacker spend the endpoint's prepaid transaction account and stop or slow its deliveries; any other endpoint can take over the delivering.
 </Check>
 
 </Section>
@@ -154,9 +154,9 @@ One idea, proof instead of trust, has consequences all over the design. Set besi
 
 <SixDifferences />
 
-The first two are the point of the previous sections: nothing sits between the ledgers, and the receiving ledger does its own checking. The next two follow from them. There is no new token, because every fee, margin and fine is paid in a ledger's configured fee asset; and there is no pool of deposited assets, because what travels is a message, not money held somewhere in the middle. The fifth is what makes CLPR a pattern rather than a pair of chains: any ledger can join once a verifier exists for its proofs, and the protocol itself does not change. The sixth is the one to remember when something goes wrong: an endpoint that is hacked, bribed or switched off can delay messages, and that is all it can do.
+The first two are the point of the previous sections: no trusted party sits between the ledgers, and the receiving ledger does its own checking. The next two follow from them. There is no new token, because every fee, margin and fine is paid in a ledger's native token; and there is no pool of user deposits, because what travels is a message, and the only funds the CLPR Service holds are connectors' funds and endpoints' bonds. The fifth is what makes CLPR a pattern rather than a pair of chains: any ledger can join once it has a CLPR Service, endpoints and verifiers for its proofs, and the protocol itself does not change. The sixth is the one to remember when something goes wrong: an endpoint that is hacked, bribed or switched off can delay messages, but it cannot forge or change one.
 
-One more property is easy to miss. If both ledgers are of the kind that keeps working correctly even when some of their own participants misbehave, the messages between them inherit that property, because nothing weaker has been added in between.
+One more property is easy to miss. If both ledgers are of the kind that keeps working correctly even when some of their own participants misbehave, the messages between them inherit that property, provided the channel's verifiers are correct and at least one honest endpoint on each side keeps them moving.
 
 <Callout kind="key">
 The receiving ledger checks the sending ledger's own signature. Everything CLPR does without follows from that one decision.
@@ -177,20 +177,20 @@ Before watching a message travel, meet everyone it will pass through. Each card 
 <WhoLivesWhere />
 
 <Callout kind="note" title="Hiero and Hedera">
-Two names come up constantly. **Hiero** is the open-source ledger software: the node, its APIs, its state model. **Hedera** is the public network that runs it; private networks running the same software are called HashSpheres. On Hiero, the CLPR Service is part of the node software itself. On EVM-compatible ledgers, such as Besu networks, it is a smart contract instead: a program deployed on the ledger like any other. Same protocol, same rules, two implementations, and the simulations below show one of each.
+Two names come up constantly. **Hiero** is the open-source ledger software: the node, its APIs, its state model. **Hedera** is the public network that runs it; private networks running the same software are called HashSpheres. On Hiero, the CLPR Service is part of the node software itself. On EVM ledgers, it is a smart contract instead: a program deployed on the ledger like any other. Same protocol, two implementations at different stages: the EVM contracts still differ from the text in places, and the Hiero one is specified by HIP-1535 as an opt-in service. The simulations below show one of each.
 </Callout>
 
 </Section>
 
 <Section id="journey" page="general">
 
-Here is the whole thing at once, and it is the heart of this page. On the left, a ledger running the Hiero software. On the right, an EVM ledger whose validators seal blocks by a method called QBFT consensus. An application on the left sends the word "ping" to its twin on the right; the twin echoes it back. Twenty-eight steps, two proofs, one reply. The switch at the top runs the same trip in the other direction, which proves itself with different cryptography.
+Here is the whole thing at once, and it is the heart of this page. On the left, a ledger running the Hiero software. On the right, an EVM ledger whose validators seal blocks by a method called QBFT consensus. An application on the left sends the word "ping" to its twin on the right; the twin sends an answer back. Twenty-eight steps, two proofs, one reply. The switch at the top runs the same trip in the other direction, which proves itself with different cryptography.
 
 Each piece of the diagram lights up as the message reaches it; that is the story.
 
 <Journey mode="plain" />
 
-Three things stand out after watching it. Everything from step 12 to step 19 is a *single* transaction on the receiving ledger: verification, the bookkeeping checks, paying the endpoint, calling the application and queuing the reply all succeed or fail together. Every message that is accepted produces exactly one reply, whether the application liked it or not; the reply is what lets the sending ledger tidy its queue and check that answers come back in order. And the two directions prove themselves completely differently, with one joint signature going right and a sealed block header plus a storage proof coming back, under identical rules about numbering, hashing and ordering.
+Three things stand out after watching it. Everything from step 12 to step 19 is a *single* transaction on the receiving ledger: if verification or the bookkeeping checks fail, none of it lands; if they pass, it lands whole, and an application that fails does not undo it, because the failure becomes the reply. Every data message that is accepted produces exactly one reply, whether the application liked it or not; the reply is what lets the sending ledger tidy its queue and check that answers come back in order. And the two directions prove themselves completely differently, with one joint signature going right and a sealed block header plus a storage proof coming back, under identical rules about numbering, hashing and ordering.
 
 <JourneyWhereStepsRun />
 
@@ -199,7 +199,7 @@ The message actually crosses at step 16; the other twenty-seven steps are the tr
 </Callout>
 
 <Check q="Which steps could a dishonest endpoint change, and what would happen?">
-None of them, usefully. Steps 7 to 11 and 20 to 21 are the endpoint's own work, but everything it produces is checked at steps 13 to 14 and 23 to 24 against signatures it cannot make. A tampered bundle is rejected and the endpoint has paid a transaction fee for nothing.
+None of them, usefully. Steps 8 to 11 and 20 to 21 are the endpoint's own work, but everything it produces is checked at steps 13 to 14 and 23 to 24 against signatures it cannot make. A tampered bundle is rejected and the endpoint has paid a transaction fee for nothing.
 </Check>
 
 </Section>
@@ -212,7 +212,7 @@ Every message added to a channel's queue is given the next number in line and a 
 
 <RunningHash />
 
-This is why an endpoint can carry a batch of, say, forty messages with a proof covering only the last one. The receiver continues the chain from its last stored hash over the new messages it was handed, and if its last running hash matches the proven one, every message in the batch is proven too. The numbering does a second job: the receiver remembers the last number it processed and skips messages it already has, rejecting a bundle that jumps ahead or carries nothing new, so an old bundle cannot be delivered twice even though its proof is still perfectly valid.
+This is why an endpoint can carry a batch of, say, forty messages with a proof covering only the last one. The receiver continues the chain from its last stored hash over the new messages it was handed, and if its last running hash matches the proven one, every message in the batch is proven too. The numbering does a second job: the receiver remembers the last number it processed and rejects a bundle whose first message is not the next number, so an old bundle cannot be delivered twice even though its proof is still perfectly valid. The EVM contracts are more lenient here: they skip leading messages they already have instead of rejecting the bundle.
 
 <RunningHashChain />
 
@@ -226,23 +226,23 @@ Prove the last running hash and recompute the rest: one proof covers the whole b
 
 Somebody has to pay for all this. Delivering a message means an endpoint submits a transaction on the receiving ledger, and that transaction runs the application there. Submitting that transaction costs a fee, which ledgers call gas; endpoints are not charities.
 
-CLPR introduces no new token. Instead it has a role called the **connector**: an account that agrees to pay. The same connector is registered on both ledgers under one identity. On the sending side the connector is asked, before the message is even queued, whether it will cover this one. On the receiving side the connector is charged for the gas the application actually used, plus a margin, and the whole amount goes to whoever submitted the bundle. That margin is the entire reason anyone runs an endpoint.
+CLPR introduces no new token. Instead it has a role called the **connector**: an account that agrees to pay. The same connector is registered on both ledgers under one identity. On the sending side the connector is asked, before the message is even queued, whether it will cover this one. On the receiving side the connector is charged for the gas the application actually used, plus a margin, and the whole amount goes to whoever submitted the bundle. That margin is what makes submitting bundles worth an endpoint's while.
 
 <ConnectorTwoJobs />
 
 <Money />
 
-The connector's approval on the sending side is a promise: *my counterpart on the other ledger can pay for this, and I can pay for the reply*. A connector locks up a deposit in advance, its **stake**. If the promise turns out to be false, the reply that comes home says so, and the fine is taken from that stake. Fines grow with each failure; a connector that keeps failing is banned from the channel and loses whatever stake is left.
+The connector's approval on the sending side is a promise: *my counterpart on the other ledger can pay for this, and I can pay for the reply*. A connector locks up a deposit in advance, its **stake**. If the promise turns out to be false, the reply that comes home says so, and the fine is taken from that stake. Fines escalate, and repeated failures can get a connector banned from the channel, forfeiting whatever stake is left.
 
 <Callout kind="key">
 No new token and no treasury: the connector pays the endpoint that delivered, and a connector that promised but could not pay is fined from its stake.
 </Callout>
 
 <Callout kind="gotcha">
-An application that crashes on the receiving side is *not* the connector's fault and is *not* fined. The connector promised to pay for execution, and it did; the application simply reverted. The reply carries an "application error" and the sending application decides what to do. Only two outcomes are the connector's fault: it does not exist on the other side, or it cannot pay.
+An application that crashes on the receiving side is *not* the connector's fault and is *not* fined. The connector promised to pay for execution, and it did; the application simply reverted. The reply reports an application error and the sending application decides what to do. Only two outcomes are the connector's fault: it does not exist on the other side, or it cannot pay.
 </Callout>
 
-Applications choose their connector, and connectors can be as picky as they like: allow-lists, rate limits, charging a fee to the application. Several connectors can serve the same channel, and one connector can serve many channels. Connectors, more than anyone, are expected to check a channel's verifier before using it: if the verifier is bad, the money at risk is the connector's locked stake.
+Applications choose their connector, and connectors can be as picky as they like: allow-lists, rate limits, charging a fee to the application. Several connectors can serve the same channel, and one operator can run connectors on many channels. Connectors, like applications, are expected to check a channel's verifier before using it: a bad verifier puts the connector's locked stake at risk.
 
 <WhoPicksWhom />
 
@@ -251,7 +251,7 @@ Two things about the money are not settled yet: how large a connector's stake mu
 </Callout>
 
 <Check q="Who is paid when a message is delivered, and who is not?">
-Only the account that submitted the bundle on the receiving ledger, and only from the connector. Nobody on the sending side is paid for anything, there is no protocol treasury, and the endpoint that did the *sending* work earns nothing directly. Endpoints are expected to prefer partners that bring them messages in return.
+Only the account that submitted the bundle on the receiving ledger, and only from the connector. Nothing goes to the sending side for this delivery, and the reply's trip back is paid the same way, to whoever submits it on Ledger A; there is no protocol treasury, and the endpoint that did the *sending* work earns nothing directly. Endpoints are expected to prefer partners that bring them messages in return.
 </Check>
 
 </Section>
@@ -262,34 +262,34 @@ A protocol is defined as much by what it does when things go wrong as by what it
 
 <Failures />
 
-Notice a pattern. Almost every failure is handled by *rejecting a bundle and changing nothing*: the channel stays open and the next honest bundle goes through. One failure is treated as a sign that something is broken rather than a passing glitch: replies arriving out of order. For that one, the channel is paused instead of guessing. Endpoints can only ever cause delay. The only failures that cost anyone money are a connector failing to pay for a message as promised, and those have a price: a fine taken from the connector's locked stake.
+Notice a pattern. A bundle that fails its checks (its proof, numbering or hashes) is *rejected, changing nothing*: the channel stays open and the next honest bundle goes through. A failure in a single message, such as an unknown or underfunded connector or an application that errors, becomes a failure reply and the rest of the bundle carries on. One failure is treated as a sign that something is broken rather than a passing glitch: replies arriving out of order. For that one, the channel is paused instead of guessing. Endpoints can only ever cause delay. The only failures that fine anyone are a connector failing to pay for a message as promised: the fine is taken from the connector's locked stake.
 
 <FailureTriage />
 
 <Callout kind="plain">
-Two words used precisely throughout: **safety** (nothing false is ever accepted) and **liveness** (things keep moving). In CLPR, safety rests on the two ledgers and their verifiers, so there is no middleman who could be bribed or hacked into accepting something false. Liveness is different: it depends on somebody, anybody, running an endpoint.
+Two words used precisely throughout: **safety** (nothing false is ever accepted) and **liveness** (things keep moving). In CLPR, safety rests on the two ledgers, their CLPR Services and the channel's verifiers, so nobody carrying messages could be bribed or hacked into making a ledger accept something false. Liveness is different: it depends on somebody, anybody, running an endpoint.
 </Callout>
 
 <Callout kind="key">
-Almost every failure is answered by rejecting a bundle and changing nothing; the only failures that cost money are a connector's broken promises.
+A bundle that fails its checks is rejected and changes nothing, a failed message becomes a failure reply, and the only failures that are fined are a connector's broken promises.
 </Callout>
 
 </Section>
 
 <Section id="patterns" page="general">
 
-Everything so far is plumbing. Here is what people build on it. A message in CLPR is just bytes with an address, and every message gets exactly one reply, so the same primitive serves four quite different jobs.
+Everything so far is plumbing. Here is what the design anticipates people building on it; it outlines these patterns only at a high level, and none is specified yet. A message in CLPR is just bytes with an address, and every data message gets exactly one reply (as long as the channel and its endpoints keep working), so the same primitive could serve four quite different jobs.
 
 <FourPatterns />
 
 <Patterns />
 
-The third pattern is worth watching, because it shows what the protocol does and does not do. Three ledgers are meant to change together or not at all. CLPR carries the messages and guarantees each one a reply; the decision to commit or roll back lives in the application that started the swap. The simulation draws one way such an application could use the protocol; the choreography is the site's illustration, the pattern is the protocol's.
+The third pattern is worth watching, because it shows what the protocol does and does not do. Three ledgers are meant to change together or not at all. CLPR carries the messages and a reply for each; the decision to commit or roll back lives in the application that started the swap. The simulation draws one way such an application could use the protocol; the choreography is the site's illustration, and the pattern itself is only outlined in the design.
 
 <AtomicSwap />
 
 <Callout kind="key">
-Four patterns, one primitive: a data message that always gets exactly one reply. The patterns are applications; the primitive is the protocol.
+Four patterns, one primitive: a data message that gets exactly one reply. The patterns are applications; the primitive is the protocol.
 </Callout>
 
 <Check q="Why must the swap application, and not CLPR, keep the tally of who is ready?">
@@ -300,13 +300,13 @@ Because CLPR knows nothing about swaps. It knows messages, replies, proofs and p
 
 <Section id="shapes" page="general">
 
-A channel always joins exactly two ledgers. That sounds limiting. It is the opposite: because every pair agrees on its own, with its own verifiers and its own queues, any shape you can draw from pairs is a shape you can build, and no shape needs anyone in the middle.
+A channel always joins exactly two ledgers. That sounds limiting. It is the opposite: because every pair agrees on its own, with its own queues and a verifier chosen for it on each side, any shape you can draw from pairs is a shape you can build, and the protocol puts no trusted party in the middle of any pair.
 
 <StarOfPairs />
 
 <MeshOfPairs />
 
-The one thing to keep straight is that CLPR itself knows only the pairs. Nothing in the protocol routes a message from one ledger to a third through a second. In the star, a message from one spoke to another has no path, unless an application on the hub receives it and sends a new message of its own to the other spoke, under its own connector and its own channel. That is a perfectly good thing to build; it is an application, not a protocol feature.
+The one thing to keep straight is that CLPR itself knows only the pairs. Nothing in the protocol forwards a message from one ledger to a third through a second. In the star, a message from one spoke to another has no path, unless an application on the hub receives it and sends a new message of its own to the other spoke, under its own connector and its own channel. That is a perfectly good thing to build; it is an application, not a protocol feature.
 
 <NetworkShapes />
 
@@ -315,11 +315,11 @@ The pair that matters most to many organisations is a private network and a publ
 <PrivateToPublic />
 
 <Callout kind="key">
-CLPR knows pairs. Stars, meshes and private-to-public links are what applications build from them, and none of them needs anyone in the middle.
+CLPR knows pairs. Stars, meshes and private-to-public links are what applications build from them; within each pair, the protocol adds no trusted party in the middle.
 </Callout>
 
 <Check q="Two ledgers both have a channel to the same third ledger. Can one send the other a message?">
-Not through CLPR alone. There is no channel between them, so nothing routes. Either they open their own channel, or an application on the third ledger receives the message and sends a new one on, as its own message with its own proof and its own payer.
+Not through CLPR alone. There is no channel between them, and CLPR defines channels only between two ledgers. Either they open their own channel, or an application on the third ledger receives the message and sends a new one on, as its own message with its own proof and its own payer.
 </Check>
 
 </Section>
@@ -332,7 +332,7 @@ CLPR is operated by people in six roles, and the design has a quiet rule about t
 
 <Roles />
 
-A few things follow from the table. The admin, the only role with any special power, has the least incentive to watch closely; the protocol's own authors list that as a known gap. The verifier developer is not registered anywhere in the protocol and holds no stake, yet every channel's safety rests on the verifier they wrote. And the connector operator is expected to be the careful one, because the fines land on them.
+A few things follow from the table. The admin, the only role with any special power, has the least incentive to watch closely, a known gap between responsibility and motivation. The verifier developer is not registered anywhere in the protocol and holds no stake, yet every channel's safety rests on the verifier they wrote. And the connector operator is expected to be the careful one, because their locked stake is at risk if the verifier is compromised.
 
 <Callout kind="key">
 Whoever would lose money is whoever does the checking: the connector operator vets the verifier, the application developer vets the channel, the user vets the application.
@@ -343,14 +343,14 @@ The roles rarely act alone. Four stories show them working together: setting up 
 <Stories />
 
 <Check q="A verifier is found to be compromised. Who acts first, and what is the window of danger?">
-The service admin, by closing the affected channels so no new messages are accepted while the ones in flight finish. The window of danger is the time between the vulnerability being discovered and the channels being closed. Then the verifier developer publishes a fix, connector operators open new channels with it, and applications move over.
+The verifier developer, by issuing a security advisory; the service admin then closes the affected channels so no new messages are accepted while the ones in flight finish. The window of danger is the time between the vulnerability being discovered and the channels being closed. Then the verifier developer publishes a fix, connector operators open new channels with it, and applications move over.
 </Check>
 
 </Section>
 
 <Section id="extend" page="general">
 
-CLPR is a pattern, not a pair of chains. Adding a new kind of ledger needs no change to the protocol or to existing implementations; each ledger it connects to deploys the new verifier and registers a channel. It needs three things. First, a CLPR Service on the new ledger. Second, endpoints that can build proofs in the new ledger's format. Third, a pair of verifiers: one runs on the new ledger and checks the existing ledger's proofs; the other runs on the existing ledger and checks the new ledger's proofs.
+CLPR is a pattern, not a pair of chains. Adding a new kind of ledger needs no change to the protocol or to existing implementations; anyone can deploy the new verifier on a ledger it connects to and register a channel there. It needs three things. First, a CLPR Service on the new ledger. Second, endpoints that can build proofs in the new ledger's format. Third, a pair of verifiers: one runs on the new ledger and checks the existing ledger's proofs; the other runs on the existing ledger and checks the new ledger's proofs.
 
 <Extend />
 
@@ -382,11 +382,11 @@ A page like this should be as clear about limits as about mechanisms.
 CLPR proves a message is real; it does not prove it is private, sensible or safe to act on.
 </Callout>
 
-**A channel is only as good as its verifier.** Anyone can create a channel with any verifier. The protocol's own checks catch a *buggy* verifier that returns garbled messages, because the running hashes will not match; they cannot catch a *lying* verifier that fabricates messages and matching running hashes. Vetting verifiers is human work.
+**A channel is no safer than its verifier.** A channel's safety rests on both ledgers' consensus, both CLPR Services and its verifier, and its payments on connectors. Of these, the verifier varies most: anyone can create a channel with any verifier, and a verifier behind an upgradeable proxy can have its logic replaced later by whoever holds the upgrade key. The protocol's own checks catch a verifier bug that garbles messages, because the running hashes will not match; they cannot catch a *lying* verifier that fabricates messages and matching running hashes. Vetting verifiers, and who can upgrade them, is human work.
 
 <BuggyVsLyingVerifier />
 
-**Some ledgers can rewrite recent history.** On some networks a block is not final the moment it is made; for a while the network can still drop it and replace it. A verifier that accepts a block that fresh risks a "phantom message": one delivered on this side whose sending block the source ledger later threw away. Each channel chooses how final a block must be, and the safe setting is recommended for anything valuable; two channels between the same ledgers can choose differently.
+**Some ledgers can rewrite recent history.** On some networks a block is not final the moment it is made; for a while the network can still drop it and replace it. A verifier that accepts a block that fresh risks a "phantom message": one delivered on this side whose sending block the source ledger later threw away. How final a block must be is a property of each channel's verifier, and CLPR does not check it. For anything valuable, use a channel whose verifier accepts finalized blocks only; two channels between the same ledgers can differ.
 
 <PhantomMessage />
 
@@ -394,37 +394,37 @@ CLPR proves a message is real; it does not prove it is private, sensible or safe
 
 <OpenIssues />
 
-**The protocol is young.** The initial text is expected to change further to polish out rough edges, with every change recorded as a dated decision record saying what was decided and why. 
+**The protocol is young.** The initial text is expected to change further to polish out rough edges; its major changes so far are recorded as dated decision records saying what was decided and why.
 
 </Section>
 
 <Section id="lives" page="general">
 
-CLPR is a set of ideas and also a set of files. Everything the lab publishes is one of four kinds of thing. The **specification** says what must happen. The **CLPR Service**, the on-ledger part that holds every channel and queue, is built twice: once into Hiero nodes, once as contracts for EVM networks. The **verifiers** plug into a service. And the **endpoint** is the program that runs off the ledgers and carries bundles between them.
+CLPR is a set of ideas and also a set of files. Everything the lab publishes about the protocol is one of four kinds of thing. The **specification** says what must happen. The **CLPR Service**, the on-ledger part that holds every channel and queue, is built twice: once into Hiero nodes, once as contracts for EVM networks. The **verifiers** plug into a service. And the **endpoint** is the program that runs off the ledgers and carries bundles between them.
 
 <FourKinds />
 
 <Architecture />
 
-The two CLPR Services have no code in common. They agree because both follow the same text, down to the exact bytes a message is written as and the exact order of the checks; where code and text disagree, the text wins and the code is fixed, and the contracts repository keeps a written list of where it currently falls short.
+The two CLPR Services have no code in common. Both are written to the same text, down to the exact bytes a message is written as and the exact order of the checks, and both must conform to it; the contracts repository keeps a written list of where its code currently differs, and some of those differences are being settled by updating the text.
 
 <Repos />
 
-The ideas come from Dr. Leemon Baird, co-founder of Hedera and designer of the hashgraph consensus algorithm, and from a practical need: Hiero-based networks, public ones such as Hedera and private ones called HashSpheres, needed a fast way to send each other messages that stay correct even when some participants misbehave and that never make one network wait on the other. Under its agreement with the Hedera Governing Council, Hashgraph wrote the initial text and built the three pieces of software above; the Council wants to donate CLPR if the Lab proposal is accepted, including the brand, to be incubated as an **LF Decentralized Trust lab**, a lightweight workspace under the Linux Foundation where stewards check that work is novel, on-mission and properly licensed, and explicitly do not review its code. The CLPR Service built into Hiero nodes is not yet part of the main Hiero code: it sits on a separate branch, approved by the Hedera Governing Council and still pending the Hiero Technical Steering Committee.
+The ideas come from earlier proposals for cross-ledger communication and from a practical need: Hiero-based networks, public ones such as Hedera and private ones called HashSpheres, needed fast, asynchronous messaging between them that stays correct even when some participants misbehave. Under its agreement with the Hedera Governing Council, Hashgraph wrote the initial text and built initial versions of the three pieces of software above; the endpoint is a prototype. CLPR is now an **LF Decentralized Trust lab**, part of a Linux Foundation project whose mission is to support development of very early open projects, under the technical oversight of the LF Decentralized Trust's Technical Advisory Council; the Council undertook to donate the CLPR brand once the lab was accepted. The CLPR Service built into Hiero nodes is specified by HIP-1535, whose status is Approved, and is an opt-in service: networks that do not enable it are unaffected.
 
 If you remember six things, remember these.
 
 1. A ledger is a shared record many machines keep in sync, and a network can jointly sign a proof that a particular line is in it.
 2. Two ledgers cannot see each other, and the usual fix, a trusted party in the middle, makes every message only as safe as that party.
-3. CLPR replaces the party with a proof: the receiving ledger checks the sending ledger's own validators' signature, using a verifier fixed to the channel.
-4. Endpoints carry proofs but hold no trusted keys. They can delay; they cannot forge. Whether a message is genuine is decided on the ledgers (**safety**); whether it arrives at all depends on endpoints (**liveness**).
+3. CLPR replaces the party with a proof: the receiving ledger checks the sending ledger's own validators' signature through the channel's verifier, and trusts that verifier and the CLPR Service on each side to be correct.
+4. Endpoints carry proofs, but nothing they carry is taken on their word. They can delay; they cannot forge. Whether a message is genuine is decided on the ledgers (**safety**); whether it arrives at all depends on endpoints (**liveness**).
 5. Messages are numbered and chained into a running hash, so one proof covers a whole batch and nothing can be inserted, dropped, reordered or replayed.
-6. Connectors pay, endpoints are reimbursed with a margin, and a connector that breaks its promise is fined. Every accepted message gets exactly one reply.
+6. Connectors pay, endpoints are reimbursed with a margin, and a connector that breaks its promise is fined. Every accepted data message gets exactly one reply.
 
 <SixThingsOnePicture />
 
 <Callout kind="key">
-Proof, not trust: the receiving ledger believes a message because it checked the sending ledger's own validators' signature, not because it trusts whoever carried it.
+Proof, not a trusted carrier: the receiving ledger believes a message because the channel's verifier checked the sending ledger's own validators' signature, not because it trusts whoever carried it.
 </Callout>
 
 <Callout kind="note" title="About this explainer">

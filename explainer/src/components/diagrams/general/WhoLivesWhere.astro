@@ -5,12 +5,12 @@ import { design } from '../../../lib/sources';
 ---
 <Figure
   lead="Three kinds of cast member."
-  caption="State that lives inside a ledger's CLPR Service (channel, connector, verifier, trust anchor), things that travel (message, bundle, state proof), and the programs around them (an application on each ledger, the endpoint outside both, the admin). The endpoint holds no key that either ledger trusts; what it carries is checked inside the receiving service."
+  caption="State that lives inside a ledger's CLPR Service (each channel with its trust anchor and verifier address, and each connector's registration and locked stake), things that travel (message, bundle, state proof), and the programs around them (an application on each ledger, the endpoint beside both: a separate program on an EVM ledger, part of the node on Hiero, the admin). Nothing the endpoint carries is accepted on its word; it is checked inside the receiving service."
   source={[{ label: 'design §2.1', href: design('21-common-terminology') }, { label: 'design §3.1.0', href: design('310-the-clpr-service') }]}
   kind="spec"
   minWidth={760}
 >
-  <svg viewBox="0 0 760 414" role="img" aria-label="Two dashed frames, Ledger A on the left and Ledger B on the right. Inside each: an application and an admin at the top, a CLPR Service box holding the channel, the connector and the verifier with its trust anchor, and an endpoint straddling the bottom edge, half outside the ledger. Between the two endpoints a bundle box holds a data message, a reply, a housekeeping message and one state proof. Arrows: the application sends to the service, the endpoint reads the outbound queue, the bundle travels between endpoints, Ledger B's endpoint submits it as a transaction, and Ledger B's verifier checks the state proof.">
+  <svg viewBox="0 0 760 414" role="img" aria-label="Two dashed frames, Ledger A on the left and Ledger B on the right. Inside each: an application and an admin at the top, a CLPR Service box holding the channel, the connector's registration and locked stake and the verifier address with its trust anchor, and an endpoint straddling the bottom edge, half outside the ledger. Between the two endpoints a bundle box holds a data message, a reply, a housekeeping message and one state proof. Arrows: the application sends to the service, the endpoint reads the outbound queue, the bundle travels between endpoints, Ledger B's endpoint submits it as a transaction, and Ledger B's verifier checks the state proof.">
     <defs>
       <marker id="wlw-arrow-a" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9 Z" fill="var(--a)"/></marker>
       <marker id="wlw-arrow-b" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9 Z" fill="var(--b)"/></marker>
@@ -21,7 +21,7 @@ import { design } from '../../../lib/sources';
     <!-- ===== Ledger A (left frame) ===== -->
     <rect x="12" y="16" width="280" height="318" rx="12" class="line a dash"/>
     <text x="26" y="38" class="t b a">Ledger A</text>
-    <text x="278" y="38" class="t mono muted end">acts from outside</text>
+    <text x="278" y="38" class="t mono muted end">may sit in the node</text>
 
     <rect x="22" y="48" width="124" height="46" rx="8" class="d-a"/>
     <text x="84" y="68" class="t b center">Application</text>
@@ -38,10 +38,10 @@ import { design } from '../../../lib/sources';
     <text x="100" y="192" class="t small center">queue + running hash</text>
     <rect x="176" y="158" width="96" height="46" rx="8" class="d-money"/>
     <text x="224" y="176" class="t small center b">Connector</text>
-    <text x="224" y="192" class="t small center">the connector</text>
+    <text x="224" y="192" class="t small center">locked stake</text>
     <rect x="32" y="212" width="240" height="40" rx="8" class="d-ok"/>
-    <text x="152" y="229" class="t small center b">Verifier + trust anchor</text>
-    <text x="152" y="244" class="t small center">checks B's proofs; fixed at creation</text>
+    <text x="152" y="229" class="t small center b">Verifier address + trust anchor</text>
+    <text x="152" y="244" class="t small center">address fixed; checks B's proofs</text>
 
     <rect x="22" y="306" width="260" height="70" rx="8" class="d-c"/>
     <text x="152" y="324" class="t b center">Endpoint</text>
@@ -73,7 +73,7 @@ import { design } from '../../../lib/sources';
     <!-- ===== Ledger B (right frame) ===== -->
     <rect x="468" y="16" width="280" height="318" rx="12" class="line b dash"/>
     <text x="734" y="38" class="t b b-col end">Ledger B</text>
-    <text x="482" y="38" class="t mono muted">acts from outside</text>
+    <text x="482" y="38" class="t mono muted">may sit in the node</text>
 
     <rect x="478" y="48" width="124" height="46" rx="8" class="d-b"/>
     <text x="540" y="68" class="t b center">Application</text>
@@ -90,10 +90,10 @@ import { design } from '../../../lib/sources';
     <text x="556" y="192" class="t small center">queue + running hash</text>
     <rect x="632" y="158" width="96" height="46" rx="8" class="d-money"/>
     <text x="680" y="176" class="t small center b">Connector</text>
-    <text x="680" y="192" class="t small center">the connector</text>
+    <text x="680" y="192" class="t small center">locked stake</text>
     <rect x="488" y="212" width="240" height="40" rx="8" class="d-ok"/>
-    <text x="608" y="229" class="t small center b">Verifier + trust anchor</text>
-    <text x="608" y="244" class="t small center">checks A's proofs; fixed at creation</text>
+    <text x="608" y="229" class="t small center b">Verifier address + trust anchor</text>
+    <text x="608" y="244" class="t small center">address fixed; checks A's proofs</text>
 
     <rect x="478" y="306" width="260" height="70" rx="8" class="d-c"/>
     <text x="608" y="324" class="t b center">Endpoint</text>
@@ -107,6 +107,6 @@ import { design } from '../../../lib/sources';
     <path d="M488,236 C460,244 452,318 436,326" class="line ok" marker-end="url(#wlw-arrow-ok)"/>
 
     <!-- takeaway -->
-    <text x="380" y="402" class="t take center">The endpoint holds no key either ledger trusts; everything it carries is checked inside the receiving service.</text>
+    <text x="380" y="402" class="t take center">Nothing the endpoint carries is accepted on its word; all of it is checked inside the receiving service.</text>
   </svg>
 </Figure>

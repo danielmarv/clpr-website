@@ -48,6 +48,24 @@ the page's own text). The same three labels the callouts use (docs/content-model
   lets `kse preview-diagram` render it without a site build.
 - The caption and the takeaway state only what the page text or the cited section states.
 
+## The website's vocabulary
+
+The pages are part of the CLPR website, so a drawing that shows actors and what passes between
+them uses the landing page's shapes: a ledger is a membrane with validator stars on its rim
+(`art-orb`, violet for Ledger A, pink for Ledger B), the CLPR Service and applications are glowing
+four-ray stars (`art-star`), an endpoint is a hexagon on its ledger's rim or, for a separate relay,
+outside it (`art-endpoint`), a verifier is a diamond (`art-verifier`), a channel or any flow is a
+fibre bundle (`art-fibre`), a bundle is a dashed pill of message stars (`art-bundle`), a connector
+is a peach coin on each ledger (`art-coin`), and an accepted proof lights a pink ring (`art-ring`).
+`node .claude/skills/clpr-figure/art.mjs` (from the repository root) prints the markup, in the
+landing page's own geometry; the `clpr-figure` skill says which actor gets which shape and how to
+check the result. Structural drawings (state machines, lists, file maps, tables) keep the boxes
+above; the theme gives those boxes the website's glass and glow, with opaque fills so a line drawn
+behind a box never shows through its label.
+
+`kse preview-diagram` reads only the engine's stylesheet, so it draws `art-*` shapes unstyled: use
+it for layout, and judge the look on the built page.
+
 ## Checking a figure
 
 ```bash
@@ -62,7 +80,7 @@ the `viewBox`. Look at the PNGs. After placing the figure in the MDX, `pnpm run 
 The preview draws in the engine's own fonts. The pages set diagram text in Sora, which runs wider,
 so a label that fits in the preview can still spill out of its box on the site. After the build,
 `node checks/browser/check-diagram-text.mjs` renders both pages in the site theme and fails when a
-label comes within 3 units of its box's edge or the drawing's (text renders a little wider on some
+label comes within 3 units of its box's edge, its ledger orb's edge or the drawing's (text renders a little wider on some
 platforms, so a label that only just fits locally can spill out in CI), runs into another box, or
 sits on another label; it also runs in `pnpm run verify`. It cannot see a line drawn through a label, so still look at the
 figure on the built page.

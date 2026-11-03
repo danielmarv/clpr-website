@@ -47,7 +47,7 @@ import Figure from '@kse/components/Figure.astro';
     <circle cx="313" cy="162" r="9" class="d-grey"/>
     <text x="313" y="166" class="t small center b">4</text>
     <text x="328" y="166" class="t small">carries the proof,</text>
-    <text x="328" y="182" class="t small">holds no trusted key:</text>
+    <text x="328" y="182" class="t small">not trusted for safety:</text>
     <text x="328" y="198" class="t small">can delay, cannot forge</text>
 
     <!-- Ledger B (3) -->
@@ -55,12 +55,11 @@ import Figure from '@kse/components/Figure.astro';
     <text x="653" y="106" class="t b center">Ledger B</text>
     <circle cx="579" cy="134" r="9" class="d-grey"/>
     <text x="579" y="138" class="t small center b">3</text>
-    <text x="594" y="138" class="t small">its verifier, fixed to</text>
-    <text x="594" y="154" class="t small">the channel, checks A's</text>
-    <text x="594" y="170" class="t small">validators' own signature</text>
-    <text x="594" y="206" class="t small muted">then its CLPR Service</text>
-    <text x="594" y="222" class="t small muted">runs the program and</text>
-    <text x="594" y="238" class="t small muted">queues the reply</text>
+    <text x="594" y="138" class="t small">its CLPR Service has the</text>
+    <text x="594" y="154" class="t small">channel's verifier check</text>
+    <text x="594" y="170" class="t small">A's validators' signature</text>
+    <text x="594" y="206" class="t small muted">then it runs the program</text>
+    <text x="594" y="222" class="t small muted">and queues the reply</text>
 
     <!-- sealed proof tokens on the way in and out of the endpoint -->
     <rect x="217" y="138" width="60" height="22" rx="6" class="d-ok"/>
@@ -89,7 +88,7 @@ import Figure from '@kse/components/Figure.astro';
 
     <!-- B -> A (6): exactly one reply -->
     <path d="M653,276 L653,358 L107,358 L107,278" class="line b dash" marker-end="url(#stp-arrow-b)"/>
-    <text x="380" y="351" class="t small center muted">exactly one reply per accepted message</text>
+    <text x="380" y="351" class="t small center muted">exactly one reply per accepted data message</text>
 
     <!-- takeaway -->
     <text x="380" y="382" class="t take center">Safety lives on the ledgers; liveness depends on endpoints; money comes from connectors.</text>

@@ -5,7 +5,7 @@ import { design, spec } from '../../../lib/sources';
 ---
 <Figure
   lead="Dial out, never in."
-  caption="Leaving service_endpoint out of a manifest entry means nobody can call that endpoint; it opens every stream itself. Because the stream is bidirectional, the public side still gets its own request answered in the same cycle."
+  caption="Leaving service_endpoint out of a manifest entry means nobody can call that endpoint; it opens every sync itself. In the specified stream, which is bidirectional, the public side still gets its own request answered in the same cycle."
   source={[{ label: 'spec §1.5', href: spec('15-sync-protocol') }, { label: 'design §3.1.4', href: design('314-endpoint-communication-protocol') }]}
   kind="spec"
   minWidth={720}

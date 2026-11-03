@@ -1,16 +1,16 @@
 ---
-/** The short list of what an application using a channel trusts (design §2.3): its own ledger, the CLPR software on both ledgers, the other ledger's validators, the application on the other side, and the channel's verifier, which is the one entry the application must check itself. The endpoint sits apart: it is not on the list. */
+/** The short list of what an application using a channel trusts (design §2.3): its own ledger, the CLPR software on both ledgers, the other ledger's validators, the application on the other side, and the channel's verifier, which is the one entry the application must check itself. The endpoint and the connector sit apart: relied on for delivery and payment, not for safety. */
 import Figure from '@kse/components/Figure.astro';
 import { design } from '../../../lib/sources';
 ---
 <Figure
   lead="Trust, narrowed, not removed."
-  caption="Every entry is named in advance and can be inspected. Anyone can create a channel with any verifier, so choosing a channel is choosing to trust its verifier."
+  caption="Each entry is something you can evaluate before relying on it. Anyone can create a channel with any verifier, so choosing a channel is choosing to trust its verifier."
   source={[{ label: 'design §2.3', href: design('23-trust-model') }]}
   kind="spec"
   minWidth={760}
 >
-  <svg viewBox="0 0 760 374" role="img" aria-label="Your application on Ledger A, on the left, trusts a short list drawn as a column of six entries: Ledger A, the CLPR software on A, the CLPR software on B, Ledger B's validators, the application on B, and the channel's verifier, which is marked as the one entry you must check yourself. An endpoint box sits apart at the top right, labelled not on the list: it can delay but cannot forge.">
+  <svg viewBox="0 0 760 374" role="img" aria-label="Your application on Ledger A, on the left, trusts a short list drawn as a column of six entries: Ledger A, the CLPR software on A, the CLPR software on B, Ledger B's validators, the application on B, and the channel's verifier, which is marked as the one entry you must check yourself. Apart on the right, an endpoint box and a connector box, labelled relied on but not for safety: the endpoint keeps messages moving and the connector pays; neither can forge.">
     <defs>
       <marker id="tl-arrow-a" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9 Z" fill="var(--a)"/></marker>
       <marker id="tl-arrow-ok" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9 Z" fill="var(--ok)"/></marker>
@@ -27,7 +27,7 @@ import { design } from '../../../lib/sources';
     <!-- The list -->
     <rect x="260" y="20" width="300" height="320" rx="12" class="d-surface" />
     <text x="410" y="42" class="t b center">The short list</text>
-    <text x="410" y="58" class="t small center muted">named in advance; all of it inspectable</text>
+    <text x="410" y="58" class="t small center muted">what safety rests on; all inspectable</text>
 
     <rect x="272" y="68" width="276" height="38" rx="8" class="d-a" />
     <text x="410" y="84" class="t b center">Ledger A</text>
@@ -58,13 +58,18 @@ import { design } from '../../../lib/sources';
     <text x="580" y="303" class="t small ok">the one entry you must</text>
     <text x="580" y="317" class="t small ok">check yourself</text>
 
-    <!-- The endpoint, apart -->
-    <rect x="580" y="60" width="168" height="70" rx="8" class="d-grey" />
-    <text x="664" y="84" class="t b center">Endpoint</text>
-    <text x="664" y="102" class="t small center bad">not on the list</text>
-    <text x="664" y="118" class="t small center muted">can delay, cannot forge</text>
+    <!-- The endpoint and the connector, apart: relied on, not for safety -->
+    <text x="664" y="42" class="t small center muted">not on the list</text>
+    <rect x="580" y="52" width="168" height="70" rx="8" class="d-grey" />
+    <text x="664" y="76" class="t b center">Endpoint</text>
+    <text x="664" y="94" class="t small center">keeps messages moving</text>
+    <text x="664" y="110" class="t small center muted">can delay, cannot forge</text>
+    <rect x="580" y="132" width="168" height="70" rx="8" class="d-grey" />
+    <text x="664" y="156" class="t b center">Connector</text>
+    <text x="664" y="174" class="t small center">pays for the message</text>
+    <text x="664" y="190" class="t small center muted">can refuse, cannot forge</text>
 
     <!-- takeaway -->
-    <text x="380" y="362" class="t take center">Narrowed, not removed: the endpoint is off the list; the verifier is on it, and nobody checks it for you.</text>
+    <text x="380" y="362" class="t take center">Narrowed, not removed: endpoints and connectors are off the list; the verifier is on it, unvetted by CLPR.</text>
   </svg>
 </Figure>

@@ -26,6 +26,8 @@ rendering, with tools that run in seconds.
 | `pnpm run sync:pin` | move the pins to the fetched heads |
 | `pnpm exec kse shot <path> <out.png> [width] [fullPage] [clicks]` | screenshot a built page with the preinstalled Chromium |
 | `pnpm exec kse audit-input` | pairs every section's text and every data table with the upstream passages their refs cite, at the pinned commits, into `.upstream/audit-input/`; the `clpr-audit` skill judges those pairs |
+| `node .claude/skills/clpr-audit/repo-input.mjs [--live]` | from the repository root: the same pairing for the website's copy (`src/content/site-refs.json`), the journey, titles and chrome the engine skips, and the documents; `--live` re-runs the checks for facts outside the pins |
+| `node .claude/skills/clpr-audit/website-shots.mjs [url]` | screenshots of every landing-page drawing and animation step, for the audit |
 | `pnpm exec kse overflow <path> [width]` | list elements wider than the viewport that are not inside a scroller; exits 1 when there are any |
 
 ## Screenshots

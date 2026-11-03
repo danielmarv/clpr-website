@@ -234,10 +234,13 @@ const ART: Record<Name, (props: { id: string }) => ReactNode> = {
   Connector: ({ id }) => (
     <Art id={id}>
       <Lane id={id} />
-      <Pulse x={120} y={60} motion="prop-bead" delay={2.4}>
-        <circle r={11} fill="#0b0a13" stroke={TONES.warm} strokeWidth={1.6} />
-        <circle r={4} fill={TONES.warm} />
-      </Pulse>
+      {/* One Connector on each ledger, not in the middle: each side's CLPR Service holds its funds. */}
+      {[LEFT, RIGHT].map((side) => (
+        <Pulse key={side.x} x={side.x} y={side.y + 36} motion="prop-bead" delay={2.4}>
+          <circle r={11} fill="#0b0a13" stroke={TONES.warm} strokeWidth={1.6} />
+          <circle r={4} fill={TONES.warm} />
+        </Pulse>
+      ))}
       <Mover path={across} motion="prop-pass" at={30}>
         <Star id={id} tone="violet" r={9} />
       </Mover>

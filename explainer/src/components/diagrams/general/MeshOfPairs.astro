@@ -1,16 +1,16 @@
 ---
-/** A mesh built from pairs: four ledgers, a channel between every two. The site's own illustration of what pairwise channels allow (design §2.1); each pair agrees separately, nothing sits in the middle, and joining means opening a channel to each partner you want. General page section 12. Static markup for scripts/preview-diagram.mjs. */
+/** A mesh built from pairs: four ledgers, a channel between every two. The site's own illustration of what pairwise channels allow (design §2.1); each pair agrees separately, with no trusted party in the middle, and joining means opening a channel to each partner you want. General page section 12. Static markup for scripts/preview-diagram.mjs. */
 import Figure from '@kse/components/Figure.astro';
 import { design } from '../../../lib/sources';
 ---
 <Figure
   lead="A mesh is six pairs."
-  caption="Four ledgers, a channel between every two: six agreements, each with its own verifiers and queues, and nothing in the middle. A fifth ledger joins by opening a channel to each partner it wants, and the existing four change nothing."
+  caption="Four ledgers, a channel between every two: six agreements, each with its own queues and a verifier named on each side, and no trusted party in the middle. A fifth ledger joins by opening a channel to each partner it wants; each of those partners gains a channel and a verifier for it, and the channels already there are unchanged."
   source={[{ label: 'design §2.1', href: design('21-common-terminology') }]}
   kind="plain"
   minWidth={760}
 >
-  <svg viewBox="0 0 760 330" role="img" aria-label="Four ledgers at the corners, A, B, C and D, with a line between every pair: six channels. A note in the centre says nothing in the middle. A fifth ledger, dashed, sits to the right with a note saying it joins by opening its own channels.">
+  <svg viewBox="0 0 760 330" role="img" aria-label="Four ledgers at the corners, A, B, C and D, with a line between every pair: six channels. A note in the centre says no trusted party in the middle. A fifth ledger, dashed, sits to the right with a note saying it joins by opening its own channels.">
     <line x1="170" y1="80" x2="446" y2="80" class="line c" />
     <line x1="108" y1="104" x2="108" y2="226" class="line c" />
     <line x1="165" y1="104" x2="451" y2="226" class="line c" />
@@ -29,9 +29,9 @@ import { design } from '../../../lib/sources';
     <rect x="446" y="226" width="124" height="48" rx="10" class="d-money" />
     <text x="508" y="248" class="t b center">Ledger D</text>
     <text x="508" y="265" class="t small center">three channels</text>
-    <rect x="210" y="146" width="196" height="38" rx="8" class="d-surface" />
-    <text x="308" y="162" class="t small center b">nothing in the middle</text>
-    <text x="308" y="177" class="t small center">six pairs, six verifiers each way</text>
+    <rect x="198" y="146" width="220" height="38" rx="8" class="d-surface" />
+    <text x="308" y="162" class="t small center b">no trusted party in the middle</text>
+    <text x="308" y="177" class="t small center">six pairs, a verifier per side</text>
     <rect x="614" y="140" width="100" height="48" rx="10" class="d-surface" stroke-dasharray="6 5" />
     <text x="664" y="160" class="t b center">Ledger E</text>
     <text x="664" y="176" class="t small center">joining</text>

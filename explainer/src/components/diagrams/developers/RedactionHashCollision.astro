@@ -5,7 +5,7 @@ import { pinned, spec } from '../../../lib/sources';
 ---
 <Figure
   lead="Why redaction was removed."
-  caption="A redacted and an unredacted encoding of the same message folded to the same running hash, so anyone submitting a bundle could flip one for the other and every check would still pass. ADR 2026-08-01 deleted the feature; the EVM code still carries a REDACTED type."
+  caption="A redacted and an unredacted encoding of the same message folded to the same running hash, so anyone submitting a bundle could flip one for the other and every check would still pass. ADR 2026-08-01 deleted the feature; the pinned EVM contracts predate the ADR and still implement redaction (redactMessage, owner-only) and the old double hash."
   source={[{ label: 'ADR 2026-08-01', href: pinned('clpr-spec', 'ADR/2026-08-01-remove-message-redaction.md') }, { label: 'spec §4.1', href: spec('41-running-hash-computation') }]}
   kind="spec"
   minWidth={720}
@@ -61,7 +61,7 @@ import { pinned, spec } from '../../../lib/sources';
     <text x="32" y="272" class="t b">Since ADR 2026-08-01</text>
     <text x="200" y="272" class="t small">no redaction: one encoding per message, one chain contribution</text>
     <text x="32" y="292" class="t mono">running_hash = SHA-256(previous_running_hash ‖ serialized_payload) · protocol version bump</text>
-    <text x="32" y="310" class="t small muted">the EVM contracts still carry a REDACTED type (reference implementation)</text>
+    <text x="32" y="310" class="t small muted">pinned EVM contracts still implement redaction</text>
 
     <!-- takeaway -->
     <text x="360" y="348" class="t take center">Two encodings, one hash: the chain cannot tell them apart, so the feature was removed.</text>

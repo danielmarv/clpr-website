@@ -1,16 +1,16 @@
 ---
-/** What each production proof points at: a Hiero proof walks from a TSS-signed SHA-384 block root down to the Channel leaf (tag 482) and ClprMessageValue leaves (tag 498); a QBFT proof walks from a header with committed seals through the EIP-1186 account proof to five storage slots. Both end in the sync data and anchor hash the service checks. Draws on the page's verifier table and the pinned hiero/state_proof.md and qbft/state_proof.md. */
+/** What each production proof points at: a Hiero proof walks from a TSS-signed SHA-384 block root down to the Channel leaf (tag 482) and ClprMessageValue leaves (tag 498); a QBFT proof walks from a header with committed seals through the EIP-1186 account proof to five channel storage slots, six when the bundle carries messages. Both end in the sync data and anchor hash the service checks. Draws on the page's verifier table and the pinned hiero/state_proof.md and qbft/state_proof.md. */
 import Figure from '@kse/components/Figure.astro';
 import { pinned } from '../../../lib/sources';
 ---
 <Figure
   lead="Two state trees, one question."
-  caption="A Hiero proof walks from a threshold-signed block root down to the channel and message leaves; a QBFT proof walks from a sealed header through the account proof to five storage slots. Both deliver the same sync data and anchor hash for the service's own checks."
+  caption="A Hiero proof walks from a threshold-signed block root down to the channel and message leaves; a QBFT proof walks from a sealed header through the account proof to five channel storage slots, six when the bundle carries messages. Both deliver the same sync data and anchor hash for the service's own checks."
   source={[{ label: 'hiero/state_proof.md', href: pinned('clpr-spec', 'verifiers/hiero/state_proof.md') }, { label: 'qbft/state_proof.md', href: pinned('clpr-spec', 'verifiers/qbft/state_proof.md') }]}
   kind="spec"
   minWidth={760}
 >
-  <svg viewBox="0 0 760 436" role="img" aria-label="Two columns. Left, Hiero: a TSS signature box (BLS12-381 aggregate over the block root, checked against the stored ledger_id) signs a block root box (48-byte SHA-384 Merkle root with domain prefixes), from which Merkle paths lead to a Channel leaf, tag 482, holding the queue metadata, and a ClprMessageValue leaf, tag 498, one per message with payload and running hash. Right, QBFT: a block header with committed seals in extraData, ECDSA signers recovered and checked against the validator set hash, leads via keccak to stateRoot with the EIP-1186 account proof for the CLPR Service, and via storage proofs to five storage slots: status + nextMessageId, ackedMessageId + receivedMessageId, sentRunningHash, receivedRunningHash, and the anchor message's running hash. Both columns feed one box at the bottom: what verifyBundle returns to the service, sync_data, messages, anchor_message_id and anchor_running_hash.">
+  <svg viewBox="0 0 760 436" role="img" aria-label="Two columns. Left, Hiero: a TSS signature box (BLS12-381 aggregate over the block root, checked against the trusted ledger_id) signs a block root box (48-byte SHA-384 Merkle root with domain prefixes), from which Merkle paths lead to a Channel leaf, tag 482, holding the queue metadata, and a ClprMessageValue leaf, tag 498, one per message with payload and running hash. Right, QBFT: a block header with committed seals in extraData, ECDSA signers recovered, with enough seals and one from the anchor's validator, leads via keccak to stateRoot with the EIP-1186 account proof for the CLPR Service, and via storage proofs to five channel slots: status + nextMessageId with the manifest version, ackedMessageId + receivedMessageId, sentRunningHash, receivedRunningHash, plus the last sent message's running hash when the bundle carries messages. Both columns feed one box at the bottom: what verifyBundle returns to the service, sync_data, messages, anchor_message_id and anchor_running_hash.">
     <defs>
       <marker id="tst-arrow-ok" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9 Z" fill="var(--ok)"/></marker>
       <marker id="tst-arrow-a" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9 Z" fill="var(--a)"/></marker>
@@ -19,13 +19,13 @@ import { pinned } from '../../../lib/sources';
 
     <!-- Column headings -->
     <text x="185" y="28" class="t b center a">Hiero (TSS / hinTS)</text>
-    <text x="575" y="28" class="t b center b-col">QBFT (Besu)</text>
+    <text x="575" y="28" class="t b center b-col">QBFT (EVM ledger)</text>
 
     <!-- Hiero: signature over the block root -->
     <rect x="20" y="40" width="330" height="64" rx="8" class="d-ok"/>
     <text x="32" y="60" class="t b">TSS signature</text>
     <text x="32" y="76" class="t small">BLS12-381 aggregate over the block root,</text>
-    <text x="32" y="90" class="t small">checked against the stored ledger_id</text>
+    <text x="32" y="90" class="t small">checked against the trusted ledger_id</text>
     <line x1="185" y1="104" x2="185" y2="122" class="line ok" marker-end="url(#tst-arrow-ok)"/>
     <text x="193" y="117" class="t small muted">signs</text>
 
@@ -54,7 +54,7 @@ import { pinned } from '../../../lib/sources';
     <rect x="410" y="40" width="330" height="64" rx="8" class="d-ok"/>
     <text x="422" y="60" class="t b">QBFT block header</text>
     <text x="422" y="76" class="t small">committed seals in extraData; ECDSA signers</text>
-    <text x="422" y="90" class="t small">recovered, threshold vs the validator set hash</text>
+    <text x="422" y="90" class="t small">recovered; one must be the anchor's validator</text>
     <line x1="575" y1="104" x2="575" y2="122" class="line b" marker-end="url(#tst-arrow-b)"/>
     <text x="583" y="117" class="t small muted">keccak the header</text>
 
@@ -66,13 +66,13 @@ import { pinned } from '../../../lib/sources';
     <line x1="575" y1="188" x2="575" y2="212" class="line b" marker-end="url(#tst-arrow-b)"/>
     <text x="583" y="204" class="t small muted">storage proofs</text>
 
-    <!-- QBFT: the five slots -->
+    <!-- QBFT: the channel slots -->
     <rect x="410" y="214" width="330" height="90" rx="8" class="d-b"/>
-    <text x="422" y="234" class="t b">five storage slots</text>
+    <text x="422" y="234" class="t b">five channel slots, six with messages</text>
     <text x="422" y="250" class="t mono">status + nextMessageId</text>
     <text x="422" y="264" class="t mono">ackedMessageId + receivedMessageId</text>
     <text x="422" y="278" class="t mono">sentRunningHash · receivedRunningHash</text>
-    <text x="422" y="292" class="t mono">the anchor message's running hash</text>
+    <text x="422" y="292" class="t small">+ manifest version; the newest message's hash</text>
 
     <!-- Both end in the same values -->
     <path d="M20,306 V312 H350 V306" class="line a"/>

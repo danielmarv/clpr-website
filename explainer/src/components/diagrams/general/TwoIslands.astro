@@ -1,5 +1,5 @@
 ---
-/** Two ledgers as two islands: a program on each wants to know something about the other, and both lookups stop at the water. Page-level framing of the cross-ledger problem (general section 2); design §1 frames the same problem. Replaces the inline two-islands SVG in section 2. */
+/** Two ledgers as two islands, drawn as the website draws a ledger (a membrane with its validators on the rim): a program on each wants to know something about the other, and both lookups stop at the water. Page-level framing of the cross-ledger problem (general section 2); design §1 frames the same problem. Replaces the inline two-islands SVG in section 2. */
 import Figure from '@kse/components/Figure.astro';
 import { design } from '../../../lib/sources';
 ---
@@ -14,7 +14,18 @@ import { design } from '../../../lib/sources';
     <rect x="12" y="12" width="736" height="266" rx="12" fill="var(--bg-2)" />
 
     <!-- Island A -->
-    <ellipse cx="170" cy="132" rx="140" ry="84" class="d-a" />
+    <ellipse cx="170" cy="132" rx="140" ry="84" class="art-orb a" />
+    <path class="art-validator a" d="M286.7 174.0L291.2 173.4L295.7 174.0L291.2 174.6ZM291.2 169.5L291.8 174.0L291.2 178.5L290.6 174.0Z"/>
+    <path class="art-validator a" d="M235.5 204.7L240.0 204.1L244.5 204.7L240.0 205.3ZM240.0 200.2L240.6 204.7L240.0 209.2L239.4 204.7Z"/>
+    <path class="art-validator a" d="M165.5 216.0L170.0 215.4L174.5 216.0L170.0 216.6ZM170.0 211.5L170.6 216.0L170.0 220.5L169.4 216.0Z"/>
+    <path class="art-validator a" d="M95.5 204.7L100.0 204.1L104.5 204.7L100.0 205.3ZM100.0 200.2L100.6 204.7L100.0 209.2L99.4 204.7Z"/>
+    <path class="art-validator a" d="M44.3 174.0L48.8 173.4L53.3 174.0L48.8 174.6ZM48.8 169.5L49.4 174.0L48.8 178.5L48.2 174.0Z"/>
+    <path class="art-validator a" d="M25.5 132.0L30.0 131.4L34.5 132.0L30.0 132.6ZM30.0 127.5L30.6 132.0L30.0 136.5L29.4 132.0Z"/>
+    <path class="art-validator a" d="M44.3 90.0L48.8 89.4L53.3 90.0L48.8 90.6ZM48.8 85.5L49.4 90.0L48.8 94.5L48.2 90.0Z"/>
+    <path class="art-validator a" d="M95.5 59.3L100.0 58.7L104.5 59.3L100.0 59.9ZM100.0 54.8L100.6 59.3L100.0 63.8L99.4 59.3Z"/>
+    <path class="art-validator a" d="M165.5 48.0L170.0 47.4L174.5 48.0L170.0 48.6ZM170.0 43.5L170.6 48.0L170.0 52.5L169.4 48.0Z"/>
+    <path class="art-validator a" d="M235.5 59.3L240.0 58.7L244.5 59.3L240.0 59.9ZM240.0 54.8L240.6 59.3L240.0 63.8L239.4 59.3Z"/>
+    <path class="art-validator a" d="M286.7 90.0L291.2 89.4L295.7 90.0L291.2 90.6ZM291.2 85.5L291.8 90.0L291.2 94.5L290.6 90.0Z"/>
     <text x="170" y="76" class="t b center">Ledger A</text>
     <text x="170" y="94" class="t small center">its own validators, its own ledger</text>
     <rect x="100" y="100" width="140" height="48" rx="8" class="d-surface" />
@@ -22,7 +33,18 @@ import { design } from '../../../lib/sources';
     <text x="170" y="172" class="t small center">"is Bo's payment on B done yet?"</text>
 
     <!-- Island B -->
-    <ellipse cx="590" cy="132" rx="140" ry="84" class="d-b" />
+    <ellipse cx="590" cy="132" rx="140" ry="84" class="art-orb b" />
+    <path class="art-validator b" d="M725.5 132.0L730.0 131.4L734.5 132.0L730.0 132.6ZM730.0 127.5L730.6 132.0L730.0 136.5L729.4 132.0Z"/>
+    <path class="art-validator b" d="M706.7 174.0L711.2 173.4L715.7 174.0L711.2 174.6ZM711.2 169.5L711.8 174.0L711.2 178.5L710.6 174.0Z"/>
+    <path class="art-validator b" d="M655.5 204.7L660.0 204.1L664.5 204.7L660.0 205.3ZM660.0 200.2L660.6 204.7L660.0 209.2L659.4 204.7Z"/>
+    <path class="art-validator b" d="M585.5 216.0L590.0 215.4L594.5 216.0L590.0 216.6ZM590.0 211.5L590.6 216.0L590.0 220.5L589.4 216.0Z"/>
+    <path class="art-validator b" d="M515.5 204.7L520.0 204.1L524.5 204.7L520.0 205.3ZM520.0 200.2L520.6 204.7L520.0 209.2L519.4 204.7Z"/>
+    <path class="art-validator b" d="M464.3 174.0L468.8 173.4L473.3 174.0L468.8 174.6ZM468.8 169.5L469.4 174.0L468.8 178.5L468.2 174.0Z"/>
+    <path class="art-validator b" d="M464.3 90.0L468.8 89.4L473.3 90.0L468.8 90.6ZM468.8 85.5L469.4 90.0L468.8 94.5L468.2 90.0Z"/>
+    <path class="art-validator b" d="M515.5 59.3L520.0 58.7L524.5 59.3L520.0 59.9ZM520.0 54.8L520.6 59.3L520.0 63.8L519.4 59.3Z"/>
+    <path class="art-validator b" d="M585.5 48.0L590.0 47.4L594.5 48.0L590.0 48.6ZM590.0 43.5L590.6 48.0L590.0 52.5L589.4 48.0Z"/>
+    <path class="art-validator b" d="M655.5 59.3L660.0 58.7L664.5 59.3L660.0 59.9ZM660.0 54.8L660.6 59.3L660.0 63.8L659.4 59.3Z"/>
+    <path class="art-validator b" d="M706.7 90.0L711.2 89.4L715.7 90.0L711.2 90.6ZM711.2 85.5L711.8 90.0L711.2 94.5L710.6 90.0Z"/>
     <text x="590" y="76" class="t b center">Ledger B</text>
     <text x="590" y="94" class="t small center">its own validators, its own ledger</text>
     <rect x="520" y="100" width="140" height="48" rx="8" class="d-surface" />

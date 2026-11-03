@@ -37,7 +37,7 @@ const centre = (i: number) => 40 + i * 145 + 55;
         );
       })}
       {nodes.map((i) => <circle data-role="dot" data-to={i} cx={centre(2)} cy="198" r="5" class="d-b" />)}
-      <text x="380" y="222" class="t center" data-role="caption">Every node keeps an identical copy. Nobody is in charge of it.</text>
+      <text x="380" y="222" class="t center" data-role="caption">Every node keeps an identical copy. No single node is in charge of it.</text>
     </svg>
     </div>
     <p class="sim__scroll-note">Wider than a phone; scroll it sideways if you need to.</p>
@@ -83,7 +83,7 @@ const centre = (i: number) => 40 + i * 145 + 55;
     const liar = $('[data-role="liar"]') as HTMLInputElement;
     const propose = $('[data-role="propose"]') as HTMLButtonElement;
     const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const IDLE_CAPTION = 'Every node keeps an identical copy. Nobody is in charge of it.';
+    const IDLE_CAPTION = 'Every node keeps an identical copy. No single node is in charge of it.';
     const IDLE_LOG = '<span class="line">ready</span>A ledger is a shared record that many computers keep in sync. Press the button to add a line and watch how they agree.';
     // Every run gets a number; Reset bumps it, and a run that notices its number is stale stops.
     let runId = 0;
@@ -135,7 +135,7 @@ const centre = (i: number) => 40 + i * 145 + 55;
       setCaption('agreeing…');
       phase(1);
       log.innerHTML = '<span class="line">agreeing</span>' + (lying
-        ? 'Node 5 wrote something different. The others compare notes: four copies say <strong>3</strong>, one says <strong>9</strong>. The majority wins and node 5 is overruled.'
+        ? 'Node 5 wrote something different. The others compare notes: four copies say <strong>3</strong>, one says <strong>9</strong>. A supermajority agrees and node 5 is overruled.'
         : 'All five copies now show the same proposed line. They compare notes and agree.');
       await wait(1300); if (!alive()) return;
       phase(2);
@@ -144,9 +144,9 @@ const centre = (i: number) => 40 + i * 145 + 55;
         part(g, 'seal').classList.add('on');
         await wait(120); if (!alive()) return;
       }
-      setCaption('sealed: this line can no longer be changed or removed');
+      setCaption('sealed: on a ledger with final consensus, this line is not changed or removed');
       phase(3);
-      log.innerHTML = '<span class="line">sealed</span>The line is <span class="ok">final</span>. Agreeing on it is called <strong>consensus</strong>; the fact that it can never be undone is called <strong>finality</strong>. Both matter later: CLPR only ever carries lines that a whole network has sealed.';
+      log.innerHTML = '<span class="line">sealed</span>The line is <span class="ok">final</span>. Agreeing on it is called <strong>consensus</strong>; the fact that it will not be undone is called <strong>finality</strong>. Both matter later: how final a line must be before CLPR carries it is set by each channel\'s verifier.';
       root.removeAttribute('aria-busy');
     }
     propose.addEventListener('click', () => { if (root.getAttribute('aria-busy') !== 'true') run(); });

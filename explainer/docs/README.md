@@ -63,8 +63,9 @@ scripts/
   overflow.mjs               list elements wider than the viewport at a given width
   export-single.mjs          each page as one self-contained HTML file, for sharing without a deployment
 .claude/skills/clpr-drift/   what moved upstream and what it touches (report only)
-.claude/skills/clpr-audit/   does every statement still match the passage it cites (report only)
+.claude/skills/clpr-audit/   does every statement in the repository still match its source (report only)
 .claude/skills/clpr-sync/    the sync procedure as a Claude skill (the only one that edits)
+.claude/skills/clpr-figure/  how to draw a figure or simulation in the website's vocabulary, and art.mjs
 .github/workflows/           ci.yml, pages.yml, upstream-watch.yml
 docs/                        this folder
 ```

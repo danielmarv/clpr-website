@@ -5,7 +5,9 @@ human overview. The step-by-step procedure that an AI assistant follows is the
 [`clpr-sync` skill](../.claude/skills/clpr-sync/SKILL.md); the two agree, and the skill is the
 more detailed of the two. Two report-only skills sit beside it: [`clpr-drift`](../.claude/skills/clpr-drift/SKILL.md)
 explains what moved upstream and what it touches, and [`clpr-audit`](../.claude/skills/clpr-audit/SKILL.md)
-judges whether every statement on the site still matches the passage it cites. Only `clpr-sync` edits or re-pins.
+judges whether every statement in the repository (both explainer pages, the website's landing page
+and its drawings, the documents) still matches the passage it cites, and re-checks the facts that
+change outside the pins. Only `clpr-sync` edits or re-pins.
 
 ## The loop
 

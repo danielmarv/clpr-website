@@ -40,7 +40,7 @@ export function Hero() {
       <div className="shell pb-8">
         <div data-hero-reveal className="flex flex-col gap-5 border-t border-white/6 pt-6 md:flex-row md:items-center md:justify-between">
           <p className="max-w-md text-[0.8125rem] leading-relaxed text-faint">{origins.label}</p>
-          <ul className="flex flex-wrap items-center gap-x-8 gap-y-4" aria-label="Contributing organizations">
+          <ul className="flex flex-wrap items-center gap-x-8 gap-y-4" aria-label="Organizations behind CLPR">
             {origins.logos.map((logo) => (
               <li key={logo.name}>
                 <a

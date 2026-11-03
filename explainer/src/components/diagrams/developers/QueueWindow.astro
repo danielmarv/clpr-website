@@ -5,7 +5,7 @@ import { design, spec } from '../../../lib/sources';
 ---
 <Figure
   lead="One queue per direction, nothing sorted by kind."
-  caption="Data messages, responses and control messages share the same ids and the same running hash chain. acked_message_id marks what the peer has proven it received and what can be deleted, except Data Messages, which are kept until their response arrives; next_message_id is where sendMessage writes next. Message ids are illustrative."
+  caption="Data messages, responses and control messages share the same ids and the same running hash chain. acked_message_id marks what the peer has proven it received and what can be deleted, except Data Messages, which are kept until their response arrives; next_message_id is where sendMessage writes next. Message ids are illustrative. The formula is the specification's; the pinned reference contracts fold sha256(prev ‖ sha256(payload))."
   source={[{ label: 'spec §1.4', href: spec('14-message-queue') }, { label: 'spec §4.1', href: spec('41-running-hash-computation') }, { label: 'design §3.2.2', href: design('322-message-storage') }]}
   kind="spec"
   minWidth={760}

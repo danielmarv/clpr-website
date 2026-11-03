@@ -14,7 +14,14 @@ import { useStepper } from "@/lib/useStepper";
 // One message across a Channel in seven steps; the motion is CSS offset-path with transitions on offset-distance.
 
 const STEP_DURATION_MS = 6000;
-const ROUTE: DemoNodeId[] = ["a-app", "a-service", "a-endpoint", "b-endpoint", "b-verifier", "b-service", "b-app"];
+/** The path a message travels. Each ledger's Verifier Contract sits beside its CLPR Service, which calls it, so it is not on the path. */
+const ROUTE: DemoNodeId[] = ["a-app", "a-service", "a-endpoint", "b-endpoint", "b-service", "b-app"];
+const NODES: DemoNodeId[] = [...ROUTE, "a-verifier", "b-verifier"];
+/** Each CLPR Service and the Verifier Contract it calls. */
+const VERIFIER_LINKS: [DemoNodeId, DemoNodeId][] = [
+  ["a-service", "a-verifier"],
+  ["b-service", "b-verifier"],
+];
 /** Spacing of the messages in a bundle, in percent of the route. */
 const BUNDLE_GAP = 1.4;
 
@@ -42,13 +49,14 @@ const LANDSCAPE: Layout = {
   stops: {
     "a-app": { x: 150, y: 132, label: { dx: 18, dy: 0, align: "start" } },
     "a-service": { x: 212, y: 236, label: { dx: -18, dy: 0, align: "end" } },
+    "a-verifier": { x: 328, y: 216, label: { dx: 0, dy: -40, align: "middle" } },
     "a-endpoint": { x: 424, y: 293, label: { dx: -10, dy: 32, align: "end" } },
     "b-endpoint": { x: 676, y: 293, label: { dx: 10, dy: 32, align: "start" } },
     "b-verifier": { x: 772, y: 216, label: { dx: 0, dy: -40, align: "middle" } },
     "b-service": { x: 900, y: 262, label: { dx: 0, dy: 32, align: "middle" } },
     "b-app": { x: 958, y: 146, label: { dx: -18, dy: -8, align: "end" } },
   },
-  bows: [0.12, -0.08, 0.14, -0.1, 0.12, 0.1],
+  bows: [0.12, -0.08, 0.14, -0.08, 0.1],
   channelLabel: { x: 550, y: 356 },
 };
 
@@ -63,13 +71,14 @@ const PORTRAIT: Layout = {
   stops: {
     "a-app": { x: 104, y: 98, label: { dx: 16, dy: 0, align: "start" } },
     "a-service": { x: 150, y: 178, label: { dx: 16, dy: 0, align: "start" } },
+    "a-verifier": { x: 98, y: 238, label: { dx: 16, dy: 0, align: "start" } },
     "a-endpoint": { x: 225, y: 292, label: { dx: -16, dy: 0, align: "end" } },
     "b-endpoint": { x: 225, y: 428, label: { dx: -16, dy: 0, align: "end" } },
-    "b-verifier": { x: 150, y: 498, label: { dx: 16, dy: 0, align: "start" } },
+    "b-verifier": { x: 110, y: 500, label: { dx: 16, dy: 0, align: "start" } },
     "b-service": { x: 190, y: 588, label: { dx: 16, dy: 0, align: "start" } },
     "b-app": { x: 118, y: 642, label: { dx: 16, dy: 0, align: "start" } },
   },
-  bows: [0.12, -0.12, -0.22, 0.14, -0.12, 0.12],
+  bows: [0.12, -0.12, -0.22, -0.3, 0.12],
   channelLabel: null,
 };
 
@@ -128,7 +137,7 @@ function buildRoute(layout: Layout) {
 function buildValidators(layout: Layout, side: "a" | "b"): { points: Point[]; links: [Point, Point][] } {
   const random = seeded(side === "a" ? 71 : 73);
   const ledger = layout.ledgers[side];
-  const stops = ROUTE.filter((id) => id.startsWith(side)).map((id) => layout.stops[id]);
+  const stops = NODES.filter((id) => id.startsWith(side)).map((id) => layout.stops[id]);
   const keepClear = stops.flatMap((stop) => [
     { point: stop, room: 48 },
     { point: { x: stop.x + stop.label.dx, y: stop.y + stop.label.dy }, room: 72 },
@@ -182,7 +191,7 @@ function placements(index: number, at: Record<DemoNodeId, number>) {
       messages = bundle("b-endpoint");
       break;
     case 4:
-      messages = bundle("b-verifier");
+      messages = bundle("b-service");
       break;
     case 5:
       messages = [at["b-app"], between("b-service", "b-app", 0.5), between("b-service", "b-app", 0.08)].map((value) => ({
@@ -372,6 +381,8 @@ function Stage({
   const { id, width, height, stops } = layout;
   const channel = { from: stops["a-endpoint"], to: stops["b-endpoint"], bow: layout.bows[2] };
   const verified = step.proofVerified;
+  /** The Verifier Contract checking a proof in this step: Ledger B's on the way over, Ledger A's on the reply. */
+  const checking: DemoNodeId | null = stepIndex === 4 ? "b-verifier" : stepIndex === 6 ? "a-verifier" : null;
   const ride = (placement: Placement): CSSProperties => ({
     offsetPath: `path("${route.path}")`,
     offsetDistance: `${placement.at}%`,
@@ -432,7 +443,20 @@ function Stage({
           />
         )}
 
-        {ROUTE.map((stopId) => {
+        {VERIFIER_LINKS.map(([serviceId, verifierId]) => (
+          <line
+            key={verifierId}
+            x1={stops[serviceId].x}
+            y1={stops[serviceId].y}
+            x2={stops[verifierId].x}
+            y2={stops[verifierId].y}
+            stroke={TONES[serviceId.startsWith("a") ? "violet" : "pink"]}
+            strokeOpacity={step.active.includes(verifierId) ? 0.7 : 0.3}
+            strokeWidth={1.2}
+            strokeDasharray="2 5"
+          />
+        ))}
+        {NODES.map((stopId) => {
           const stop = stops[stopId];
           const active = step.active.includes(stopId);
           const tone = stopId.startsWith("a") ? "violet" : "pink";
@@ -441,12 +465,12 @@ function Stage({
               {active && <circle cx={stop.x} cy={stop.y} r={22} stroke={TONES[tone]} strokeOpacity={0.7} strokeWidth={1.2} />}
               {stopId.endsWith("endpoint") ? (
                 <path d={hexagon(stop.x, stop.y, 11)} fill="#0b0a13" stroke={TONES[tone]} strokeWidth={1.4} />
-              ) : stopId === "b-verifier" ? (
+              ) : stopId.endsWith("verifier") ? (
                 <path
                   d={`M${stop.x} ${stop.y - 11}L${stop.x + 11} ${stop.y}L${stop.x} ${stop.y + 11}L${stop.x - 11} ${stop.y}Z`}
-                  fill={verified ? TONES.pink : "#0b0a13"}
-                  fillOpacity={verified ? 0.45 : 1}
-                  stroke={TONES.pink}
+                  fill={checking === stopId ? TONES[tone] : "#0b0a13"}
+                  fillOpacity={checking === stopId ? 0.45 : 1}
+                  stroke={TONES[tone]}
                   strokeWidth={1.4}
                 />
               ) : (
@@ -455,9 +479,9 @@ function Stage({
             </g>
           );
         })}
-        {stepIndex === 4 && (
-          <g key={`ping-${stepIndex}`} transform={`translate(${stops["b-verifier"].x} ${stops["b-verifier"].y})`}>
-            <circle className="journey-ping" r={20} stroke={TONES.pink} strokeWidth={1.4} />
+        {checking && (
+          <g key={`ping-${stepIndex}`} transform={`translate(${stops[checking].x} ${stops[checking].y})`}>
+            <circle className="journey-ping" r={20} stroke={TONES[checking.startsWith("a") ? "violet" : "pink"]} strokeWidth={1.4} />
           </g>
         )}
 
@@ -503,7 +527,7 @@ function Stage({
           </div>
         );
       })}
-      {ROUTE.map((stopId) => {
+      {NODES.map((stopId) => {
         const stop = stops[stopId];
         const node = demo.nodes[stopId];
         const active = step.active.includes(stopId);

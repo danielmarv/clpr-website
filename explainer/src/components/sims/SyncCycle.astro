@@ -19,7 +19,7 @@ const steps = [
   {
     phase: 'Step 0 · before the first message',
     t: 'One stream, one channel, mutual TLS',
-    plain: 'Endpoint A wants to sync one channel. It picks one of Ledger B\'s endpoints from the peer manifest that Ledger A holds for the channel and opens a gRPC stream to it. The two authenticate each other with mutual TLS: each endpoint\'s root of trust is the CA certificate published on-chain in its manifest, and what it actually presents is a short-lived Ed25519 leaf certificate its process minted at start-up. One stream is one sync cycle. Nothing is pushed unasked: delivery is pull-shaped, each side asks for a bundle by describing its own state.',
+    plain: 'Endpoint A wants to sync one channel. It picks one of Ledger B\'s endpoints from the peer manifest that Ledger A holds for the channel and opens a gRPC stream to it. The two authenticate each other with mutual TLS: each endpoint\'s root of trust is the CA certificate published on-chain in its manifest, and what it actually presents is an in-memory Ed25519 leaf certificate its process minted at start-up. One stream is one sync cycle. Nothing is pushed unasked: each side asks for a bundle by describing its own state, and the peer shapes the bundle from that.',
     proto: '<code>rpc sync(stream ClprSyncPayload) returns (stream ClprSyncPayload)</code>; every payload carries the 32-byte <code>channel_id</code>. <code>ClprEndpoint.tls_certificate</code> is a DER-encoded self-signed ECDSA P-384 CA certificate (at most 512 bytes; not presented on the wire); each endpoint holds an Ed25519 leaf signed by that CA and presents it at the mTLS handshake. The connection and its TLS session MAY persist across cycles.',
     refs: [{ h: spec('grpc-endpoint-service'), l: 'spec §1.5, gRPC Endpoint Service' }, { h: spec('12-endpoint-identity'), l: 'spec §1.2' }, { h: design('314-endpoint-communication-protocol'), l: 'design §3.1.4' }, { h: design('312-endpoint-manifest'), l: 'design §3.1.2, TLS certificate' }, { h: ADR_SYNC('34-mtls-root-of-trust-model'), l: 'ADR 2026-07-14 §3.4' }],
   },
@@ -34,14 +34,14 @@ const steps = [
     phase: 'Step 2 · message ②',
     t: 'B answers with a bundle for A, and its own request',
     plain: 'B reads the request and takes from Ledger B exactly the messages A says it is missing: from the next id after A\'s number, up to the per-bundle cap. It wraps them in a state proof of Ledger B that covers B\'s own sync data and the last message in the batch (the earlier ones ride on the running hash), and sends them back together with B\'s own BundleRequest, so that A can do the same for B.',
-    proto: '<code>ClprSyncPayload(bundle_request: B\'s state, bundle_response: bundle_payload)</code>. No messages if <code>current_received_message_id + 1 ≥</code> B\'s <code>next_message_id</code>; otherwise the range starts at <code>current_received_message_id + 1</code>. State-proven inside the payload: B\'s <code>ChannelSyncData(received_message_id, status, next_message_id)</code>, the anchor message id and running hash, plus any trust-anchor or manifest update. The bundle may be a proper prefix of the backlog: <code>max_messages_per_bundle</code> is a hard cap and the receiving Service rejects anything above it.',
-    refs: [{ h: design('323-bundle-transport'), l: 'design §3.2.3' }, { h: ADR_PREFIX('11-a-bundle-cannot-express-a-subsequence-of-a-large-backlog'), l: 'ADR 2026-07-17' }, { h: spec('11-ledger-identity-and-configuration'), l: 'spec §1.1, ClprThrottles' }, { h: spec('42-bundle-verification-algorithm'), l: 'spec §4.2, step 2' }],
+    proto: '<code>ClprSyncPayload(bundle_request: B\'s state, bundle_response: bundle_payload)</code>. If the claim is at or above B\'s <code>next_message_id</code>, it names a message B has not sent, and B starts from its own <code>acked_message_id + 1</code> instead; no messages if <code>current_received_message_id + 1</code> equals B\'s <code>next_message_id</code>; otherwise the range starts at <code>current_received_message_id + 1</code>. State-proven inside the payload: B\'s <code>ChannelSyncData(received_message_id, status, next_message_id)</code>, the anchor message id and running hash, plus any trust-anchor or manifest update. The bundle may be a proper prefix of the backlog: <code>max_messages_per_bundle</code> is a hard cap and the receiving Service rejects anything above it.',
+    refs: [{ h: design('323-bundle-transport'), l: 'design §3.2.3' }, { h: ADR_SYNC('33-trust-model-for-the-unproven-request'), l: 'ADR 2026-07-14 §3.3' }, { h: ADR_PREFIX('11-a-bundle-cannot-express-a-subsequence-of-a-large-backlog'), l: 'ADR 2026-07-17' }, { h: spec('11-ledger-identity-and-configuration'), l: 'spec §1.1, ClprThrottles' }, { h: spec('42-bundle-verification-algorithm'), l: 'spec §4.2, step 2' }],
   },
   {
     phase: 'Step 3 · message ③',
     t: 'A verifies, submits to Ledger A, then sends B\'s bundle',
     plain: 'A does not trust the bytes. It runs the verifier locally first, so it does not pay for a bundle whose proof would fail, then submits the bundle as an ordinary transaction to Ledger A. There the CLPR Service checks that the bundle makes progress, that the message ids continue exactly where A\'s record ends, and that the running hash matches the proven anchor; it records B\'s acknowledgement and dispatches the messages. Then A builds B\'s bundle from Ledger A, shaped by B\'s request, and sends it. A has nothing more to ask, so bundle_request is absent.',
-    proto: 'Endpoints MUST verify bundle proofs before submitting. On-chain (§4.2): <code>verifyBundle</code> → NoProgress check (§2.1.2) → size check → replay defence (first id = <code>received_message_id + 1</code>, then contiguous) → running-hash check → <code>acked_message_id := sync_data.received_message_id</code> → status checks → dispatch. Then <code>ClprSyncPayload(no bundle_request, bundle_response: bundle for B)</code>.',
+    proto: 'Endpoints MUST verify bundle proofs before submitting. On-chain (spec §4.2): <code>verifyBundle</code> → NoProgress check (spec §2.1.2) → size check → replay defence (first id = <code>received_message_id + 1</code>, then contiguous) → running-hash check → <code>acked_message_id := sync_data.received_message_id</code> → status checks → dispatch. Then <code>ClprSyncPayload(no bundle_request, bundle_response: bundle for B)</code>.',
     refs: [{ h: design('314-endpoint-communication-protocol'), l: 'design §3.1.4' }, { h: spec('42-bundle-verification-algorithm'), l: 'spec §4.2' }, { h: spec('212-bundle-progress-criteria'), l: 'spec §2.1.2' }, { h: ADR_SYNC('33-trust-model-for-the-unproven-request'), l: 'ADR 2026-07-14 §3.3' }],
   },
   {
@@ -56,7 +56,7 @@ const X = { la: 60, ea: 210, eb: 560, lb: 706 };
 ---
 <div class="sim synccycle" id={id}>
   <div class="sim__head">
-    <div><span class="kind">Step-through</span><h3>One sync cycle: four messages on one stream</h3></div>
+    <div><span class="kind">Step-through</span><h3>One sync cycle as specified: four messages on one stream</h3></div>
     <span class="pill grey" data-role="clock">step 0 / 4</span>
     <div class="sim__track seg" data-role="track" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
   </div>
@@ -275,7 +275,11 @@ const X = { la: 60, ea: 210, eb: 560, lb: 706 };
     function render(moved = false) {
       const aRecv = num('aRecv', 0), aNext = num('aNext', 1), bRecv = num('bRecv', 0), bNext = num('bNext', 1), bMan = num('bMan', 1), maxB = num('maxB', 1);
       const claim = Math.max(0, aRecv + num('aClaim', -2));
-      const forA = shape(claim, bNext, maxB);
+      // A claim at or above B's next_message_id names a message B has not sent: B falls back to its own
+      // acked_message_id + 1 (ADR 2026-07-14 §3.3), taken here to equal A's real received_message_id.
+      const fallback = claim >= bNext;
+      const startAfter = fallback ? aRecv : claim;
+      const forA = shape(startAfter, bNext, maxB);
       const forB = shape(bRecv, aNext, maxB);
       const manifestProof = bMan > A_CACHED_B_MANIFEST;
 
@@ -325,20 +329,21 @@ const X = { la: 60, ea: 210, eb: 560, lb: 706 };
       } else if (step === 1) {
         html = `<strong>A → B:</strong> <code>${req(claim, TA_B_SEEN_BY_A, A_CACHED_B_MANIFEST)}</code>. Unproven, and nothing on Ledger B changes because of it.` + (claim !== aRecv ? ` <span class="warn">A's real received_message_id is ${aRecv}; the request says ${claim}.</span>` : '');
       } else if (step === 2) {
-        const backlog = (forA.backlog ? `B's outbound queue holds ${forA.backlog} message${forA.backlog === 1 ? '' : 's'} after id ${claim} (ids ${claim + 1}…${bNext - 1}). ` : `B has nothing after id ${claim} (its next_message_id is ${bNext}), so the bundle carries no messages. `)
-          + (claim > aRecv ? `<span class="warn">Because A over-claimed, ids ${aRecv + 1}…${Math.min(claim, bNext - 1)} that A still needs are left out.</span> ` : claim < aRecv ? `<span class="warn">Because A under-claimed, ids ${claim + 1}…${aRecv} that A already has are included again.</span> ` : '');
+        const backlog = (fallback ? `<span class="warn">A's claim of ${claim} names a message B has not sent (its next_message_id is ${bNext}), so B falls back to its own acked_message_id + 1, taken here as ${aRecv + 1}.</span> ` : '')
+          + (forA.backlog ? `B's outbound queue holds ${forA.backlog} message${forA.backlog === 1 ? '' : 's'} after id ${startAfter} (ids ${startAfter + 1}…${bNext - 1}). ` : `B has nothing after id ${startAfter} (its next_message_id is ${bNext}), so the bundle carries no messages. `)
+          + (claim > aRecv && !fallback ? `<span class="warn">Because A over-claimed, ids ${aRecv + 1}…${Math.min(claim, bNext - 1)} that A still needs are left out.</span> ` : claim < aRecv ? `<span class="warn">Because A under-claimed, ids ${claim + 1}…${aRecv} that A already has are included again.</span> ` : '');
         const cap = forA.n && forA.n < forA.backlog ? `<strong>Only ${forA.n} go in</strong>, because max_messages_per_bundle = ${maxB}: the bundle is a proper prefix of the backlog, its anchor is message ${forA.last}, and ${forA.last + 1}…${bNext - 1} wait for a later cycle. ` : forA.n ? `All ${forA.n} fit under max_messages_per_bundle = ${maxB}; the anchor is message ${forA.last}. ` : '';
         html = `<strong>B → A:</strong> bundle for A = <strong>${range(forA)}</strong>. ${backlog}${cap}State-proven in the payload: B's <code>ChannelSyncData(received_message_id: ${bRecv}, status: ACTIVE, next_message_id: ${bNext})</code>${manifestProof ? ` and a proof of B's endpoint manifest v${bMan}, because A reported only v${A_CACHED_B_MANIFEST}` : ''}. In the same payload, B's own <code>${req(bRecv, TA_A_SEEN_BY_B, B_CACHED_A_MANIFEST)}</code>.`;
       } else if (step === 3) {
         const verdict = aOutcome === 'ok'
           ? `<span class="ok">Ledger A accepts it.</span> First id ${forA.first} = received_message_id ${aRecv} + 1, ids contiguous, running hash reproduces the proven anchor. received_message_id → ${forA.last}; acked_message_id → ${bRecv} (B's proven received_message_id), so A can delete acknowledged responses${manifestProof ? `; peer manifest → v${bMan}` : ''}.`
           : aOutcome === 'stale'
-          ? `<span class="bad">Ledger A rejects it.</span> The replay defence (§4.2 Step 3) demands a first id of exactly received_message_id + 1 = ${aRecv + 1}, but the bundle starts at ${forA.first}: it repeats ${aRecv - forA.first + 1} message${aRecv - forA.first + 1 === 1 ? '' : 's'} Ledger A already has. <strong>Nothing on chain changes</strong>; the stale request cost bandwidth and, if submitted, a transaction fee, and the next cycle's fresh request fixes the range. Correctness never depended on the request.`
+          ? `<span class="bad">Ledger A rejects it.</span> The replay defence (spec §4.2 step 3) demands a first id of exactly received_message_id + 1 = ${aRecv + 1}, but the bundle starts at ${forA.first}: it repeats ${aRecv - forA.first + 1} message${aRecv - forA.first + 1 === 1 ? '' : 's'} Ledger A already has. <strong>Nothing on chain changes</strong>; the stale request cost bandwidth and, if submitted, a transaction fee, and the next cycle's fresh request fixes the range. Correctness never depended on the request.`
           : aOutcome === 'over'
-          ? `<span class="bad">Ledger A rejects it.</span> The bundle starts at ${forA.first}, but Ledger A has only received up to ${aRecv}, so ids ${aRecv + 1}…${forA.first - 1} are missing: the replay defence (§4.2 Step 3) rejects the whole bundle. An over-claim only harms the over-claiming side (a liveness cost, never a safety one); a later correct request, or any endpoint's permissionless submission, delivers the gap.`
+          ? `<span class="bad">Ledger A rejects it.</span> The bundle starts at ${forA.first}, but Ledger A has only received up to ${aRecv}, so ids ${aRecv + 1}…${forA.first - 1} are missing: the replay defence (spec §4.2 step 3) rejects the whole bundle. An over-claim only harms the over-claiming side (a liveness cost, never a safety one); a later correct request, or any endpoint's permissionless submission, delivers the gap.`
           : manifestProof
           ? `<span class="ok">Ledger A accepts it</span> even with no messages: a manifest proof with version ${bMan} > ${A_CACHED_B_MANIFEST} is progress on its own (Criterion 3), and acked_message_id → ${bRecv}.`
-          : `<span class="warn">Nothing to submit:</span> no messages, no manifest or trust-anchor advance. A submits it only if the acknowledgement itself is progress (sync_data.received_message_id ${bRecv} above Ledger A's acked_message_id); otherwise the endpoint suppresses it rather than pay for a NoProgress rejection (§2.1.2).`;
+          : `<span class="warn">Nothing to submit:</span> no messages, no manifest or trust-anchor advance. A submits it only if the acknowledgement itself is progress (sync_data.received_message_id ${bRecv} above Ledger A's acked_message_id); otherwise the endpoint suppresses it rather than pay for a NoProgress rejection (spec §2.1.2).`;
         const forBtext = forB.n ? `${range(forB)}${forB.n < forB.backlog ? ` (${forB.n} of ${forB.backlog}, capped)` : ''}` : `no messages (B already has everything up to ${aNext - 1})`;
         html = `${verdict} <strong>A → B:</strong> bundle for B = <strong>${forBtext}</strong>, state-proven with A's <code>ChannelSyncData(received_message_id: ${aRecv}, status: ACTIVE, next_message_id: ${aNext})</code>. bundle_request absent: A has nothing more to ask this cycle.`;
       } else {

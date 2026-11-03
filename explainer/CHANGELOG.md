@@ -2,6 +2,51 @@
 
 Newest first. Each sync entry lists the upstream commit range it was reviewed against.
 
+## 2026-11-02 - the explainer wears the landing page's look
+
+Same pins, content unchanged. The pages now sit on the website's aurora background, with its
+eyebrows (Sora, sentence case, a gradient tick), light headings fading to lavender, navigation
+pills and glass panels. The palette follows the website: Ledger B and proofs are pink, money is
+peach. Every figure and simulation keeps its layout and takes the website's glow, with opaque box
+fills so lines behind boxes no longer cross labels. The hero animation is redrawn in the landing
+page's vocabulary (ledger membranes with validators, hexagon endpoints, diamond verifiers, a fibre
+channel), and so are the two islands in general §2. The shapes are `art-*` classes, the
+`clpr-figure` skill says which actor gets which, and its `art.mjs` prints the markup
+(docs/decisions.md D19). `check-diagram-text.mjs` now also keeps labels inside ledger orbs and
+checks the hero. The 28-step simulation no longer names its applications after an example
+contract the general page never shows. On screens 1240px and wider the 28-step journey and the
+architecture map spill into the right margin instead of scrolling, and on phones the page links
+fit one row.
+
+## 2026-11-02 - accuracy audit of the whole repository
+
+Same pins for the spec, contracts and endpoint (clpr-spec@945082d, clpr-smart-contracts@276c8d5,
+clpr-endpoint@2ccd48d). Governance moved from 498d4f4 to 1447ae0 and org-profile from 263fb39 to 528e9c0; the
+governance section is rewritten against the new files (GOVERNANCE.md, teams.yml), and the org
+profile's other changes (the weekly call, contribution notes) touch nothing on the pages.
+Every section, data row, figure, simulation and journey step was judged against its refs, and the
+code at the pins wherever the text describes an implementation. The audit found 170 problems (155 in
+the sections, figures, simulations and data rows, 14 in the journey, 1 in the page description), all
+fixed; most were overstatements:
+
+- Nothing sits between the ledgers: endpoints relay every bundle and can delay a message but not
+  forge one, and safety also rests on the channel's verifier and both CLPR Services.
+- A verifier's address is fixed for its channel's lifetime, but the contract may be an
+  upgradeable proxy; nothing calls it immutable any more.
+- The CLPR Service is the custodian of connector funds and endpoint bonds; what it never pools is
+  user assets.
+- The native Hiero implementation is no longer described as a feature branch pending approval; the
+  pages say where it lives, and the website states its live status.
+- Implementation notes were re-read against the code: the EVM charge formula, which state survives a
+  pause, peer selection, the unary sync exchange in the Java endpoint, the QBFT single-validator
+  anchor, the Hiero verifier's own ledger id and the running-hash form the EVM code still uses.
+- Attribution wording ("the specification says", "its authors flag") is gone from prose and
+  simulation notes, and one person's name is gone.
+
+`pack.json` retires "nothing in between", "zero custody" and "immutable verifier", so `kse
+check-vocab` fails on them. The audit skill now covers the website around the explainer too
+(docs/decisions.md D18), and the writing guide's "Things not to claim" carries these lessons.
+
 ## 2026-11-02 — figures and simulations fit the site's type
 
 Same upstream pins, content unchanged. Drawn in Sora, which runs wider than the engine's serif

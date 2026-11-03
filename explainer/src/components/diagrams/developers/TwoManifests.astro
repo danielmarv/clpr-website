@@ -1,16 +1,16 @@
 ---
-/** Ledger A publishes one local endpoint manifest; each channel on Ledger B holds a proven copy that is replaced whole, by proof, through three paths (completeChannel, verifyBundle, a direct submission by anyone) and never through the message queue. Draws on design §3.1.2, spec §2.4 and ADR 2026-07-03. */
+/** Ledger A publishes one local endpoint manifest; each channel on Ledger B holds a proven copy that is replaced whole, by proof, through three paths (completeChannel, a synced bundle, a manifest-only bundle anyone submits with submitBundle) and never through the message queue. Draws on design §3.1.2, spec §2.4 and ADR 2026-07-03. */
 import Figure from '@kse/components/Figure.astro';
 import { design, spec, pinned } from '../../../lib/sources';
 ---
 <Figure
   lead="Two manifests, one direction of truth."
-  caption="Ledger A's local manifest is the source; each channel on Ledger B holds a proven copy. The copy changes only by proof: populated at completeChannel, then replaced whole whenever a higher version arrives inside a bundle or is submitted directly by anyone, which is what makes recovery scenario R1 possible."
+  caption="Ledger A's local manifest is the source; each channel on Ledger B holds a proven copy. The copy changes only by proof: populated at completeChannel, then replaced whole whenever a higher version arrives inside a bundle, including a manifest-only bundle anyone can submit directly, which is what makes recovery scenario R1 possible."
   source={[{ label: 'design §3.1.2', href: design('312-endpoint-manifest') }, { label: 'spec §2.4', href: spec('24-endpoint-manifest') }, { label: 'ADR 2026-07-03', href: pinned('clpr-spec', 'ADR/2026-07-03-clpr-endpoint-manifests.md') }]}
   kind="spec"
   minWidth={760}
 >
-  <svg viewBox="0 0 760 360" role="img" aria-label="Ledger A's local manifest on the left, with its ClprEndpoint entries; Ledger B's channel on the right holding a proven copy of the peer manifest. Three numbered paths in the middle carry the manifest from A to B: completeChannel with verifyConfig, verifyBundle when the version is higher, and anyone reading getEndpointManifest and submitting a state proof directly. A dashed, crossed-out path at the bottom shows the message queue, which carried the list before ADR 2026-07-03 and could deadlock, never reaching B.">
+  <svg viewBox="0 0 760 360" role="img" aria-label="Ledger A's local manifest on the left, with its ClprEndpoint entries; Ledger B's channel on the right holding a proven copy of the peer manifest. Three numbered paths in the middle carry the manifest from A to B: completeChannel with verifyConfig, verifyBundle when the version is higher, and anyone reading getEndpointManifest and submitting a manifest-only bundle with submitBundle, which goes through the same verifyBundle step. A dashed, crossed-out path at the bottom shows the message queue, which carried the list before ADR 2026-07-03 and could deadlock, never reaching B.">
     <defs>
       <marker id="tm-arrow-ok" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9 Z" fill="var(--ok)"/></marker>
       <marker id="tm-arrow-c" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9 Z" fill="var(--c)"/></marker>
@@ -67,7 +67,7 @@ import { design, spec, pinned } from '../../../lib/sources';
     <rect x="290" y="166" width="200" height="60" rx="8" class="d-c"/>
     <text x="302" y="184" class="t b">anyone, directly</text>
     <text x="302" y="200" class="t mono">getEndpointManifest()</text>
-    <text x="302" y="216" class="t small">state proof → ordinary tx</text>
+    <text x="302" y="216" class="t small">in a bundle → submitBundle</text>
     <circle cx="476" cy="188" r="9" class="d-grey"/>
     <text x="476" y="192" class="t small center b">3</text>
     <line x1="288" y1="196" x2="242" y2="196" class="line c" marker-end="url(#tm-arrow-c)"/>

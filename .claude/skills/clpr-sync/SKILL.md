@@ -140,6 +140,13 @@ precise and cites sections. If a new concept appears upstream, use the specifica
 it on both pages, explain it in plain words on the general page, and add a glossary term if
 needed. Do not coin a friendlier name for it.
 
+Hold the new text to `explainer/docs/writing-guide.md` ("Things not to claim") as well as to the
+spec: CLPR is a messaging protocol that guarantees authenticity, integrity and order, not delivery
+or meaning; the site speaks neutrally for an LF Decentralized Trust lab; Hiero status is whatever
+HIP-1535 states. A fact the sync changes on one surface (the explainer, `site.ts`, the README)
+changes on all of them, and a corrected claim that could come back gets a `retiredVocab` entry in
+`src/data/pack.json`.
+
 If something in the new upstream text is ambiguous or self-contradictory, do not guess. Describe
 the ambiguity as such (the developer page already does this for several items) and mention it in
 the changelog entry so a maintainer can raise it upstream.
@@ -164,7 +171,8 @@ today; the provenance table on both pages regenerates from the manifest at build
 
 Then run the `clpr-audit` skill on the sections and data rows you changed (all of them after a
 large sync): `pnpm exec kse audit-input` pairs each section's text with the passages its refs
-cite at the new pins, and the skill judges every statement. The bar before the changelog entry is
+cite at the new pins, `node .claude/skills/clpr-audit/repo-input.mjs` (from the repository root)
+does the same for the website's copy, and the skill judges every statement. The bar before the changelog entry is
 zero drifted and zero unsupported findings; an `illustration` verdict is only acceptable inside a
 section flagged `illustration: true` in `sections.json`.
 

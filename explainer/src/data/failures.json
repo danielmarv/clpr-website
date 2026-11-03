@@ -1,10 +1,10 @@
 {
-  "$comment": "The \"what can go wrong\" cases of the Failures simulation. Every outcome is taken from the design document and the specification; refs point at the passage each case rests on.",
+  "$comment": "The \"what can go wrong\" cases of the Failures simulation. Every outcome is taken from the design document and the specification, and a detail that only the EVM contracts add says so; refs point at the passage each case rests on.",
   "cases": [
     {
       "k": "app",
       "q": "The application on the other side crashes",
-      "what": "The bundle still succeeds. The application's revert is caught; the reply carries APPLICATION_ERROR and the revert data. Delivery worked; the application simply did not like the message.",
+      "what": "The bundle still succeeds. The application's revert is caught and the reply carries APPLICATION_ERROR; the EVM contracts also put the revert data in it. Delivery worked; the application simply did not like the message.",
       "pays": "The connector pays for the gas used, as normal. No fine.",
       "state": "ACTIVE",
       "recovers": "Nothing to recover. The sending application decides what to do with the error.",
@@ -13,6 +13,12 @@
           "doc": "design",
           "anchor": "333-receiving-routing-and-paying",
           "label": "design §3.3.3"
+        },
+        {
+          "doc": "repo",
+          "id": "clpr-smart-contracts",
+          "path": "src/libraries/service/BundleLib.sol",
+          "label": "BundleLib.sol"
         }
       ]
     },
@@ -35,7 +41,7 @@
       "k": "uf",
       "q": "The connector on the other side has run out of funds",
       "what": "CONNECTOR_UNDERFUNDED. The destination connector's locked stake is slashed and the failure reply is queued.",
-      "pays": "Slash proceeds reimburse the destination submitter on the spot. The source connector is fined too when the reply arrives. Penalties escalate to a ban.",
+      "pays": "Slash proceeds reimburse the destination submitter on the spot. The source connector is fined too when the reply arrives. Penalties can escalate, and repeated failures may get the connector banned from the channel.",
       "state": "ACTIVE",
       "recovers": "Yes; the connector operator tops up or is replaced by the application.",
       "refs": [
@@ -187,7 +193,7 @@
       "what": "Then messages from that ledger can be forged, and CLPR does not claim otherwise. A message is exactly as trustworthy as the consensus that sealed it.",
       "pays": "Everyone relying on that ledger, on-chain or cross-chain.",
       "state": "n/a",
-      "recovers": "Outside the protocol's scope. What CLPR guarantees is that there is no additional party, beyond the two ledgers, whose compromise could do this.",
+      "recovers": "Outside the protocol's scope. Beyond the two ledgers' consensus, the only other parts trusted for this are the channel's verifier and the CLPR Service on each side; endpoints and connectors cannot forge a message.",
       "refs": [
         {
           "doc": "design",

@@ -16,7 +16,7 @@ website's `pnpm build` (`embed.mjs` runs Astro with `BASE_PATH=/plumbing/`); see
 
 | Page | For | Covers |
 |---|---|---|
-| **`/`** | Anyone. No prior knowledge assumed. | What a ledger is, why ledgers cannot see each other, why bridges fail, proof instead of trust, the cast, the 28-step round trip in both directions, the running-hash chain, who pays, what can go wrong, channels, couriers, verifiers, the six roles, a tappable map of every piece of software, adding a ledger, limits, how the spec changes, the LFDT lab |
+| **`/`** | Anyone. No prior knowledge assumed. | What a ledger is, why ledgers cannot see each other, why bridges fail, proof instead of trust, the cast, the 28-step round trip in both directions, the running-hash chain, who pays, what can go wrong, channels, endpoints, verifiers, the six roles, a tappable map of every piece of software, adding a ledger, limits, how the spec changes, the LFDT lab |
 | **`/developers/`** | Developers. No prior knowledge of CLPR; comfort with ledgers, hashes and contracts. | The same arc at full depth: trust model, four layers, identity and throttles, channels (commit-reveal, lifecycle), endpoints and manifests, the sync protocol, queue and running hash, bundles and progress, the bundle verification algorithm with fault injection, response ordering, connectors and slashing, verifiers and trust-anchor rotation, the application API, roles, recovery, security, the reference implementations and their divergences, the ADRs, governance, glossary |
 
 ## What makes it trustworthy
@@ -65,7 +65,7 @@ The full procedure is the [`clpr-sync` skill](.claude/skills/clpr-sync/SKILL.md)
 can run end to end (fetch, read the diffs, update both pages and the simulations, re-pin, check,
 look, audit, record, commit). Two report-only skills go with it: [`clpr-drift`](.claude/skills/clpr-drift/SKILL.md)
 says what moved upstream and what it touches; [`clpr-audit`](.claude/skills/clpr-audit/SKILL.md) checks every
-statement against the passage it cites at the pinned commits. A weekly [workflow](.github/workflows/upstream-watch.yml) opens an issue
+statement in the repository, the website's landing page included, against the passage it cites at the pinned commits. A weekly [workflow](.github/workflows/upstream-watch.yml) opens an issue
 when a pinned repository has moved. See [docs/syncing.md](docs/syncing.md).
 
 ## Building against other commits
@@ -101,7 +101,7 @@ records every sync with the upstream commit range it was reviewed against.
 ## Contributing and license
 
 Pull requests welcome; every commit needs a DCO sign-off (`git commit -s`). See
-[CONTRIBUTING.md](CONTRIBUTING.md). Code is [Apache-2.0](LICENSE); prose is
+[CONTRIBUTING.md](CONTRIBUTING.md). Code is [Apache-2.0](../LICENSE); prose is
 [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
 
 ## Writing rules

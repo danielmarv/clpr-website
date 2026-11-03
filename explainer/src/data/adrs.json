@@ -1,5 +1,5 @@
 {
-  "$comment": "Accepted decision records in clpr-spec/ADR, one row per file; check-data.mjs fails when a file upstream has no row. summary is the general page's one-sentence reading, detail the developer page's (may carry inline <code>).",
+  "$comment": "Decision records in clpr-spec/ADR, one row per file; check-data.mjs fails when a file upstream has no row. summary is the general page's one-sentence reading, detail the developer page's (may carry inline <code>).",
   "adrs": [
     {
       "file": "2026-07-02-channel-context-verifier-interface.md",
@@ -20,7 +20,7 @@
       "file": "2026-07-03-clpr-endpoint-manifests.md",
       "date": "2026-07-03",
       "title": "CLPR Endpoint Manifests",
-      "summary": "The endpoint manifest (each ledger's on-chain list of endpoint addresses) moved out of the message queue and into proven on-chain state, because delivering the new addresses through a queue that needs the old addresses to deliver anything was a deadlock.",
+      "summary": "The endpoint manifest (each ledger's on-chain list of endpoint addresses) became its own proven piece of state, with updates carried as a proof inside bundles instead of as a queued message, because if every endpoint is replaced at once, a queued update cannot reach the other side.",
       "detail": "Move endpoint lists out of <code>ConfigUpdate</code> into a proven, versioned on-ledger manifest refreshed through bundle payloads, fixing the complete-turnover deadlock; two-step admission with bond on permissionless ledgers.",
       "refs": [
         {
@@ -35,7 +35,7 @@
       "file": "2026-07-14-endpoint-sync-streaming-and-mtls.md",
       "date": "2026-07-14",
       "title": "CLPR Endpoint Sync Streaming Protocol and mTLS Root-of-Trust Model",
-      "summary": "Endpoints now talk over a two-way stream rather than a single request, because the old shape sent every message twice in steady state. The same record set the encryption model: a long-lived certificate on chain and a short-lived one per process.",
+      "summary": "Endpoints now talk over a two-way stream rather than a single request, because the old shape sent every message twice in steady state. The same record set the root of trust for mutual TLS between endpoints: a certificate authority on chain and a short-lived certificate per process.",
       "detail": "Replace the unary <code>sync</code> RPC with a bidirectional-streaming request/response cycle that eliminates systematic duplicate sends; adopt a P-384 root CA / Ed25519 leaf mTLS model.",
       "refs": [
         {

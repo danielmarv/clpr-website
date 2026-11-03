@@ -187,15 +187,22 @@ function Diagram({ step }: { step: number }) {
         </text>
       </g>
 
-      {/* Step 7: a Connector bonded to the Channel. */}
+      {/* Step 7: a Connector bonded to the Channel, present on both ledgers beside each CLPR Service. */}
       <g style={show(6)}>
-        <g transform="translate(300 160)">
-          <circle r={10} fill="#0b0a13" stroke={TONES.warm} strokeWidth={1.6} />
-          <circle r={3.5} fill={TONES.warm} />
-        </g>
-        <Label x={300} y={190} strong={step === 6}>
-          {copy.connector}
-        </Label>
+        {[
+          { x: SERVICE.new.x + 52, y: SERVICE.new.y - 56 },
+          { x: SERVICE.hiero.x - 52, y: SERVICE.hiero.y - 56 },
+        ].map((place) => (
+          <g key={place.x}>
+            <g transform={`translate(${place.x} ${place.y})`}>
+              <circle r={10} fill="#0b0a13" stroke={TONES.warm} strokeWidth={1.6} />
+              <circle r={3.5} fill={TONES.warm} />
+            </g>
+            <Label x={place.x} y={place.y - 18} strong={step === 6}>
+              {copy.connector}
+            </Label>
+          </g>
+        ))}
       </g>
 
       {/* Step 8: applications on both ledgers, and messages on the Channel. */}

@@ -48,7 +48,7 @@ const phaseOf = (p: string) => journey.phases.find((x) => x.id === p)!;
       <g data-node="appA" class="node">
         <rect x="40" y="72" width="150" height="46" rx="8" class="d-a" />
         <text x="115" y="92" class="t b center">Application</text>
-        <text x="115" y="108" class="t small center">PingPong</text>
+        <text x="115" y="108" class="t small center">sends, gets the reply</text>
       </g>
       <g data-node="svcA" class="node">
         <rect x="40" y="132" width="320" height="150" rx="10" class="d-a" fill-opacity="0.35" />
@@ -89,7 +89,7 @@ const phaseOf = (p: string) => journey.phases.find((x) => x.id === p)!;
       <g data-node="appB" class="node">
         <rect x="730" y="72" width="150" height="46" rx="8" class="d-b" />
         <text x="805" y="92" class="t b center">Application</text>
-        <text x="805" y="108" class="t small center">PingPong</text>
+        <text x="805" y="108" class="t small center">receives, answers</text>
       </g>
       <g data-node="svcB" class="node">
         <rect x="576" y="132" width="308" height="150" rx="10" class="d-b" fill-opacity="0.35" />
@@ -190,7 +190,9 @@ const phaseOf = (p: string) => journey.phases.find((x) => x.id === p)!;
 </div>
 
 <style>
-  .journey .sim__scroll > svg { min-width: 920px; }
+  /* From 1240px the sim spills into the margin (site-theme.css) and the drawing fits it instead. */
+  @media (max-width: 1239.98px) { .journey .sim__scroll > svg { min-width: 920px; } }
+  @media (min-width: 1240px) { .journey .sim__scroll > svg { min-width: 0; } }
   .journey__token { transition: transform 600ms cubic-bezier(.4,.1,.2,1); color: var(--text); }
   .journey .node { transition: opacity 250ms; }
   .journey .node.off { opacity: 0.32; }

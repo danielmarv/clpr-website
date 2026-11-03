@@ -4,7 +4,7 @@ import Figure from '@kse/components/Figure.astro';
 import { design } from '../../../lib/sources';
 ---
 <Figure
-  lead="The key is the whole security."
+  lead="Where Ledger B trusts a key, the key is the security."
   caption="Ledger B checks a signature from the middleman's key, not anything from Ledger A. A stolen key, a colluding committee or a buggy signer produces a report that passes exactly the same check as a true one."
   source={[{ label: 'design §1', href: design('1-executive-summary') }]}
   kind="plain"
@@ -66,6 +66,6 @@ import { design } from '../../../lib/sources';
     <text x="345" y="280" class="t small center bad">Ledger B never consults Ledger A, so it cannot tell the two apart.</text>
 
     <!-- takeaway -->
-    <text x="360" y="312" class="t take center">Ledger B is only ever as safe as key K, whoever holds it today.</text>
+    <text x="360" y="312" class="t take center">Here, Ledger B is only as safe as key K, whoever holds it today.</text>
   </svg>
 </Figure>

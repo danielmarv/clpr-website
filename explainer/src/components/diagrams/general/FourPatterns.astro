@@ -4,7 +4,7 @@ import Figure from '@kse/components/Figure.astro';
 import { design } from '../../../lib/sources';
 ---
 <Figure
-  lead="Four things people build on one message primitive."
+  lead="Four patterns the design outlines on one message primitive."
   caption="A call to a contract on another ledger, with the result coming back later. Assets locked on one ledger and minted on another, released if the mint fails. Several ledgers changing state together or not at all. And Hiero tokens moving between Hiero networks with no contract proxies in between. All four are just messages with replies."
   source={[{ label: 'design §3.4.1', href: design('341-remote-smart-contract-call') }, { label: 'design §3.4.2', href: design('342-escrow-mint-then-burn') }, { label: 'design §3.4.3', href: design('343-n-ledger-atomic-swap-2pc') }, { label: 'design §3.4.4', href: design('344-native-hiero-asset-management') }]}
   kind="plain"
@@ -87,6 +87,6 @@ import { design } from '../../../lib/sources';
     <text x="665" y="262" class="t small center">no contract proxies</text>
     <text x="665" y="304" class="t small center muted">CLPR-native handling</text>
 
-    <text x="380" y="350" class="t take center">Four patterns, one primitive: a data message that always gets exactly one reply.</text>
+    <text x="380" y="350" class="t take center">Four patterns, one primitive: a data message that gets exactly one reply.</text>
   </svg>
 </Figure>
