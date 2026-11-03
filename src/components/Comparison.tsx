@@ -21,8 +21,8 @@ export function Comparison() {
           {/* Many bridges: the same two ledgers, joined through a party in the middle. */}
           <article className={cn(CARD, "panel")}>
             <header className="flex items-start justify-between gap-4">
-              <h3 className="text-[0.9375rem] font-medium text-white/60">{columns.bridge}</h3>
-              <CircleSlash className="size-5 shrink-0 text-white/30" aria-hidden="true" />
+              <h3 className="text-[0.9375rem] font-medium text-fg/60">{columns.bridge}</h3>
+              <CircleSlash className="size-5 shrink-0 text-fg/30" aria-hidden="true" />
             </header>
             <div className="mt-6 aspect-[520/200] w-full">
               <BridgeArt />
@@ -30,9 +30,9 @@ export function Comparison() {
             <p className="mt-6 max-w-[48ch] text-[0.8125rem] leading-relaxed text-faint">{diagrams.bridge.caption}</p>
             <dl className={ROWS}>
               {rows.map((row) => (
-                <div key={row.aspect} className="border-t border-white/[0.07] py-5">
+                <div key={row.aspect} className="border-t border-fg/[0.07] py-5">
                   <dt className="text-[0.8125rem] text-faint">{row.aspect}</dt>
-                  <dd className="mt-1.5 text-[1rem] leading-relaxed text-white/55">{row.bridge}</dd>
+                  <dd className="mt-1.5 text-[1rem] leading-relaxed text-fg/55">{row.bridge}</dd>
                 </div>
               ))}
             </dl>
@@ -42,11 +42,11 @@ export function Comparison() {
           <article
             className={cn(
               CARD,
-              "rounded-panel border border-signal-glow/25 bg-[linear-gradient(160deg,rgb(63_34_215/0.18),rgb(255_255_255/0.02)_55%,rgb(200_42_128/0.1))] max-md:mt-4",
+              "rounded-panel border border-signal-glow/40 bg-[linear-gradient(160deg,rgb(91_69_224/0.09),rgb(255_255_255/0.8)_55%,rgb(210_58_138/0.06))] max-md:mt-4 dark:border-signal-glow/25 dark:bg-[linear-gradient(160deg,rgb(63_34_215/0.18),rgb(255_255_255/0.02)_55%,rgb(200_42_128/0.1))]",
             )}
           >
             <header className="flex items-start justify-between gap-4">
-              <h3 className="text-[0.9375rem] font-medium text-white">{columns.clpr}</h3>
+              <h3 className="text-[0.9375rem] font-medium text-fg">{columns.clpr}</h3>
               <BadgeCheck className="size-5 shrink-0 text-proof-glow" aria-hidden="true" />
             </header>
             <div className="mt-6 aspect-[520/200] w-full">
@@ -55,9 +55,9 @@ export function Comparison() {
             <p className="mt-6 max-w-[48ch] text-[0.8125rem] leading-relaxed text-night-text">{diagrams.clpr.caption}</p>
             <dl className={ROWS}>
               {rows.map((row) => (
-                <div key={row.aspect} className="border-t border-white/12 py-5">
-                  <dt className="text-[0.8125rem] text-white/55">{row.aspect}</dt>
-                  <dd className="mt-1.5 text-[1rem] leading-relaxed text-white">{row.clpr}</dd>
+                <div key={row.aspect} className="border-t border-fg/12 py-5">
+                  <dt className="text-[0.8125rem] text-fg/55">{row.aspect}</dt>
+                  <dd className="mt-1.5 text-[1rem] leading-relaxed text-fg">{row.clpr}</dd>
                 </div>
               ))}
             </dl>
@@ -71,7 +71,7 @@ export function Comparison() {
           </p>
           <a
             href={comparison.explainer.href}
-            className="group inline-flex shrink-0 items-center gap-2 text-[0.9375rem] font-medium text-signal-ink transition-colors hover:text-white"
+            className="group inline-flex shrink-0 items-center gap-2 text-[0.9375rem] font-medium text-signal-ink transition-colors hover:text-fg"
           >
             {comparison.explainer.label}
             <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-1" aria-hidden="true" />

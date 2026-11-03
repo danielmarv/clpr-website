@@ -20,7 +20,7 @@ function Art({ id, children }: { id: string; children: ReactNode }) {
 
 function Label({ x, y, anchor = "middle", children }: { x: number; y: number; anchor?: "start" | "middle" | "end"; children: ReactNode }) {
   return (
-    <text x={x} y={y} textAnchor={anchor} className="fill-white/45 text-[12px]">
+    <text x={x} y={y} textAnchor={anchor} className="fill-fg/45 text-[12px]">
       {children}
     </text>
   );
@@ -92,7 +92,7 @@ function EndpointsArt() {
         <circle r={10} stroke={TONES.pink} strokeWidth={1.2} />
       </Mover>
       <Mover path={fibre(lower.from, lower.to, lower.bow)} motion="prop-response" at={35}>
-        <rect x={-5} y={-5} width={10} height={10} rx={2} transform="rotate(45)" fill="#0b0a13" stroke={TONES.warm} strokeWidth={1.4} />
+        <rect x={-5} y={-5} width={10} height={10} rx={2} transform="rotate(45)" fill="var(--art-fill)" stroke={TONES.warm} strokeWidth={1.4} />
       </Mover>
       <Label x={160} y={30}>{labels.bundles}</Label>
       <Label x={160} y={148}>{labels.anchor}</Label>
@@ -113,12 +113,12 @@ function VerifierArt() {
       <Bundle from={{ x: anchor.x, y: anchor.y + 10 }} to={{ x: verifier.x, y: verifier.y - 14 }} tone="warm" strands={4} spread={0.08} opacity={0.4} seed={9} />
       <path
         d={`M${verifier.x} ${verifier.y - 14}L${verifier.x + 14} ${verifier.y}L${verifier.x} ${verifier.y + 14}L${verifier.x - 14} ${verifier.y}Z`}
-        fill="#0b0a13"
+        fill="var(--art-fill)"
         stroke={TONES.pink}
         strokeWidth={1.4}
       />
       <g transform={`translate(${anchor.x} ${anchor.y})`}>
-        <circle r={8} fill="#0b0a13" stroke={TONES.warm} strokeWidth={1.4} />
+        <circle r={8} fill="var(--art-fill)" stroke={TONES.warm} strokeWidth={1.4} />
         <circle r={2.5} fill={TONES.warm} />
       </g>
       <Pulse x={verifier.x} y={verifier.y} motion="prop-ring" delay={2.02} rest={0}>

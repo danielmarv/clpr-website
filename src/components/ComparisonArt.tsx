@@ -29,7 +29,7 @@ function Art({ id, children }: { id: string; children: ReactNode }) {
 
 function Caption({ y = 172, children, className }: { y?: number; children: ReactNode; className?: string }) {
   return (
-    <text x={WIDTH / 2} y={y} textAnchor="middle" className={cn("text-[15px] max-sm:text-[21px]", className ?? "fill-white/45")}>
+    <text x={WIDTH / 2} y={y} textAnchor="middle" className={cn("text-[15px] max-sm:text-[21px]", className ?? "fill-fg/45")}>
       {children}
     </text>
   );
@@ -56,13 +56,13 @@ export function BridgeArt() {
         width={HUB.width}
         height={HUB.height}
         rx={18}
-        fill="#0b0a13"
+        fill="var(--art-fill)"
         fillOpacity={0.75}
-        stroke="#fff"
+        stroke="var(--fg)"
         strokeOpacity={0.35}
         strokeDasharray="4 4"
       />
-      <text x={HUB.x} y={HUB.y - 20} textAnchor="middle" className="fill-white/75 text-[14px] max-sm:text-[19px]">
+      <text x={HUB.x} y={HUB.y - 20} textAnchor="middle" className="fill-fg/75 text-[14px] max-sm:text-[19px]">
         {diagrams.bridge.middle}
       </text>
       {validators.map((point, k) => (
@@ -94,7 +94,7 @@ export function ClprArt() {
       <Endpoint x={B_RIM.x} y={B_RIM.y} tone="pink" />
       <path
         d={`M${verifier.x} ${verifier.y - 7}L${verifier.x + 7} ${verifier.y}L${verifier.x} ${verifier.y + 7}L${verifier.x - 7} ${verifier.y}Z`}
-        fill="#0b0a13"
+        fill="var(--art-fill)"
         stroke={TONES.pink}
         strokeWidth={1.3}
       />

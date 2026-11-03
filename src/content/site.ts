@@ -323,4 +323,5 @@ export const site = {
   menuClose: "Close menu",
   githubLabel: "GitHub",
   homeLabel: "CLPR home",
+  theme: { label: "Color theme", light: "Light", dark: "Dark", system: "System" },
 } as const;

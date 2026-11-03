@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 
 import { site } from "@/content/site";
+import { THEME_COLOR, THEME_SCRIPT } from "@/lib/theme";
 import "./globals.css";
 
 // Sora (OFL) stands in for Styrene A, the licensed typeface on hashgraph.com/clpr.
@@ -40,13 +41,18 @@ export const metadata: Metadata = {
   },
 };
 
+// Light is the default; ThemeSwitch moves it to the theme in effect.
 export const viewport: Viewport = {
-  themeColor: "#0c0b1d",
+  themeColor: THEME_COLOR.light,
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${sora.variable} ${plexMono.variable} antialiased`}>
+    // THEME_SCRIPT sets data-theme before React hydrates, hence suppressHydrationWarning.
+    <html lang="en" className={`${sora.variable} ${plexMono.variable} antialiased`} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+      </head>
       <body className="min-h-dvh">{children}</body>
     </html>
   );

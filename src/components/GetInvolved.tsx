@@ -38,7 +38,7 @@ export function GetInvolved() {
         <SpiralRibbon className="mx-auto aspect-3/2 w-full max-w-[34rem] max-lg:order-first lg:mx-0 lg:max-w-none lg:justify-self-end" />
       </div>
 
-      <ul className="mt-16 grid gap-px overflow-hidden rounded-panel border border-white/[0.07] bg-white/[0.07] md:grid-cols-3 lg:mt-20">
+      <ul className="mt-16 grid gap-px overflow-hidden rounded-panel border border-fg/[0.07] bg-fg/[0.07] md:grid-cols-3 lg:mt-20">
         {involvement.paths.map((path) => {
           const external = isExternal(path.href);
           return (
@@ -46,11 +46,11 @@ export function GetInvolved() {
               <a
                 href={path.href}
                 {...(external && { target: "_blank", rel: "noreferrer" })}
-                className="group flex h-full flex-col p-6 transition-colors duration-300 hover:bg-white/[0.03] sm:p-7"
+                className="group flex h-full flex-col p-6 transition-colors duration-300 hover:bg-fg/[0.03] sm:p-7"
               >
                 <h3 className="text-[1.125rem] font-medium tracking-[-0.015em]">{path.name}</h3>
                 <p className="mt-2 flex-1 text-[0.9375rem] leading-relaxed text-muted-foreground">{path.body}</p>
-                <span className="mt-6 inline-flex items-center gap-2 text-[0.9375rem] font-medium text-signal-ink transition-colors group-hover:text-white">
+                <span className="mt-6 inline-flex items-center gap-2 text-[0.9375rem] font-medium text-signal-ink transition-colors group-hover:text-fg">
                   {path.cta}
                   {external ? (
                     <ArrowUpRight className="size-4" aria-hidden="true" />

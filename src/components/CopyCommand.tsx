@@ -36,13 +36,13 @@ export function CopyCommand({
   };
 
   return (
-    <div className={cn("rounded-lg border border-white/10 bg-black/30", className)}>
-      <div className="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-2">
-        <p className="truncate text-[0.75rem] text-white/55">{label}</p>
+    <div className={cn("rounded-lg border border-fg/10 bg-surface dark:bg-black/30", className)}>
+      <div className="flex items-center justify-between gap-3 border-b border-fg/10 px-4 py-2">
+        <p className="truncate text-[0.75rem] text-fg/55">{label}</p>
         <button
           type="button"
           onClick={copy}
-          className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-[0.75rem] text-white/75 transition-colors hover:bg-white/10 hover:text-white"
+          className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-[0.75rem] text-fg/75 transition-colors hover:bg-fg/10 hover:text-fg"
         >
           {copied ? <Check className="size-3.5 text-proof-glow" aria-hidden="true" /> : <Copy className="size-3.5" aria-hidden="true" />}
           {/* On phones the icon alone; the label stays for screen readers. */}
@@ -51,7 +51,7 @@ export function CopyCommand({
           </span>
         </button>
       </div>
-      <pre className="whitespace-pre-wrap break-all px-4 py-3.5 font-mono text-[0.82rem] leading-relaxed text-white">
+      <pre className="whitespace-pre-wrap break-all px-4 py-3.5 font-mono text-[0.82rem] leading-relaxed text-fg">
         <code>
           <span className="select-none text-signal-glow">$ </span>
           {command}

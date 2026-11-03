@@ -12,7 +12,7 @@ export function Hero() {
         <div className="relative z-10 max-w-[40rem] max-lg:order-2">
           <p
             data-hero-reveal
-            className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] py-1 pl-2.5 pr-3.5 text-[0.8125rem] text-muted-foreground"
+            className="inline-flex items-center gap-2 rounded-full border border-fg/10 bg-fg/[0.03] py-1 pl-2.5 pr-3.5 text-[0.8125rem] text-muted-foreground"
           >
             <span className="size-1.5 rounded-full bg-signal-glow" aria-hidden="true" />
             {hero.eyebrow}
@@ -48,7 +48,7 @@ export function Hero() {
       </div>
 
       <div className="shell pb-10">
-        <div data-hero-reveal className="flex flex-col gap-5 border-t border-white/[0.07] pt-6 md:flex-row md:items-center md:justify-between">
+        <div data-hero-reveal className="flex flex-col gap-5 border-t border-fg/[0.07] pt-6 md:flex-row md:items-center md:justify-between">
           <p className="max-w-md text-[0.8125rem] leading-relaxed text-faint">{origins.label}</p>
           <ul className="flex flex-wrap items-center gap-x-8 gap-y-4" aria-label="Organizations behind CLPR">
             {origins.logos.map((logo) => (
@@ -64,7 +64,7 @@ export function Hero() {
                     alt={logo.name}
                     width={logo.width}
                     height={logo.height}
-                    className={`${logo.className} brightness-0 invert`}
+                    className={`${logo.className} brightness-0 dark:invert`}
                   />
                 </a>
               </li>
@@ -81,7 +81,7 @@ export function Hero() {
                   alt="LF Decentralized Trust"
                   width={698.7}
                   height={39.1}
-                  className="h-3.5 w-auto"
+                  className="h-3.5 w-auto brightness-0 dark:brightness-100"
                 />
               </a>
             </li>
