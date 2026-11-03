@@ -22,9 +22,7 @@ export const links = {
   labsCharter: "https://github.com/LFDT-CLPR/governance/blob/main/lf-decentralized-trust-labs_Charter.pdf",
   contributing: "https://github.com/LFDT-CLPR/.github/blob/main/CONTRIBUTING.md",
   weeklyCall: "https://zoom-lfx.platform.linuxfoundation.org/meetings/lf-decentralized-trust-labs?view=week",
-  lfdtRelease: "https://www.linuxfoundation.org/press/lf-decentralized-trust-adds-swift-wells-fargo-and-13-additional-new-members",
   releaseCoverage: "https://genfinity.io/2026/09/24/hedera-hashgraph-clpr-linux-foundation-decentralized-trust-labs/",
-  earlyAdopter: "https://hashgraph.com/clpr-early-adopter-program/",
 } as const;
 
 // The site's pages; the home page's sections are linked from the footer.
@@ -338,14 +336,6 @@ export const involvement = {
   },
 } as const;
 
-const quotes = {
-  barbosa: {
-    name: "Daniela Barbosa",
-    role: "General Manager of Decentralized Technologies at the Linux Foundation and Executive Director of LF Decentralized Trust",
-  },
-  baird: { name: "Dr. Leemon Baird", role: "Co-Founder at Hedera and Chief Scientist at Hashgraph" },
-} as const;
-
 // Quoted from the announcement of 24 September 2026, as reported that day (links.releaseCoverage).
 export const voices = {
   id: "voices",
@@ -354,11 +344,13 @@ export const voices = {
   lead: "Builders, partners and community leaders on what open development makes possible.",
   quotes: [
     {
-      ...quotes.barbosa,
+      name: "Daniela Barbosa",
+      role: "General Manager of Decentralized Technologies at the Linux Foundation and Executive Director of LF Decentralized Trust",
       text: "As a new LFDT lab, CLPR will leverage open development to shape a protocol that fuels collaboration across the industry. With this contribution, Hedera is once again showing its commitment to vendor neutral, collaborative development of critical shared technologies.",
     },
     {
-      ...quotes.baird,
+      name: "Dr. Leemon Baird",
+      role: "Co-Founder at Hedera and Chief Scientist at Hashgraph",
       text: "That commitment to open collaboration is exactly what’s needed to solve one of the industry’s most persistent problems: network interoperability. When underpinning an application, CLPR is designed to fix that cryptographically so data, assets and messages move freely without a single point of failure to attack.",
     },
   ],
@@ -485,90 +477,23 @@ export const issueExplorer = {
   },
 } as const;
 
+// The blog's labels; the posts are Markdown files in content/posts/ (src/lib/posts.ts, docs/blogs.md),
+// and the blog's title and subtitle are in content/posts/_index.md.
 export const blog = {
-  metaTitle: "Blog",
   description: "News and announcements from the CLPR project.",
   kicker: "Project news",
-  title: "CLPR Blog",
-  lead: "Stay up to date with our latest news and announcements.",
   latestLabel: "Latest post",
-  recentLabel: "Recent posts",
   readLabel: "Read the post",
   backLabel: "All posts",
-  sourcesLabel: "Sources",
-  posts: [
-    {
-      slug: "clpr-joins-lf-decentralized-trust-labs",
-      title: "Hedera contributes Hashgraph-developed CLPR to LFDT",
-      summary: "The bridgeless Cross-Ledger Protocol joins LFDT Labs as an openly developed codebase.",
-      date: "2026-09-24",
-      body: [
-        {
-          kind: "text",
-          text: "On 24 September 2026, Hedera contributed CLPR (“clipper”) to LF Decentralized Trust as a new lab. CLPR was developed by the Hashgraph team. It is a bridgeless cross-ledger messaging protocol: it uses state proofs so that independent ledger networks can verify each other’s state directly, with no intermediaries.",
-        },
-        {
-          kind: "text",
-          text: "Used with an application built on it, CLPR can let assets, data and messages move across ledgers without bridges, pooled liquidity or intermediary validator networks.",
-        },
-        {
-          kind: "quote",
-          ...quotes.barbosa,
-          text: "Cross ledger interoperability is key to unlocking the flow of value across networks and platforms. As a new LFDT lab, CLPR will leverage open development to shape a protocol that fuels collaboration across the industry. With this contribution, Hedera is once again showing its commitment to vendor neutral, collaborative development of critical shared technologies.",
-        },
-        {
-          kind: "text",
-          text: "As an LFDT lab, CLPR is now an openly developed codebase. The specification, the Solidity contracts for EVM ledgers, the Java endpoint and the lab’s governance are in the LFDT-CLPR organization on GitHub. Labs are where early work builds a community and invites contributions before it can become a top-level LFDT project, and CLPR is early: the specification is still changing and some economic parameters are open.",
-        },
-        {
-          kind: "quote",
-          ...quotes.baird,
-          text: "Just weeks ago marked the two-year anniversary of Hedera’s establishment as a founding Premier Member of the Linux Foundation Decentralized Trust, donating the entirety of the Hedera codebase to LFDT as Project Hiero. That commitment to open collaboration is exactly what’s needed to solve one of the industry’s most persistent problems: network interoperability. When underpinning an application, CLPR is designed to fix that cryptographically so data, assets and messages move freely without a single point of failure to attack. Today’s announcement that Hedera is donating another protocol to LFDT shows that our commitment is only growing, and we’re excited to see how developers experiment with CLPR’s capabilities.",
-        },
-        {
-          kind: "text",
-          text: "To get started, read the specification, pick an open issue in the Issue Explorer, or join the weekly call.",
-        },
-      ],
-      sources: [
-        { label: "LF Decentralized Trust press release, 24 September 2026", href: links.lfdtRelease },
-        { label: "Genfinity: Hedera contributes CLPR to LFDT Labs, 24 September 2026", href: links.releaseCoverage },
-      ],
-    },
-    {
-      slug: "cross-ledger-early-adopter-program",
-      title: "Meet the Cross-Ledger Early Adopter Program",
-      summary: "Three use cases, a hosted testnet and an assigned integration expert.",
-      date: "2026-09-24",
-      body: [
-        {
-          kind: "text",
-          text: "Alongside the contribution of CLPR to LF Decentralized Trust, Hashgraph opened a call for participants in its Cross-Ledger Early Adopter Program.",
-        },
-        {
-          kind: "text",
-          text: "The program is built around three use cases: cross-border payments and in-flight FX, cross-ledger settlement, and collateral mobility.",
-        },
-        {
-          kind: "text",
-          text: "It runs as a three-phase virtual program. Participants get access to a Hashgraph-hosted testnet, where they move test assets through a CLPR-enabled application layer, and technical participants work with an assigned integration expert.",
-        },
-        {
-          kind: "text",
-          text: "Financial institutions, fintechs, asset issuers, liquidity providers and corporations can take part. The program aims to select participants from several countries, so that cross-border regulatory and compliance questions are part of the work from the start.",
-        },
-        {
-          kind: "text",
-          text: "The program is run by Hashgraph, not by the CLPR lab, and organizations register their interest on Hashgraph’s site. The protocol itself is developed in the open in the LFDT-CLPR repositories, where anyone can contribute.",
-        },
-      ],
-      cta: { label: "The program on hashgraph.com", href: links.earlyAdopter },
-      sources: [
-        { label: "Genfinity: Hedera contributes CLPR to LFDT Labs, 24 September 2026", href: links.releaseCoverage },
-        { label: "Hashgraph: CLPR", href: links.hashgraph },
-      ],
-    },
-  ],
+  readingTime: "{minutes} min read",
+  postCount: "{count} posts",
+  postCountOne: "1 post",
+  pageOf: "Page {page} of {total}",
+  pager: { label: "Archive pages", first: "First", previous: "Previous", next: "Next", last: "Last", page: "Page {page}" },
+  rail: { label: "About this post", author: "Author", authors: "Authors", contents: "On this page", share: "Share" },
+  shareOn: "Share on {network}",
+  nearby: { label: "Nearby posts", older: "Older post", newer: "Newer post" },
+  more: { title: "More from the blog", all: "All posts" },
 } as const;
 
 export const footer = {

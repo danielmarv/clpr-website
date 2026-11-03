@@ -121,12 +121,23 @@ function liveSection(ids) {
   return out;
 }
 
+// The blog's posts are Markdown files in content/posts/ (src/lib/posts.ts); each paragraph, list and
+// quote joins the input of the blog block, whose refs and live facts cover them.
+function postLines() {
+  const dir = join(root, 'content', 'posts');
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir).filter((file) => file.endsWith('.md')).sort().flatMap((file) =>
+    readFileSync(join(dir, file), 'utf8').split(/\n\s*\n/).map((block) => block.trim()).filter(Boolean)
+      .map((block) => `- \`content/posts/${file}\`: ${block.replace(/\s*\n\s*/g, ' ')}`));
+}
+
 const files = [];
 for (const [name, value] of Object.entries(site)) {
   const entry = siteRefs.blocks[name];
   if (!entry) problems.push(`site.ts export "${name}" has no entry in src/content/site-refs.json (judged as unsupported until it has one)`);
   if (entry?.claims === false) continue;
   const lines = strings(value, '', []);
+  if (name === 'blog') lines.push(...postLines());
   const body = [
     `# Audit input: website, ${name}`, '',
     `Pinned commits: ${pins}. Source: src/content/site.ts, export \`${name}\`; refs from src/content/site-refs.json. Drawings and animations that use this block are judged from the screenshots (website-shots.mjs).`, '',
