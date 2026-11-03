@@ -11,12 +11,12 @@
 
 html[lang]:root {
   color-scheme: dark;
-  --bg: #120f2c;
-  --bg-2: #17143a;
-  --surface: #1a1740;
+  --bg: #0c0b1d;
+  --bg-2: #111025;
+  --surface: #16152e;
   --text: #f4f3f8;
   --text-2: #a3a1b8;
-  --text-3: #8f8cab;       /* 5.7:1 on --bg */
+  --text-3: #8f8cab;       /* 6.0:1 on --bg */
   --border: rgb(255 255 255 / 0.08);
   --border-2: rgb(255 255 255 / 0.16);
   --link: #b5abff;
@@ -52,15 +52,13 @@ html[lang]:root {
 
 /* ---------- frame ---------- */
 html body { font-size: 1.0625rem; }
-/* The website's page background (its no-WebGL aurora in src/app/globals.css), so the explainer reads as part of it. */
+/* The website's page background (body in src/app/globals.css): one soft glow at the top, then flat ink. */
 html body {
   background:
-    radial-gradient(ellipse 60% 50% at 78% 22%, rgb(108 55 235 / 0.28), transparent 70%),
-    radial-gradient(ellipse 50% 40% at 90% 45%, rgb(200 42 128 / 0.16), transparent 70%),
-    radial-gradient(ellipse 90% 50% at 50% 0%, rgb(33 18 113 / 0.5), transparent 70%),
-    linear-gradient(180deg, #1a1540, #0f0c26);
-  background-color: var(--bg);
-  background-attachment: fixed;
+    radial-gradient(ellipse 72rem 44rem at 82% -14rem, rgb(63 34 215 / 0.3), transparent 70%),
+    radial-gradient(ellipse 48rem 32rem at 104% 6rem, rgb(200 42 128 / 0.12), transparent 70%),
+    var(--bg);
+  background-repeat: no-repeat;
 }
 @media (min-width: 720px) { html body { font-size: 1.0625rem; line-height: 1.7; } }
 html .progress { z-index: 50; }
@@ -73,7 +71,7 @@ html .shell { width: 100%; max-width: 76rem; margin-inline: auto; padding-inline
 /* ---------- header, as the website draws it ---------- */
 html .site-header {
   position: sticky; top: 0; z-index: 40; color: #fff;
-  border-bottom: 1px solid var(--line); background: rgb(18 15 44 / 0.72);
+  border-bottom: 1px solid var(--line); background: rgb(12 11 29 / 0.72);
   -webkit-backdrop-filter: blur(24px) saturate(150%); backdrop-filter: blur(24px) saturate(150%);
 }
 html .site-header .shell { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 1.5rem; height: 4rem; }
@@ -214,7 +212,7 @@ html .theme-toggle { display: none; }
 @property --my { syntax: "<length-percentage>"; inherits: true; initial-value: 50%; }
 html .site-footer {
   position: relative; margin-top: 2rem; overflow-x: clip; line-height: 1.65;
-  border-top: 1px solid rgb(255 255 255 / 0.07); background: rgb(18 15 44 / 0.85); color: rgb(255 255 255 / 0.7);
+  border-top: 1px solid rgb(255 255 255 / 0.07); background: rgb(12 11 29 / 0.85); color: rgb(255 255 255 / 0.7);
 }
 html .site-footer::before {
   content: ""; position: absolute; left: 50%; top: 0; height: 18rem; width: 64rem; max-width: 100%; transform: translateX(-50%); pointer-events: none;
