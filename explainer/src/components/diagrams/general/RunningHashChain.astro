@@ -5,7 +5,7 @@ import { design, spec } from '../../../lib/sources';
 ---
 <Figure
   lead="A chain, not a list of hashes."
-  caption="Each running hash is SHA-256 of the previous running hash and a hash of the message (the form both implementations use), starting from thirty-two zero bytes. Only the last one is covered by the validators' signature; because every earlier message feeds into it, that one signature vouches for all forty."
+  caption="Each running hash is SHA-256 of the previous running hash joined to the message, starting from thirty-two zero bytes; the EVM contracts still hash the message first and chain that hash. Only the last one is covered by the validators' signature; because every earlier message feeds into it, that one signature vouches for all forty."
   source={[{ label: 'spec §4.1', href: spec('41-running-hash-computation') }, { label: 'design §3.2.2', href: design('322-message-storage') }]}
   kind="spec"
   minWidth={760}
@@ -74,7 +74,7 @@ import { design, spec } from '../../../lib/sources';
     <text x="420" y="232" class="t small center bad">then H2, H3 … H40 all change, and the signed H40 no longer matches</text>
 
     <!-- formula and takeaway -->
-    <text x="380" y="256" class="t mono center muted">Hn = SHA-256( Hn-1 ‖ SHA-256(message n) ), H0 = 32 zero bytes</text>
+    <text x="380" y="256" class="t mono center muted">Hn = SHA-256( Hn-1 ‖ message n ), H0 = 32 zero bytes</text>
     <text x="380" y="276" class="t take center">Each running hash folds in the one before it; change anything and the proven last value no longer matches.</text>
   </svg>
 </Figure>

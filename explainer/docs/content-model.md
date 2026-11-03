@@ -85,8 +85,8 @@ Every statement about the protocol is one of three things, and the reader can te
 3. **The spec marks it open.** Use `kind="open"` and say what is undecided.
 
 Anything that is none of the three (an inference, a demo observation, a reasonable guess) is
-either labelled "inferred" or left out. `journey.json` carries the same discipline per step in its
-`evidence` field (`event`, `intx`, `inferred`).
+either labelled "inferred" or left out. `journey.json` follows the same discipline in its step text:
+implementation behaviour is attributed to the EVM contracts or the reference verifier.
 
 See [writing-guide.md](writing-guide.md) for voice and [provenance.md](provenance.md) for why the
 links look the way they do.

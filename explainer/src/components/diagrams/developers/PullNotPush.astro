@@ -1,11 +1,11 @@
 ---
-/** One sync between two endpoints: the receiver says how far it has got, the sender answers with exactly the missing messages plus a proof; the request itself is unproven and cannot change any ledger (spec §1.5; design §3.1.4). */
+/** One sync between two endpoints: the receiver says how far it has got, the sender answers with the missing messages, up to the bundle limits, plus a proof; the request itself is unproven and cannot change any ledger (spec §1.5; design §3.1.4). */
 import Figure from '@kse/components/Figure.astro';
 import { design, spec } from '../../../lib/sources';
 ---
 <Figure
   lead="Ask, then receive."
-  caption="Each endpoint tells its peer how far it has got and gets back exactly the messages after that point, with a proof. The request carries no proof and needs none, because it cannot change anything."
+  caption="Each endpoint tells its peer how far it has got and gets back the messages after that point, up to the bundle limits, with a proof. The request carries no proof and needs none, because it cannot change anything."
   source={[
     { label: 'spec §1.5', href: spec('15-sync-protocol') },
     { label: 'design §3.1.4', href: design('314-endpoint-communication-protocol') },
@@ -13,7 +13,7 @@ import { design, spec } from '../../../lib/sources';
   kind="spec"
   minWidth={680}
 >
-  <svg viewBox="0 0 680 350" role="img" aria-label="Two endpoints as vertical lanes. The endpoint on B, on the right, tells the endpoint on A, on the left, that it has received up to message 41; the request is cheap, unproven and changes nothing. The endpoint on A answers with messages 42, 43 and 44 plus a proof sealed by Ledger A. The endpoint on B dry-runs the bundle and submits it to Ledger B, below it, which throws away anything it already has.">
+  <svg viewBox="0 0 680 350" role="img" aria-label="Two endpoints as vertical lanes. The endpoint on B, on the right, tells the endpoint on A, on the left, that it has received up to message 41; the request is cheap, unproven and changes nothing. The endpoint on A answers with messages 42, 43 and 44 plus a proof sealed by Ledger A. The endpoint on B dry-runs the bundle and submits it to Ledger B, below it, which throws away anything it already has. Too low a number causes duplicates; too high a number only delays messages.">
     <defs>
       <marker id="pnp-arrow-c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--c)" /></marker>
       <marker id="pnp-arrow-ok" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--ok)" /></marker>
@@ -43,7 +43,7 @@ import { design, spec } from '../../../lib/sources';
     <text x="280" y="172" class="t b">#42 #43 #44 + proof</text>
     <text x="340" y="193" class="t small center">sealed by Ledger A</text>
     <line x1="440" y1="175" x2="514" y2="175" class="line ok" marker-end="url(#pnp-arrow-ok)" />
-    <text x="340" y="140" class="t small center">exactly what was missing, nothing more</text>
+    <text x="340" y="140" class="t small center">what was missing, up to the bundle limits</text>
 
     <!-- 3 submit -->
     <circle cx="500" cy="224" r="9" class="d-grey" /><text x="500" y="228" class="t small center b">3</text>
@@ -53,10 +53,10 @@ import { design, spec } from '../../../lib/sources';
     <rect x="395" y="270" width="250" height="52" rx="8" class="d-b" />
     <text x="520" y="291" class="t b center">Ledger B</text>
     <text x="520" y="308" class="t small center">throws away what it already has</text>
-    <text x="380" y="289" class="t small muted end">a wrong number at worst produces</text>
-    <text x="380" y="304" class="t small muted end">a duplicate, which is discarded here</text>
+    <text x="380" y="289" class="t small muted end">too low a number: duplicates, discarded here;</text>
+    <text x="380" y="304" class="t small muted end">too high: messages delayed, not lost</text>
 
     <!-- takeaway -->
-    <text x="340" y="342" class="t take center">Nothing is pushed. The request cannot change any ledger; at worst it causes a duplicate.</text>
+    <text x="340" y="342" class="t take center">Nothing is pushed. The request cannot change any ledger; a wrong number only wastes effort.</text>
   </svg>
 </Figure>

@@ -8,7 +8,8 @@
  * animation (no timers): it pauses on tap, on hover, when scrolled off screen, and shows its final
  * frame under prefers-reduced-motion. Backing: design §2.2 (message flow), §4.5 (every Hiero
  * consensus node is an endpoint), the organization profile (the EVM endpoint is a separate program).
- * The viewBox stays 560 wide: at a 400px screen the hero is 368px wide, so 16px text renders at
+ * Drawn in the website's vocabulary (ledger membranes, hexagon endpoints, diamond verifiers, a fibre
+ * channel; .claude/skills/clpr-figure). The viewBox stays 560 wide: at a 400px screen the hero is 368px wide, so 16px text renders at
  * 10.5px, the floor check-sims.mjs enforces.
  */
 interface Props { mode?: 'plain' | 'protocol'; href: string; }
@@ -22,47 +23,104 @@ const L = mode === 'plain'
       link: 'Step through all 28 steps' };
 ---
 <div class="trailer" data-paused="false">
-  <svg viewBox="0 0 560 196" role="img" aria-label="A message sealed on Ledger A is handed over by A's endpoint, which is part of its node, to Ledger B's endpoint, a separate program, which submits it to Ledger B. Ledger B checks the seal against the trust anchor on file and delivers it to the application; a reply travels back the same way.">
-    <!-- Ledger A -->
-    <rect x="12" y="20" width="150" height="160" rx="12" class="d-a"/>
-    <text x="87" y="44" class="t b center tr-l">{L.a}</text>
-    <rect x="26" y="56" width="92" height="32" rx="8" class="d-surface"/>
-    <text x="72" y="77" class="t center tr-l">{L.app}</text>
-    <rect x="26" y="128" width="122" height="40" rx="8" class="d-ok tr-glow tr-glowA"/>
-    <text x="87" y="145" class="t center tr-l">{L.ver}</text>
-    <text x="87" y="161" class="t small center tr-s">{L.card}</text>
-    <!-- Ledger B -->
-    <rect x="398" y="20" width="150" height="160" rx="12" class="d-b"/>
-    <text x="473" y="44" class="t b center tr-l">{L.b}</text>
-    <rect x="442" y="56" width="92" height="32" rx="8" class="d-surface"/>
-    <text x="488" y="77" class="t center tr-l">{L.app}</text>
-    <rect x="412" y="128" width="122" height="40" rx="8" class="d-ok tr-glow tr-glowB"/>
-    <text x="473" y="145" class="t center tr-l">{L.ver}</text>
-    <text x="473" y="161" class="t small center tr-s">{L.card}</text>
-    <!-- Ledger A's endpoint: part of the node, so it straddles the frame edge -->
-    <rect x="130" y="88" width="96" height="40" rx="8" class="d-c"/>
-    <text x="178" y="105" class="t center tr-l">{L.ep}</text>
-    <text x="178" y="121" class="t small center tr-s">{L.epA}</text>
-    <!-- Ledger B's endpoint: a separate program, joined to its ledger -->
-    <line x1="226" y1="108" x2="258" y2="108" class="line c"/>
-    <rect x="258" y="84" width="94" height="48" rx="10" class="d-c"/>
-    <text x="305" y="105" class="t center tr-l">{L.ep}</text>
-    <text x="305" y="122" class="t small center tr-s">{L.epB}</text>
-    <line x1="352" y1="108" x2="398" y2="108" class="line c tr-dash"/>
-    <!-- check marks that pop when a verifier accepts -->
-    <g class="tr-check tr-checkB"><circle cx="520" cy="134" r="9" class="d-ok"/><path d="M515,134 l3.5,3.5 l6.5,-7" fill="none" stroke="var(--ok)" stroke-width="2"/></g>
-    <g class="tr-check tr-checkA"><circle cx="40" cy="134" r="9" class="d-ok"/><path d="M35,134 l3.5,3.5 l6.5,-7" fill="none" stroke="var(--ok)" stroke-width="2"/></g>
-    <!-- the message, with the seal it picks up on Ledger A -->
+  <svg viewBox="0 0 560 224" role="img" aria-label="A message sealed on Ledger A is handed over by A's endpoint, which is part of its node, to Ledger B's endpoint, a separate program, which submits it to Ledger B. Ledger B checks the seal against the trust anchor on file and delivers it to the application; a reply travels back the same way.">
+    <defs><linearGradient id="trailer-lane" gradientUnits="userSpaceOnUse" x1="187" y1="0" x2="313" y2="0"><stop offset="0" stop-color="#9d8bff"/><stop offset="1" stop-color="#f27fbd"/></linearGradient></defs>
+    <!-- Ledger A and Ledger B, as the website draws them: a membrane with its validators on the edge -->
+    <g class="art-ledger">
+    <circle class="art-orb a" cx="92" cy="124" r="86"/>
+    <g class="art-fibre a">
+      <path d="M74.1 39.9C94.9 47.9 117.2 51.7 139.4 52.3"/>
+      <path d="M139.4 52.3C147.5 66.5 158.4 79 170.8 89.6"/>
+      <path d="M170.8 89.6C168.8 108.5 170.6 127.8 175.1 146.3"/>
+      <path d="M175.1 146.3C160.4 160.4 148.7 177.4 139.6 195.6"/>
+      <path d="M139.6 195.6C121.2 197.1 103.2 202.2 86.4 209.8"/>
+      <path d="M86.4 209.8C75.7 204.7 64.1 201.6 52.4 200.4"/>
+      <path d="M52.4 200.4C42.8 186.8 30.5 175.3 16.9 165.9"/>
+      <path d="M16.9 165.9C16.6 148 12.8 130.3 6.6 113.7"/>
+      <path d="M6.6 113.7C25.1 94.8 39.7 72.4 50.7 48.6"/>
+      <path d="M50.7 48.6C58.9 47.1 66.9 44 74.1 39.9"/>
+    </g>
+    <path class="art-validator a" d="M69.6 39.9L74.1 39.3L78.6 39.9L74.1 40.5ZM74.1 35.4L74.7 39.9L74.1 44.4L73.5 39.9Z"/>
+    <path class="art-validator a" d="M134.9 52.3L139.4 51.7L143.9 52.3L139.4 52.9ZM139.4 47.8L140 52.3L139.4 56.8L138.8 52.3Z"/>
+    <path class="art-validator a" d="M166.3 89.6L170.8 89L175.3 89.6L170.8 90.2ZM170.8 85.1L171.4 89.6L170.8 94.1L170.2 89.6Z"/>
+    <path class="art-validator a" d="M170.6 146.3L175.1 145.7L179.6 146.3L175.1 146.9ZM175.1 141.8L175.7 146.3L175.1 150.8L174.5 146.3Z"/>
+    <path class="art-validator a" d="M135.1 195.6L139.6 195L144.1 195.6L139.6 196.2ZM139.6 191.1L140.2 195.6L139.6 200.1L139 195.6Z"/>
+    <path class="art-validator a" d="M81.9 209.8L86.4 209.2L90.9 209.8L86.4 210.4ZM86.4 205.3L87 209.8L86.4 214.3L85.8 209.8Z"/>
+    <path class="art-validator a" d="M47.9 200.4L52.4 199.8L56.9 200.4L52.4 201ZM52.4 195.9L53 200.4L52.4 204.9L51.8 200.4Z"/>
+    <path class="art-validator a" d="M12.4 165.9L16.9 165.3L21.4 165.9L16.9 166.5ZM16.9 161.4L17.5 165.9L16.9 170.4L16.3 165.9Z"/>
+    <path class="art-validator a" d="M2.1 113.7L6.6 113.1L11.1 113.7L6.6 114.3ZM6.6 109.2L7.2 113.7L6.6 118.2L6 113.7Z"/>
+    <path class="art-validator a" d="M46.2 48.6L50.7 48L55.2 48.6L50.7 49.2ZM50.7 44.1L51.3 48.6L50.7 53.1L50.1 48.6Z"/>
+    </g>
+    <g class="art-ledger">
+    <circle class="art-orb b" cx="468" cy="124" r="86"/>
+    <g class="art-fibre b">
+      <path d="M450.1 39.9C473.1 50.2 498 55.9 523 57.9"/>
+      <path d="M523 57.9C529.7 75.9 540 92.5 552.3 107.1"/>
+      <path d="M552.3 107.1C550 119.1 550 131.4 551.8 143.4"/>
+      <path d="M551.8 143.4C536 158.8 523.4 177.2 513.7 196.9"/>
+      <path d="M513.7 196.9C502.7 198.9 492.2 203.2 482.5 208.8"/>
+      <path d="M482.5 208.8C464.3 202 444.8 199 425.5 198.7"/>
+      <path d="M425.5 198.7C415.6 181.8 402.4 166.8 387.5 154.2"/>
+      <path d="M387.5 154.2C389.9 136.5 388.8 118.4 385.1 101"/>
+      <path d="M385.1 101C400.5 86.7 413 69.5 422.6 50.9"/>
+      <path d="M422.6 50.9C432.4 48.9 441.6 45 450.1 39.9"/>
+    </g>
+    <path class="art-validator b" d="M445.6 39.9L450.1 39.3L454.6 39.9L450.1 40.5ZM450.1 35.4L450.7 39.9L450.1 44.4L449.5 39.9Z"/>
+    <path class="art-validator b" d="M518.5 57.9L523 57.3L527.5 57.9L523 58.5ZM523 53.4L523.6 57.9L523 62.4L522.4 57.9Z"/>
+    <path class="art-validator b" d="M547.8 107.1L552.3 106.5L556.8 107.1L552.3 107.7ZM552.3 102.6L552.9 107.1L552.3 111.6L551.7 107.1Z"/>
+    <path class="art-validator b" d="M547.3 143.4L551.8 142.8L556.3 143.4L551.8 144ZM551.8 138.9L552.4 143.4L551.8 147.9L551.2 143.4Z"/>
+    <path class="art-validator b" d="M509.2 196.9L513.7 196.3L518.2 196.9L513.7 197.5ZM513.7 192.4L514.3 196.9L513.7 201.4L513.1 196.9Z"/>
+    <path class="art-validator b" d="M478 208.8L482.5 208.2L487 208.8L482.5 209.4ZM482.5 204.3L483.1 208.8L482.5 213.3L481.9 208.8Z"/>
+    <path class="art-validator b" d="M421 198.7L425.5 198.1L430 198.7L425.5 199.3ZM425.5 194.2L426.1 198.7L425.5 203.2L424.9 198.7Z"/>
+    <path class="art-validator b" d="M383 154.2L387.5 153.6L392 154.2L387.5 154.8ZM387.5 149.7L388.1 154.2L387.5 158.7L386.9 154.2Z"/>
+    <path class="art-validator b" d="M380.6 101L385.1 100.4L389.6 101L385.1 101.6ZM385.1 96.5L385.7 101L385.1 105.5L384.5 101Z"/>
+    <path class="art-validator b" d="M418.1 50.9L422.6 50.3L427.1 50.9L422.6 51.5ZM422.6 46.4L423.2 50.9L422.6 55.4L422 50.9Z"/>
+    </g>
+    <text x="92" y="20" class="t b center tr-l">{L.a}</text>
+    <text x="468" y="20" class="t b center tr-l">{L.b}</text>
+    <!-- the applications -->
+    <path class="art-star a" d="M82 70L92 69.3L102 70L92 70.7ZM92 60L92.7 70L92 80L91.3 70Z"/>
+    <text x="92" y="96" class="t center tr-l">{L.app}</text>
+    <path class="art-star b" d="M458 70L468 69.3L478 70L468 70.7ZM468 60L468.7 70L468 80L467.3 70Z"/>
+    <text x="468" y="96" class="t center tr-l">{L.app}</text>
+    <!-- each ledger's verifier, checking against the trust anchor it keeps for the other -->
+    <path class="art-verifier tr-glow tr-glowA" d="M92 123L103 134L92 145L81 134Z"/>
+    <text x="92" y="164" class="t center tr-l">{L.ver}</text>
+    <text x="92" y="184" class="t small center tr-s">{L.card}</text>
+    <path class="art-verifier tr-glow tr-glowB" d="M468 123L479 134L468 145L457 134Z"/>
+    <text x="468" y="164" class="t center tr-l">{L.ver}</text>
+    <text x="468" y="184" class="t small center tr-s">{L.card}</text>
+    <!-- the channel between the two endpoints -->
+    <g class="art-fibre lane" stroke="url(#trailer-lane)">
+      <path d="M187 124C228.6 115.7 271.4 116.5 313 124"/>
+      <path d="M187 124C228.6 120.5 271.4 120.9 313 124"/>
+      <path d="M187 124C228.6 122.6 271.4 122.7 313 124"/>
+      <path d="M187 124C228.6 125.2 271.4 125.1 313 124"/>
+      <path d="M187 124C228.6 127 271.4 126.7 313 124"/>
+      <path d="M187 124C228.6 132.1 271.4 131.3 313 124"/>
+    </g>
+    <!-- Ledger A's endpoint is part of its node, so it sits on A's edge; Ledger B's is a separate program, joined to B -->
+    <path class="art-endpoint a" d="M186.7 129L178 134L169.3 129L169.3 119L178 114L186.7 119Z"/>
+    <text x="218" y="160" class="t center tr-l">{L.ep}</text>
+    <text x="218" y="178" class="t small center tr-s">{L.epA}</text>
+    <path class="art-endpoint b" d="M330.7 129L322 134L313.3 129L313.3 119L322 114L330.7 119Z"/>
+    <line x1="333" y1="124" x2="382" y2="124" class="line b tr-dash"/>
+    <text x="322" y="160" class="t center tr-l">{L.ep}</text>
+    <text x="322" y="178" class="t small center tr-s">{L.epB}</text>
+    <!-- a ring that lights when a verifier accepts -->
+    <g class="tr-check tr-checkB"><circle class="art-ring" cx="468" cy="134" r="15"/></g>
+    <g class="tr-check tr-checkA"><circle class="art-ring" cx="92" cy="134" r="15"/></g>
+    <!-- the message, with the proof it picks up on Ledger A -->
     <g class="tr-env">
-      <rect x="-17" y="-11" width="34" height="22" rx="4" fill="var(--surface)" stroke="var(--text)" stroke-width="1.5"/>
-      <path d="M-17,-11 L0,2 L17,-11" fill="none" stroke="var(--text)" stroke-width="1.5"/>
-      <g class="tr-seal"><circle cx="13" cy="-11" r="6" class="d-ok"/><circle cx="13" cy="-11" r="2" fill="var(--ok)"/></g>
+      <circle class="art-halo a" r="13"/>
+      <path class="art-star a" d="M-11 0L0 -0.8L11 0L0 0.8ZM0 -11L0.8 0L0 11L-0.8 0Z"/>
+      <g class="tr-seal"><circle class="art-ring" cx="10" cy="-10" r="5"/></g>
     </g>
     <!-- the reply -->
     <g class="tr-reply">
-      <rect x="-17" y="-11" width="34" height="22" rx="4" fill="var(--b-soft)" stroke="var(--b)" stroke-width="1.5"/>
-      <path d="M-17,-11 L0,2 L17,-11" fill="none" stroke="var(--b)" stroke-width="1.5"/>
-      <g class="tr-seal"><circle cx="13" cy="-11" r="6" class="d-ok"/><circle cx="13" cy="-11" r="2" fill="var(--ok)"/></g>
+      <circle class="art-halo b" r="13"/>
+      <path class="art-star b" d="M-11 0L0 -0.8L11 0L0 0.8ZM0 -11L0.8 0L0 11L-0.8 0Z"/>
+      <g class="tr-seal"><circle class="art-ring" cx="10" cy="-10" r="5"/></g>
     </g>
   </svg>
   <p class="trailer__phases" aria-hidden="true">
@@ -86,31 +144,31 @@ const L = mode === 'plain'
   .trailer__foot .btn { font-size: 0.66rem; padding: 4px 9px; }
 
   /* Base state, shown under prefers-reduced-motion and while the stylesheet decides: the last frame. */
-  .trailer .tr-env { transform: translate(488px, 100px); }
-  .trailer .tr-reply { transform: translate(72px, 100px); }
+  .trailer .tr-env { transform: translate(496px, 58px); }
+  .trailer .tr-reply { transform: translate(64px, 58px); }
   .trailer .tr-check { transform-box: fill-box; transform-origin: center; }
-  .trailer .tr-glow { stroke-width: 1.5; }
+  .trailer .tr-glow { stroke-width: 1.4; }
   .trailer .tr-phase-5 { opacity: 1; }
 
   /* The loop: 12 seconds, linear between waypoints. */
   @keyframes tr-env {
-    0%, 3%   { transform: translate(140px, 72px); opacity: 0; }
-    6%, 18%  { transform: translate(140px, 72px); opacity: 1; }
-    22%, 30% { transform: translate(178px, 82px); }
-    36%, 42% { transform: translate(305px, 78px); }
-    48%, 54% { transform: translate(473px, 118px); opacity: 1; }
-    58%, 60% { transform: translate(488px, 100px); opacity: 1; }
-    62%, 100% { transform: translate(488px, 100px); opacity: 0; }
+    0%, 3%   { transform: translate(120px, 58px); opacity: 0; }
+    6%, 18%  { transform: translate(120px, 58px); opacity: 1; }
+    22%, 30% { transform: translate(178px, 96px); }
+    36%, 42% { transform: translate(322px, 96px); }
+    48%, 54% { transform: translate(468px, 108px); opacity: 1; }
+    58%, 60% { transform: translate(496px, 58px); opacity: 1; }
+    62%, 100% { transform: translate(496px, 58px); opacity: 0; }
   }
   @keyframes tr-seal { 0%, 11% { opacity: 0; } 14%, 100% { opacity: 1; } }
   @keyframes tr-reply {
-    0%, 63%  { transform: translate(488px, 100px); opacity: 0; }
-    66%, 68% { transform: translate(488px, 100px); opacity: 1; }
-    72%, 78% { transform: translate(305px, 78px); }
-    82%, 86% { transform: translate(178px, 82px); }
-    89%, 93% { transform: translate(87px, 118px); opacity: 1; }
-    97%, 98% { transform: translate(72px, 100px); opacity: 1; }
-    100%     { transform: translate(72px, 100px); opacity: 0; }
+    0%, 63%  { transform: translate(496px, 58px); opacity: 0; }
+    66%, 68% { transform: translate(496px, 58px); opacity: 1; }
+    72%, 78% { transform: translate(322px, 96px); }
+    82%, 86% { transform: translate(178px, 96px); }
+    89%, 93% { transform: translate(92px, 108px); opacity: 1; }
+    97%, 98% { transform: translate(64px, 58px); opacity: 1; }
+    100%     { transform: translate(64px, 58px); opacity: 0; }
   }
   @keyframes tr-checkB { 0%, 48% { opacity: 0; transform: scale(0.5); } 52%, 100% { opacity: 1; transform: scale(1); } }
   @keyframes tr-checkA { 0%, 90% { opacity: 0; transform: scale(0.5); } 94%, 100% { opacity: 1; transform: scale(1); } }

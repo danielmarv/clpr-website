@@ -77,6 +77,17 @@ Rules:
   (a mono first line), `.sim__controls .kicker` and `.group`, `.pill.pulse`, `li.done` in a step
   list, `--card-min` on `.step-card`, `aria-busy` on the root during a timed run. Component-specific
   styling goes in the component's own `<style>` block, scoped to `.sim.<name>`.
+- **Drawings wider than the column.** The column is 840px. The journey (920) and the architecture
+  map (940) keep their `min-width` only below 1240px. From there `site-theme.css` lets the sim spill
+  into the right margin and the drawing fits it, so neither scrolls on a desktop screen. A new wide
+  simulation joins the same two rules.
+
+## Motion in the website's style
+
+A simulation or the hero may move a message the way the landing page does: a glowing star with
+class `art-move` and an `offset-path` in its style travels the path; `--dur`, `--delay` and
+`--rest` set its timing and where it rests under reduced motion (site-theme.css). Static figures
+never move. Shapes come from the `clpr-figure` skill's vocabulary (docs/figures.md).
 
 ## Testing a sim
 

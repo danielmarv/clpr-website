@@ -5,12 +5,12 @@ import { pinned } from '../../../lib/sources';
 ---
 <Figure
   lead="Two lanes through one relay."
-  caption="On the way out the relay notices the queue grow, builds a payload with a proof and streams it to a chosen peer. On the way in it decodes the peer's bundle, drops messages its ledger already accepted so a duplicate cannot sink the bundle as a replay, simulates submitBundle with eth_call, and only then signs and pays."
+  caption="On the way out the relay notices the queue grow, builds a payload with a proof and streams it to a peer picked at random, weighted by past successes. On the way in it decodes the peer's bundle, drops messages its ledger already accepted (for EVM-format bundles) so a duplicate cannot sink the bundle as a replay, previews submitBundle with eth_call, and only then signs and pays."
   source={[{ label: 'endpoint docs/architecture.md', href: pinned('clpr-endpoint', 'docs/architecture.md') }, { label: 'docs/sync-protocol.md', href: pinned('clpr-endpoint', 'docs/sync-protocol.md') }]}
   kind="impl"
   minWidth={760}
 >
-  <svg viewBox="0 0 760 400" role="img" aria-label="A tall Local EVM node box on the left and a tall Peer endpoint box on the right, with two horizontal lanes between them. The outbound lane runs left to right through three boxes: a state-change poller that watches nextMessageId, a sync task that reads the new messages and builds the payload with QbftBundleConstructor, and a peer picker that prefers never-failed, then recently successful, then round-robin peers. The inbound lane runs right to left through a decode and trim box, a green dry-run box where EvmBundlePreVerifier simulates submitBundle with eth_call, and a submitter that signs submitBundle client-side with EIP-1559 and polls for the receipt. A note at the bottom names the always-plaintext info port 9546.">
+  <svg viewBox="0 0 760 400" role="img" aria-label="A tall Local EVM node box on the left and a tall Peer endpoint box on the right, with two horizontal lanes between them. The outbound lane runs left to right through three boxes: a state-change poller that watches nextMessageId, a sync task that reads the new messages and builds the payload with QbftBundleConstructor, and a peer picker that chooses at random, weighted by past successes, skipping peers in back-off. The inbound lane runs right to left through a decode and trim box, a green dry-run box where submitBundle is previewed with eth_call, and a submitter that signs submitBundle client-side with EIP-1559 and polls for the receipt. A note at the bottom names the always-plaintext info port 9546.">
     <defs>
       <marker id="ep-lanes-arrow-b" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9 Z" fill="var(--b)"/></marker>
       <marker id="ep-lanes-arrow-c" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9 Z" fill="var(--c)"/></marker>
@@ -56,9 +56,9 @@ import { pinned } from '../../../lib/sources';
     <line x1="454" y1="88" x2="472" y2="88" class="line c" marker-end="url(#ep-lanes-arrow-c)"/>
     <rect x="474" y="48" width="172" height="80" rx="8" class="d-c"/>
     <text x="482" y="68" class="t b">Peer picker</text>
-    <text x="482" y="86" class="t small">never-failed, then</text>
-    <text x="482" y="102" class="t small">recently-successful,</text>
-    <text x="482" y="118" class="t small">then round-robin</text>
+    <text x="482" y="86" class="t small">random, weighted by</text>
+    <text x="482" y="102" class="t small">past successes; failing</text>
+    <text x="482" y="118" class="t small">peers back off</text>
     <line x1="646" y1="88" x2="664" y2="88" class="line c" marker-end="url(#ep-lanes-arrow-c)"/>
 
     <!-- inbound lane, right to left -->
@@ -68,13 +68,13 @@ import { pinned } from '../../../lib/sources';
     <text x="482" y="230" class="t b">Decode and trim</text>
     <text x="482" y="248" class="t small">parses the peer's bundle;</text>
     <text x="482" y="264" class="t small">drops messages the ledger</text>
-    <text x="482" y="280" class="t small">already accepted</text>
+    <text x="482" y="280" class="t small">already accepted (EVM)</text>
     <line x1="474" y1="250" x2="456" y2="250" class="line c" marker-end="url(#ep-lanes-arrow-c)"/>
     <rect x="294" y="210" width="160" height="80" rx="8" class="d-ok"/>
     <text x="302" y="230" class="t b">Dry-run</text>
-    <text x="302" y="248" class="t mono">EvmBundlePreVerifier</text>
-    <text x="302" y="264" class="t small">simulates submitBundle</text>
-    <text x="302" y="280" class="t small">with eth_call first</text>
+    <text x="302" y="248" class="t small">eth_call preview of</text>
+    <text x="302" y="264" class="t small">submitBundle; skipped</text>
+    <text x="302" y="280" class="t small">if it would revert</text>
     <line x1="294" y1="250" x2="276" y2="250" class="line ok" marker-end="url(#ep-lanes-arrow-ok)"/>
     <rect x="114" y="210" width="160" height="80" rx="8" class="d-c"/>
     <text x="122" y="230" class="t b">Submitter</text>

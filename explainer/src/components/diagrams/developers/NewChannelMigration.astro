@@ -1,16 +1,16 @@
 ---
-/** Who acts, in what order, when a verifier must be replaced: both a compromise and a proof format upgrade end in a new channel; design §4.7 and §5. */
+/** Who acts, in what order, when a channel needs a different verifier: both a compromise and a proof format upgrade end in a new channel, because the verifier address is fixed for the channel's life; design §4.7 and §5, spec §8.8. */
 import Figure from '@kse/components/Figure.astro';
 import { design } from '../../../lib/sources';
 ---
 <Figure
-  lead="Every verifier change is a new channel."
+  lead="A different verifier means a new channel."
   caption="The verifier developer publishes, the connector operator registers, the application developer migrates and the admin closes the old channel. For a compromise the close comes first and in-flight messages may end UNRESOLVED; for a planned format upgrade the close comes last, after the source has kept the old format alive long enough to migrate."
   source={[{ label: 'design §4.7', href: design('47-cross-role-scenarios') }, { label: 'design §5', href: design('5-recovery-scenarios') }]}
   kind="spec"
   minWidth={760}
 >
-  <svg viewBox="0 0 760 396" role="img" aria-label="A trigger, either a security advisory or a proof format change, reaches the verifier developer and the CLPR Service admin. The verifier developer publishes a patched or new-format verifier; the connector operator registers a new channel with it and a connector on both ledgers; the application developer migrates to the new channel. The admin closes the old channel, at once for a compromise and after migration for an upgrade; in-flight messages finish on the old channel while new traffic moves to the new one.">
+  <svg viewBox="0 0 760 396" role="img" aria-label="A trigger, either a security advisory or a proof format change, reaches the verifier developer and the CLPR Service admin. The verifier developer publishes a patched or new-format verifier; the connector operator registers a new channel with it and a connector on both ledgers; the application developer migrates to the new channel. The admin closes the old channel, at once for a compromise and after migration for an upgrade; the old channel drains through CLOSING and DRAINED to CLOSED, and in-flight messages may end UNRESOLVED, while new traffic moves to the new one.">
     <defs>
       <marker id="ncm-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--text-3)" /></marker>
       <marker id="ncm-arrow-ok" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--ok)" /></marker>
@@ -59,9 +59,9 @@ import { design } from '../../../lib/sources';
 
     <rect x="282" y="148" width="196" height="80" rx="8" class="d-bad" />
     <text x="380" y="170" class="t b center">Old channel</text>
-    <text x="380" y="188" class="t small center">in-flight messages finish;</text>
-    <text x="380" y="206" class="t mono center">CLOSING → CLOSED</text>
-    <text x="380" y="220" class="t small center">its verifier cannot change</text>
+    <text x="380" y="188" class="t small center">in-flight may end UNRESOLVED</text>
+    <text x="380" y="206" class="t small center">CLOSING → DRAINED → CLOSED</text>
+    <text x="380" y="220" class="t small center">verifier address fixed</text>
 
     <line x1="478" y1="188" x2="542" y2="188" class="line dash" marker-end="url(#ncm-arrow)" />
 
@@ -81,7 +81,7 @@ import { design } from '../../../lib/sources';
     <text x="642" y="328" class="t small center">switch and migrate users</text>
     <circle cx="554" cy="261" r="9" class="d-grey" /><text x="554" y="265" class="t small center b">4</text>
 
-    <text x="380" y="364" class="t take center">Verifiers are fixed for a channel's life, so every fix is a new channel.</text>
+    <text x="380" y="364" class="t take center">A channel's verifier address is fixed for its life, so a different verifier means a new channel.</text>
     <text x="380" y="380" class="t take center">For a compromise, the window of vulnerability is between discovery and close.</text>
   </svg>
 </Figure>

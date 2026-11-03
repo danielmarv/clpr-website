@@ -178,12 +178,12 @@ const LINKS = {
           <li><code>trust_anchor_id</code> = <code>epochNumber</code> as big-endian bytes, no leading zeros</li>
         </ul>
         <p class="small">Rotation evidence is the list of epoch-boundary headers (<code>epochBlockHeaders</code>) in the proof: each is sealed by the previous set and lists the next set in <code>extraData</code>; the verifier walks them in order and returns only the final anchor. The relay includes at most <code>maxEpochBlockHeadersPerBundle</code> (default 5) per bundle and catches up over several bundles if more epochs passed. Implementation note: the reference <code>QBFTVerifier.sol</code> currently stores a single validator address in the first slot, reverts with <code>MultiValidatorNotSupported</code> for larger sets, and returns the id as a fixed 8-byte <code>uint64</code>.</p>
-        <p><strong>Hiero (TSS) verifier.</strong> The anchor is the raw <code>ledger_id</code> bytes, the genesis-rooted identity of the network's threshold signing key, with no framing and no separate id (<code>verifyConfig</code> returns an empty <code>initialTrustAnchorId</code>). Rotation is not implemented yet: <code>verifyBundle</code> returns an empty <code>newTrustAnchor</code>, so the anchor is immutable for the Channel's lifetime. One generic Hiero verifier can serve Channels to many Hiero networks; the anchor says which network is being verified.</p>
+        <p><strong>Hiero (TSS) verifier.</strong> The anchor is the raw <code>ledger_id</code> bytes, the genesis-rooted identity of the network's threshold signing key, with no framing and no separate id (<code>verifyConfig</code> returns an empty <code>initialTrustAnchorId</code>). Rotation is not implemented yet: the native <code>VerifyBundleCall</code> returns an empty <code>newTrustAnchor</code>, so there the anchor is immutable for the Channel's lifetime. The Solidity <code>HieroVerifier</code> checks signatures against the ledger_id fixed at its deployment and returns the hash of the hinTS verification key as <code>newTrustAnchor</code>, a cache hint. One generic Hiero verifier can serve Channels to many Hiero networks; the anchor says which network is being verified.</p>
       </div>
       <div class="result">
         <h4>What can and cannot change the anchor</h4>
         <ul class="small" style="margin:0;padding-left:1.1rem">
-          <li>The anchor is written by <code>verifyConfig</code> at <code>completeChannel</code> and afterwards changes only when <code>verifyBundle</code> returns a non-empty <code>new_trust_anchor</code>. There is no admin key, governance call or <code>ConfigUpdate</code> path.</li>
+          <li>The anchor is written by <code>verifyConfig</code> at <code>completeChannel</code> and afterwards changes only when <code>verifyBundle</code> returns a non-empty <code>new_trust_anchor</code>. There is no admin key, governance call or <code>ConfigUpdate</code> path; a verifier behind an upgradeable proxy can still change what it accepts.</li>
           <li>Succession requirement: the successor must be committed to inside the same proof that was verified against the current anchor; a verifier that returns a new anchor without that proven commitment must revert. This is what stops a compromised endpoint from injecting an authority.</li>
           <li>The Service stores <code>new_trust_anchor</code> and <code>new_trust_anchor_id</code> atomically before processing any message in the bundle (spec §4.2 Step 1c); the id must be non-empty exactly when the anchor is.</li>
           <li>A bundle with zero application messages that advances the anchor is valid: Bundle Progress Criterion 2.</li>
@@ -467,7 +467,7 @@ const LINKS = {
           plain: late
             ? `A proof sealed by V${v} could only prove messages that existed before the rotation, and those were all delivered already. The endpoint's pre-check finds no Bundle Progress Criterion satisfied and does not send the bundle.`
             : `There is nothing new to deliver, so the endpoint's pre-check finds no Bundle Progress Criterion satisfied and does not send the bundle at all. Had it sent one, the Service would reject it as NoProgress and the fee would be lost.`,
-          proto: `Spec §2.1.2: "CLPR Endpoints MUST NOT submit bundles that make no progress"; the Service applies the same five criteria after the verifier call (§4.2 Step 1a) and rejects with NoProgress.`,
+          proto: `"CLPR Endpoints MUST NOT submit bundles that make no progress" (spec §2.1.2); the Service applies the same five criteria after the verifier call (spec §4.2 step 1a) and rejects with NoProgress.`,
           refs: [['spec212', 'spec §2.1.2'], ['spec42', 'spec §4.2']],
         });
         return;
@@ -480,7 +480,7 @@ const LINKS = {
         if (!late) {
           say({
             plain: `The endpoint proves the source's current state with a proof sealed by V${v}. The Channel trusts V${v}, so verifyBundle succeeds and ${plural(k, 'message')} ${k === 1 ? 'is' : 'are'} delivered. new_trust_anchor came back empty: nothing rotates.`,
-            proto: `§4.2 Step 1: verifyBundle(bundle_payload, trust_anchor, ctx) returned sync data, ${k} message payloads, the anchor message id and running hash, new_trust_anchor = empty, new_trust_anchor_id = empty. Step 1c is skipped because the anchor is empty; steps 2 to 6 (size, replay defence, running hash, dispatch) run as usual.`,
+            proto: `Step 1 (spec §4.2): verifyBundle(bundle_payload, trust_anchor, ctx) returned sync data, ${k} message payloads, the anchor message id and running hash, new_trust_anchor = empty, new_trust_anchor_id = empty. Step 1c is skipped because the anchor is empty; steps 2 to 6 (size, replay defence, running hash, acknowledgement, dispatch) run as usual.`,
             refs: [['spec42', 'spec §4.2'], ['spec31', 'spec §3.1']],
           });
         } else if (mode === 'single') {
@@ -556,7 +556,7 @@ const LINKS = {
       } else {
         say({
           plain: `The endpoint submits a proof sealed by V${sealer}, which is inside the window, carrying the source's commitment to V${successor}. The verifier returns the new window ${words()}; the Service stores it and its id ${cur} before any message is processed. V${old} drops out of the window. The timing was the endpoint's choice: it could have done this at any moment while nothing sealed by V${old} was still in flight.${more}`,
-          proto: `verifyBundle returned new_trust_anchor = window(V${cur}, V${successor}), new_trust_anchor_id = ${cur}. Criterion 2 holds; §4.2 Step 1c stores both atomically before any message. "With a window encoding, the endpoint can additionally batch window-advances into regular application bundles rather than requiring separate trust-only bundles."`,
+          proto: `verifyBundle returned new_trust_anchor = window(V${cur}, V${successor}), new_trust_anchor_id = ${cur}. Criterion 2 holds; step 1c (spec §4.2) stores both atomically before any message. "With a window encoding, the endpoint can additionally batch window-advances into regular application bundles rather than requiring separate trust-only bundles."`,
           refs: [['specTransition', 'spec §3.2, transition bundle'], ['specCatchup', 'spec §3.2, catch-up'], ['spec42', 'spec §4.2 Step 1c']],
         });
       }
@@ -582,8 +582,8 @@ const LINKS = {
       };
       render();
       say({
-        plain: `One transaction instead of ${n + 1}. The payload carries ${n} rotation proofs in order; the verifier walks them internally, checking each against the authority the previous one installed, and returns only the final anchor ${words()}. The intermediate authorities never touch the chain. ${plural(k, 'message')} proven under V${cur} ${k === 1 ? 'rides' : 'ride'} along in the same bundle.${left > 0 ? ` The endpoint missed ${missed} rotations but sends at most ${CAP} rotation proofs per bundle, so ${plural(left, 'more')} ${left === 1 ? 'follows' : 'follow'} in the next one.` : ''}`,
-        proto: `"A verifier MAY support batching multiple rotations into a single bundle_payload by walking the chain of rotation proofs internally; only the final new_trust_anchor and new_trust_anchor_id are returned and stored on-chain, and application messages proven under that final authority MAY be included in the same bundle." The QBFT verifier does this with epochBlockHeaders: each header's seals are verified against the current validator set, the next set is read from its extraData, and the current block must sit in epoch trustAnchorEpoch + headers (EpochMismatch otherwise). The relay includes at most maxEpochBlockHeadersPerBundle (default 5) headers per bundle, oldest first, and catches up over subsequent bundles.`,
+        plain: `One transaction instead of ${n + 1}. The payload carries ${n} rotation proofs in order; the verifier walks them internally, checking each against the authority the previous one installed, and returns only the final anchor ${words()}. The intermediate authorities never touch the chain. ${plural(k, 'message')} proven under V${cur} ${k === 1 ? 'rides' : 'ride'} along in the same bundle; the QBFT relay, by contrast, sends a bundle with more than one rotation proof without messages.${left > 0 ? ` The endpoint missed ${missed} rotations but sends at most ${CAP} rotation proofs per bundle, so ${plural(left, 'more')} ${left === 1 ? 'follows' : 'follow'} in the next one.` : ''}`,
+        proto: `"A verifier MAY support batching multiple rotations into a single bundle_payload by walking the chain of rotation proofs internally; only the final new_trust_anchor and new_trust_anchor_id are returned and stored on-chain, and application messages proven under that final authority MAY be included in the same bundle." The QBFT verifier does this with epochBlockHeaders: each header's committed seals must include one from the anchor's validator, the next validator is read from its extraData, and the current block must sit in epoch trustAnchorEpoch + headers (EpochMismatch otherwise). The relay includes at most maxEpochBlockHeadersPerBundle (default 5) headers per bundle, oldest first, carries no messages in a bundle with more than one header, and catches up over subsequent bundles.`,
         refs: [['specCatchup', 'spec §3.2, catch-up'], ['qbft', 'QBFT trust anchor'], ['qbftSol', 'QBFTVerifier.sol']],
       });
     }
@@ -594,8 +594,8 @@ const LINKS = {
       last = { bundle: 'forged: names its own successor', proof: `no commitment proven under ${words()}`, returns: 'revert: succession not proven', store: 'anchor unchanged', verdict: 'reverted' };
       render();
       say({
-        plain: `<span class="ok">Blocked.</span> A compromised endpoint submits a bundle that names an authority of its own choosing as the successor, with no state-proven commitment from ${words()}. The verifier finds no succession evidence and reverts; the anchor is untouched and the attacker paid the fee. Only a proof that the current authority itself verified can move the anchor, and nothing else can: no admin key, no governance vote, no ConfigUpdate.`,
-        proto: `Succession requirement: "A new trust anchor MUST be committed to within the same proof that was verified against the current trust anchor. A verifier that returns a new_trust_anchor without state-proving the commitment in the supplied proof MUST revert. This requirement prevents trust anchor injection by a compromised endpoint." Design §3.1.5: "No other path (admin key, governance call, or ConfigUpdate) may modify the trust anchor; its only update channel is a verified proof returned by verifyBundle."`,
+        plain: `<span class="ok">Blocked.</span> A compromised endpoint submits a bundle that names an authority of its own choosing as the successor, with no state-proven commitment from ${words()}. The verifier finds no succession evidence and reverts; the anchor is untouched and the attacker paid the fee. Only a proof the channel's verifier accepts against the current authority can move the anchor; no admin key, governance vote or ConfigUpdate can set it.`,
+        proto: `Succession requirement: "A new trust anchor MUST be committed to within the same proof that was verified against the current trust anchor. A verifier that returns a new_trust_anchor without state-proving the commitment in the supplied proof MUST revert. This requirement prevents trust anchor injection by a compromised endpoint." "No other path (admin key, governance call, or ConfigUpdate) may modify the trust anchor; its only update channel is a verified proof returned by verifyBundle" (design §3.1.5).`,
         refs: [['design315', 'design §3.1.5'], ['spec31', 'spec §3.1'], ['specTransition', 'spec §3.2, transition bundle']],
       });
     }

@@ -91,6 +91,18 @@
     [
       "\\bnotebooks?\\b",
       "ledger"
+    ],
+    [
+      "\\bnothing (sits |is )?in (between|the middle)\\b",
+      "no bridge to trust: endpoints relay every bundle, and can delay a message but not forge one"
+    ],
+    [
+      "\\bzero custody\\b",
+      "no pooled user assets (the CLPR Service holds Connector funds and endpoint bonds)"
+    ],
+    [
+      "\\bimmutable (smart )?contract\\b|\\bverifiers? (contracts? )?(is|are) immutable\\b",
+      "a verifier whose address is fixed for the Channel's lifetime (the contract may be an upgradeable proxy)"
     ]
   ],
   "structure": {

@@ -5,7 +5,7 @@ import { design, spec } from '../../../lib/sources';
 ---
 <Figure
   lead="Checks, effects, then the application."
-  caption="The specification requires reentrancy guards and the checks-effects-interactions order: all Channel state for a message updated before control passes to the target application."
+  caption="Reentrancy guards and the checks-effects-interactions order are required: all Channel state for a message updated before control passes to the target application."
   source={[{ label: 'spec §8.5', href: spec('85-reentrancy') }, { label: 'design §3.3.3', href: design('333-receiving-routing-and-paying') }]}
   kind="spec"
   minWidth={720}
@@ -37,7 +37,7 @@ import { design, spec } from '../../../lib/sources';
     <text x="436" y="62" class="t mono">received_message_id = i</text>
     <text x="436" y="78" class="t mono">received_running_hash</text>
     <text x="436" y="94" class="t mono">Connector charge</text>
-    <text x="436" y="110" class="t small muted">the specification's order</text>
+    <text x="436" y="110" class="t small muted">the required order</text>
 
     <!-- 2: interaction -->
     <line x1="224" y1="176" x2="422" y2="194" class="line a" marker-end="url(#ced-arrow-a)"/>

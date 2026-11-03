@@ -5,12 +5,12 @@ import { design, pinned } from '../../../lib/sources';
 ---
 <Figure
   lead="Six things CLPR does without."
-  caption="No network in the middle, no committee whose keys decide, no new token, no pooled liquidity, no single kind of ledger, and no key whose theft lets anyone forge a message. In each case the answer is the same: the receiving ledger checks the sending ledger's own validators' signature, and the rest follows."
+  caption="No network in the middle, no committee whose keys decide, no new token, no pool of user deposits, no single kind of ledger, and no endpoint key whose theft lets anyone forge a message. In each case the answer is the same: the receiving ledger checks the sending ledger's own validators' signature through the channel's verifier, and the rest follows."
   source={[{ label: 'design §1', href: design('1-executive-summary') }, { label: 'design §2.3', href: design('23-trust-model') }, { label: 'design §3.1.5', href: design('315-verifier-contracts') }, { label: 'organization profile', href: pinned('org-profile', 'profile/README.md') }]}
   kind="plain"
   minWidth={760}
 >
-  <svg viewBox="0 0 760 356" role="img" aria-label="Six cards in two rows. Each crosses out something the usual designs rely on and names what CLPR does instead: no network in the middle, the two ledgers talk directly; no committee's keys, Ledger A's own validators' signature checked by Ledger B; no new token, each ledger's own token pays; no pooled liquidity, messages not deposits; no single kind of ledger, any ledger with a verifier; no stolen key that forges, the worst case is delay.">
+  <svg viewBox="0 0 760 356" role="img" aria-label="Six cards in two rows. Each crosses out something the usual designs rely on and names what CLPR does instead: no network in the middle, the two ledgers talk directly; no committee's keys, Ledger A's own validators' signature checked by Ledger B; no new token, each ledger's own token pays; no pooled liquidity, messages not deposits, with no pool of user deposits; no single kind of ledger, any ledger can join with a CLPR Service, endpoints and verifiers; no endpoint that forges, an endpoint can delay but not forge.">
     <!-- card 1 -->
     <rect x="16" y="14" width="230" height="140" rx="10" class="d-surface" />
     <line x1="34" y1="58" x2="228" y2="58" class="line" />
@@ -42,23 +42,23 @@ import { design, pinned } from '../../../lib/sources';
     <text x="140" y="198" class="t center bad" style="text-decoration: line-through">pooled liquidity</text>
     <circle cx="40" cy="240" r="7" class="d-ok" /><path d="M36,240 l3,3 l5.5,-6" fill="none" stroke="var(--ok)" stroke-width="1.8" />
     <text x="140" y="244" class="t b center ok">messages, not deposits</text>
-    <text x="131" y="266" class="t small center">nothing sits in a pool</text>
+    <text x="131" y="266" class="t small center">no pool of user deposits</text>
     <!-- card 5 -->
     <rect x="262" y="168" width="230" height="140" rx="10" class="d-surface" />
     <line x1="280" y1="212" x2="474" y2="212" class="line" />
     <circle cx="286" cy="192" r="7" class="d-bad" /><line x1="282" y1="188" x2="290" y2="196" class="line bad" /><line x1="290" y1="188" x2="282" y2="196" class="line bad" />
     <text x="386" y="198" class="t center bad" style="text-decoration: line-through">one kind of ledger</text>
     <circle cx="286" cy="240" r="7" class="d-ok" /><path d="M282,240 l3,3 l5.5,-6" fill="none" stroke="var(--ok)" stroke-width="1.8" />
-    <text x="386" y="244" class="t b center ok">any ledger with a verifier</text>
-    <text x="377" y="266" class="t small center">its proofs, its own verifier</text>
+    <text x="386" y="244" class="t b center ok">any ledger can join</text>
+    <text x="377" y="266" class="t small center">a Service, endpoints, verifiers</text>
     <!-- card 6 -->
     <rect x="508" y="168" width="230" height="140" rx="10" class="d-surface" />
     <line x1="526" y1="212" x2="720" y2="212" class="line" />
     <circle cx="532" cy="192" r="7" class="d-bad" /><line x1="528" y1="188" x2="536" y2="196" class="line bad" /><line x1="536" y1="188" x2="528" y2="196" class="line bad" />
-    <text x="632" y="198" class="t center bad" style="text-decoration: line-through">a stolen key that forges</text>
+    <text x="632" y="198" class="t center bad" style="text-decoration: line-through">an endpoint that forges</text>
     <circle cx="532" cy="240" r="7" class="d-ok" /><path d="M528,240 l3,3 l5.5,-6" fill="none" stroke="var(--ok)" stroke-width="1.8" />
-    <text x="632" y="244" class="t b center ok">the worst case is delay</text>
-    <text x="623" y="266" class="t small center">endpoints cannot forge</text>
+    <text x="632" y="244" class="t b center ok">it can delay, not forge</text>
+    <text x="623" y="266" class="t small center">endpoints carry, ledgers check</text>
     <text x="380" y="340" class="t take center">One idea does all six: the receiving ledger checks the sending ledger's own signature.</text>
   </svg>
 </Figure>

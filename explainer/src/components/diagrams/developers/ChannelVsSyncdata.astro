@@ -1,16 +1,16 @@
 ---
-/** The Channel record stays on its own ledger; only each side's ChannelSyncData (status, received_message_id, next_message_id) is state-proven and carried in every bundle. Draws on spec §2.1. */
+/** Each ledger keeps its own Channel record; each side's ChannelSyncData (status, received_message_id, next_message_id) is state-proven and carried in every bundle. Draws on spec §2.1. */
 import Figure from '@kse/components/Figure.astro';
 import { spec } from '../../../lib/sources';
 ---
 <Figure
   lead="What a proof actually covers."
-  caption="The Channel record stays on its own ledger; only each side's ChannelSyncData, holding status, received_message_id and next_message_id, is state-proven and carried in every bundle. That is how one side's close reaches the other."
+  caption="Each ledger keeps its own Channel record; each side's ChannelSyncData, holding status, received_message_id and next_message_id, is state-proven and carried in every bundle, alongside whatever else the verifier proves. That is how one side's close reaches the other."
   source={[{ label: 'spec §2.1', href: spec('21-channel') }]}
   kind="spec"
   minWidth={760}
 >
-  <svg viewBox="0 0 760 372" role="img" aria-label="Two tall frames, Channel on Ledger A on the left and Channel on Ledger B on the right, each holding a list of channel fields that stays on its own ledger and, below it, a green ChannelSyncData box with status, received_message_id and next_message_id. A solid arrow carries A's ChannelSyncData, state-proven, in a bundle to Ledger B; a dashed arrow below carries B's back the other way. A note in the middle says: where the spec says Channel.status, read this side's ChannelSyncData.status.">
+  <svg viewBox="0 0 760 372" role="img" aria-label="Two tall frames, Channel on Ledger A on the left and Channel on Ledger B on the right, each holding its own list of channel fields and, below it, a green ChannelSyncData box with status, received_message_id and next_message_id. A solid arrow carries A's ChannelSyncData, state-proven, in a bundle to Ledger B; a dashed arrow below carries B's back the other way. A note in the middle says: where a rule says Channel.status, read this side's ChannelSyncData.status.">
     <defs>
       <marker id="cvs-arrow-ok" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9 Z" fill="var(--ok)"/></marker>
       <marker id="cvs-arrow-c" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9 Z" fill="var(--c)"/></marker>
@@ -19,7 +19,7 @@ import { spec } from '../../../lib/sources';
     <!-- Ledger A (left) -->
     <rect x="20" y="20" width="250" height="312" rx="12" class="d-a"/>
     <text x="34" y="42" class="t b">Channel on Ledger A</text>
-    <text x="34" y="58" class="t small muted">stays home; never crosses the gap</text>
+    <text x="34" y="58" class="t small muted">A's own record of the channel</text>
     <rect x="34" y="68" width="222" height="174" rx="8" class="d-surface"/>
     <text x="46" y="86" class="t small muted">the record, kept on A</text>
     <text x="46" y="104" class="t mono">channel_id</text>
@@ -55,7 +55,7 @@ import { spec } from '../../../lib/sources';
     <text x="516" y="308" class="t mono">next_message_id</text>
 
     <!-- Middle note: what the spec means by Channel.status -->
-    <text x="380" y="124" class="t small center muted">where the spec says</text>
+    <text x="380" y="124" class="t small center muted">where a rule says</text>
     <text x="380" y="140" class="t mono center">Channel.status</text>
     <text x="380" y="156" class="t small center muted">read this side's</text>
     <text x="380" y="172" class="t mono center">ChannelSyncData.status</text>
@@ -74,6 +74,6 @@ import { spec } from '../../../lib/sources';
     <text x="380" y="320" class="t small center muted">B's, the same in reverse</text>
 
     <!-- takeaway -->
-    <text x="380" y="356" class="t take center">Proofs carry the minimum: only ChannelSyncData crosses the gap; the Channel record never does.</text>
+    <text x="380" y="356" class="t take center">Each side's ChannelSyncData is proven in every bundle; that is how status crosses the gap.</text>
   </svg>
 </Figure>

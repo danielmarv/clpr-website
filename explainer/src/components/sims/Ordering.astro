@@ -87,7 +87,7 @@ const replies = ['Rb1', 'Rb2', 'Rb4'];
   </div>
   <div class="sim__log sim__log--tall" data-role="log"></div>
   <div class="od__notes">
-    <p class="small" style="margin:0 0 6px"><strong>Two kinds of rejection.</strong> A bundle that fails verification (bad hash chain, replay, oversized payload) is simply rejected: no pause, no state change, and the channel stays ACTIVE ready for the next valid bundle. PAUSED is reserved exclusively for response-ordering violations, because they indicate corruption in the peer's own outbound queue state, not a bad endpoint. Nobody is slashed either way; in the design document's words, you cannot slash a peer ledger.</p>
+    <p class="small" style="margin:0 0 6px"><strong>Two kinds of rejection.</strong> A bundle that fails verification (bad hash chain, replay, oversized payload) is simply rejected: no pause, no state change, and the channel stays ACTIVE ready for the next valid bundle. PAUSED is reserved exclusively for response-ordering violations, because they indicate corruption in the peer's own outbound queue state, not a bad endpoint. Nobody is slashed either way: a peer ledger cannot be slashed.</p>
     <p class="small" style="margin:0">Source: <a href={links.design328} rel="noopener">design §3.2.8</a> (the worked example is taken from there) · <a href={links.design327} rel="noopener">§3.2.7</a> · <a href={links.spec45} rel="noopener">spec §4.5</a> · <a href={links.spec44} rel="noopener">§4.4</a> · <a href={links.spec42} rel="noopener">§4.2 step 5</a> · <a href={links.spec211} rel="noopener">§2.1.1</a>.</p>
   </div>
 </div>
@@ -315,7 +315,7 @@ const replies = ['Rb1', 'Rb2', 'Rb4'];
         inbox = { ack: 'sync_data.received_message_id = 2', msgs: [], verdict: 'accepted', verdictClass: 'ok' };
         say(
           'B\'s sync data now says it has received A\'s messages through 2. A records the ack but deletes nothing: Ma1 and Ma2 are data messages, and A must keep them as the reference list for checking the order of B\'s replies. Ra3 could go as soon as it is acked, but it is not acked yet, and neither is Ma4.',
-          `§4.2 step 5: acked_message_id ← sync_data.received_message_id = 2. Acknowledged Data Messages are retained until their response arrives (${L('spec44', 'spec §4.4')}); acknowledged Response and Control Messages are deleted, but Ra3 (id 3) is beyond the ack${gone.length ? '' : ', so nothing is deleted'}. Example from ${L('design328', 'design §3.2.8')}: "A cannot yet delete Ma1 or Ma2 — it needs them to verify response ordering."`,
+          `acked_message_id ← sync_data.received_message_id = 2 (${L('spec42', 'spec §4.2 step 5')}). Acknowledged Data Messages are retained until their response arrives (${L('spec44', 'spec §4.4')}); acknowledged Response and Control Messages are deleted, but Ra3 (id 3) is beyond the ack${gone.length ? '' : ', so nothing is deleted'}. A cannot yet delete Ma1 or Ma2: it needs them to verify response ordering (${L('design328', 'design §3.2.8')}).`,
         );
       },
       rb12: () => {
@@ -328,7 +328,7 @@ const replies = ['Rb1', 'Rb2', 'Rb4'];
         inbox = { ack: `sync_data.received_message_id = ${acked}`, msgs: [{ name: 'Rb1', ok: true }, { name: 'Rb2', ok: true }], verdict: resumed ? 'accepted · channel resumes' : 'accepted', verdictClass: 'ok' };
         say(
           `A bundle from B carries Rb1 and Rb2. A walks its queue of unanswered data messages: the oldest is Ma1, and Rb1 answers 1, a match, so Rb1 is delivered to the application that sent Ma1 and Ma1 is deleted. Then Rb2 is checked against Ma2: match, delivered, deleted.${ackNote}${resumed ? ' Because the replies are correctly ordered, the channel resumes from PAUSED to ACTIVE on its own; no admin action was needed or available.' : ''}`,
-          `${L('spec45', 'spec §4.5')}: for each Response Message, walk the outbound queue of retained Data Messages (skipping Response and Control Messages); its message_id MUST equal the oldest unresponded Data Message's id. Match → deliver to the originating application read from ClprMessage.sender, delete the matched slot.${resumed ? ` PAUSED → ACTIVE: "auto-resumes when the next inbound bundle contains correctly ordered responses" (${L('spec211', 'spec §2.1.1')}).` : ''}`,
+          `For each Response Message, walk the outbound queue of retained Data Messages (skipping Response and Control Messages); its message_id MUST equal the oldest unresponded Data Message's id. Match → deliver to the originating application read from ClprMessage.sender, delete the matched slot (${L('spec45', 'spec §4.5')}).${resumed ? ` PAUSED → ACTIVE: "auto-resumes when the next inbound bundle contains correctly ordered responses" (${L('spec211', 'spec §2.1.1')}).` : ''}`,
         );
         return [{ name: 'Rb1', id: 1 }, { name: 'Rb2', id: 2 }];
       },
@@ -339,7 +339,7 @@ const replies = ['Rb1', 'Rb2', 'Rb4'];
         inbox = { ack: 'sync_data.received_message_id = 4', msgs: [], verdict: 'accepted', verdictClass: 'ok' };
         say(
           `B acks through 4. Ra3 is a reply, and replies never get replies, so once B has it there is nothing left to check: it is deleted immediately. ${kept.join(' and ')} ${kept.length > 1 ? 'are' : 'is'} kept until ${kept.length > 1 ? 'their responses arrive' : 'Rb4 arrives'}.`,
-          `acked_message_id ← 4. Delete acknowledged Response and Control Messages (${gone.map((x) => x.name).join(', ') || 'none left'}); retain acknowledged Data Messages (${kept.join(', ')}) until matched (${L('spec42', 'spec §4.2 step 5')}, ${L('design327', 'design §3.2.7')}). From the example: "A deletes Ra3 immediately (it is a response, no further action needed) but retains Ma4 until Rb4 arrives."`,
+          `acked_message_id ← 4. Delete acknowledged Response and Control Messages (${gone.map((x) => x.name).join(', ') || 'none left'}); retain acknowledged Data Messages (${kept.join(', ')}) until matched (${L('spec42', 'spec §4.2 step 5')}, ${L('design327', 'design §3.2.7')}). A deletes Ra3 at once, since a response needs no further action, and keeps Ma4 until Rb4 arrives.`,
         );
       },
       rb4: () => {
@@ -350,7 +350,7 @@ const replies = ['Rb1', 'Rb2', 'Rb4'];
         inbox = { ack: 'sync_data.received_message_id = 4', msgs: [{ name: 'Rb4', ok: true }], verdict: 'accepted', verdictClass: 'ok' };
         say(
           `Rb4 arrives. The oldest unanswered data message is Ma4: match. The response is delivered to Ma4's sender and Ma4 is deleted.${ackNote} The queue is now empty: every message has been both acknowledged and, where it needed one, answered.`,
-          `${L('spec45', 'spec §4.5')} walk: oldest unresponded Data Message = Ma4; Rb4.message_id = 4 → match, deliver, delete.${gone.length ? ` Ack update deletes ${gone.map((x) => x.name).join(', ')} (Response Message, ${L('spec44', 'spec §4.4')}).` : ''} Response ordering is tracked implicitly by walking the retained Data Messages; there is no separate counter.`,
+          `Walk (${L('spec45', 'spec §4.5')}): oldest unresponded Data Message = Ma4; Rb4.message_id = 4 → match, deliver, delete.${gone.length ? ` Ack update deletes ${gone.map((x) => x.name).join(', ')} (Response Message, ${L('spec44', 'spec §4.4')}).` : ''} Response ordering is tracked implicitly by walking the retained Data Messages; there is no separate counter.`,
         );
         return [{ name: 'Rb4', id: 4 }];
       },
@@ -363,7 +363,7 @@ const replies = ['Rb1', 'Rb2', 'Rb4'];
           again
             ? `B sends the same bundle again. It is rejected again, for the same reason, and the channel stays PAUSED. Nothing in it is processed. B has to fix its reply generation, which on a ledger like Ethereum may mean upgrading its CLPR Service contract; A's admin may alternatively close the channel, which then drains once B behaves.`
             : `A bundle from B carries Rb4, but the oldest data message still waiting for an answer is ${o.name}. B has answered out of order. That cannot happen on a healthy ledger, because replies are generated in the order the messages arrived, so A treats it as corruption of B's reply generation rather than as noise: the channel is PAUSED, the bundle is rejected outright, and nothing in it is delivered, acknowledged or advanced. Nobody is slashed: you cannot slash a ledger, and the bad replies are already committed in B's queue and cannot be unsent. The channel resumes on its own when B delivers a correctly ordered bundle (try "B sends Rb1, Rb2"); the admin may also close it.`,
-          `${L('spec45', 'spec §4.5')} step 4, mismatch (Rb4 ≠ oldest unresponded ${o.name}): set Channel status to PAUSED; reject new sendMessage calls. While PAUSED, existing queued messages remain and continue syncing, but inbound bundles with out-of-order responses are rejected outright: nothing is dispatched, acknowledged or advanced (${L('spec211', 'spec §2.1.1')}). Auto-resume: "when the next inbound bundle contains correctly ordered responses (if the admin hasn't closed it)". ${L('design328', 'design §3.2.8')}: "It does not slash — you cannot slash a peer ledger, only individual endpoints."`,
+          `Mismatch (Rb4 ≠ oldest unresponded ${o.name}, ${L('spec45', 'spec §4.5')} step 4): set Channel status to PAUSED; reject new sendMessage calls. While PAUSED, existing queued messages remain and continue syncing, but inbound bundles with out-of-order responses are rejected outright: nothing is dispatched, acknowledged or advanced (${L('spec211', 'spec §2.1.1')}). Auto-resume: "when the next inbound bundle contains correctly ordered responses (if the admin hasn't closed it)". No slashing: a peer ledger cannot be slashed (${L('design328', 'design §3.2.8')}).`,
         );
       },
       reset: () => {
@@ -377,7 +377,7 @@ const replies = ['Rb1', 'Rb2', 'Rb4'];
         for (const d of Array.from(root.querySelectorAll<HTMLElement>('.od__dot'))) d.classList.remove('done', 'pop');
         say(
           'Ledger A has sent four messages to Ledger B: three data messages (Ma1, Ma2, Ma4) and one reply of its own (Ra3, answering an earlier message from B). Nothing is acknowledged yet. Press the buttons in any order the protocol allows; the others are greyed out.',
-          `The queue is ${L('design328', 'design §3.2.8')}'s example, [Ma1, Ma2, Ra3, Ma4]. "Ma" is a Data Message from A, "Ra" a Response Message from A, "Rb" a Response Message from B answering the Ma with the same number. The ordering reference is always the oldest Data Message that has not yet been answered.`,
+          `The queue is [Ma1, Ma2, Ra3, Ma4] (${L('design328', 'design §3.2.8')}). "Ma" is a Data Message from A, "Ra" a Response Message from A, "Rb" a Response Message from B answering the Ma with the same number. The ordering reference is always the oldest Data Message that has not yet been answered.`,
         );
       },
     };

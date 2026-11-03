@@ -165,3 +165,37 @@ that hosts them, and a change to either side is one pull request.
 build` in `explainer/` still produces the standalone copy the gates check. The site engine comes
 from npm (`knowledge-site-engine`), so the website needs no git access to build. Supersedes the
 hand-off described in deployment.md before this move.
+
+## D18. One audit for the whole repository
+
+**Decision.** The `clpr-audit` skill covers everything the repository says about CLPR: both explainer
+pages and their data, the website's landing page with its drawings and animations, and the
+documents. The landing page's copy keeps its sources in `src/content/site-refs.json`, beside
+`site.ts`, in the same ref shape the explainer's data uses; facts that change outside the pinned
+repositories (implementation status, releases, licences) are listed there as live checks.
+
+**Why.** The first whole-repository audit found the landing page claiming things the explainer had
+long since corrected, such as "nothing in between" and immutable verifiers, and a Hiero status that
+had changed upstream. An audit that reaches only one of two surfaces lets them disagree.
+
+**Consequences.** A new or changed block in `site.ts` needs an entry in `site-refs.json`, or
+`repo-input.mjs` reports it as unsupported. The overstatements the audit found are retired phrases
+in `pack.json`, so `kse check-vocab` fails on them in the explainer.
+
+## D19. The explainer draws in the website's vocabulary
+
+**Decision.** The explainer's pages take the landing page's background, eyebrows, headings,
+navigation pills and glass panels, and its drawings take the landing page's shapes for the actors:
+ledger membranes with validator stars, glowing stars for services and applications, hexagon
+endpoints, diamond verifiers, fibre channels, peach connector coins. The shapes are classes on plain
+SVG (`art-*` in `src/styles/site-theme.css`) and `.claude/skills/clpr-figure/art.mjs` prints their
+markup in the landing page's own geometry; nothing needs WebGL or a script.
+
+**Why.** A reader who moves from the website into the explainer should see the same CLPR, not a
+second site. Keeping figures as static markup keeps `export-single`, the anchor check and the
+figure preview working, and the same drawing claims stay checkable.
+
+**Consequences.** Structural drawings keep boxes, restyled; the box fills are opaque so a line
+behind a box never crosses its label. `checks/browser/check-diagram-text.mjs` also holds labels
+inside ledger orbs and checks the hero. `kse preview-diagram` draws the new shapes unstyled, so
+the look is judged on the built page.

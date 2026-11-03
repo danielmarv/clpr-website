@@ -126,7 +126,9 @@ const parts = catalog.components.map((c) => ({ ...c, links: c.refs.map((r) => ({
   .archmap.has-sel .part:not(.on):hover, .archmap.has-sel .part:not(.on):focus-visible { opacity: 1; }
   .archmap .part:focus-visible { outline: none; }
   .archmap .part:focus-visible rect { stroke: var(--focus); stroke-width: 2.5; }
-  .archmap .sim__scroll > svg { min-width: 940px; }
+  /* From 1240px the sim spills into the margin (site-theme.css) and the drawing fits it instead. */
+  @media (max-width: 1239.98px) { .archmap .sim__scroll > svg { min-width: 940px; } }
+  @media (min-width: 1240px) { .archmap .sim__scroll > svg { min-width: 0; } }
   .archmap [data-role="channel"] { transition: stroke 250ms, stroke-width 150ms; }
   .archmap [data-role="channel"].ok { stroke-width: 2.5; }
   @media (min-width: 720px) { .archmap .result { min-height: var(--card-min, 0); } }

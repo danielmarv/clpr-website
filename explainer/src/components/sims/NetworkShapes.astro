@@ -50,7 +50,7 @@ const refs = [
           <rect x="-17" y="-11" width="34" height="22" rx="4" fill="var(--surface)" stroke="var(--text)" stroke-width="1.5" />
           <path d="M-17,-11 L0,2 L17,-11" fill="none" stroke="var(--text)" stroke-width="1.5" />
         </g>
-        <text x="380" y="288" class="t take center" data-role="take">Five channels, each between two ledgers; the hub holds four of them.</text>
+        <text x="380" y="288" class="t take center" data-role="take">Four channels, each between two ledgers; the hub holds all four.</text>
       </svg>
     </div>
     <p class="sim__scroll-note">Wider than a phone; scroll it sideways if you need to.</p>
@@ -87,7 +87,7 @@ const refs = [
   const SHAPES: Record<Shape, { nodes: string[]; links: [string, string][]; take: string; status: string; dial?: [string, string] }> = {
     pair: { nodes: ['B', 'C'], links: [['B', 'C']], take: 'One channel: the simplest shape, and the only one CLPR itself knows.', status: 'a pair' },
     star: { nodes: ['A', 'B', 'C', 'D', 'E'], links: [['A', 'B'], ['A', 'C'], ['A', 'D'], ['A', 'E']], take: 'Four channels, each between two ledgers; the hub holds all four.', status: 'a star' },
-    mesh: { nodes: ['B', 'C', 'D', 'E'], links: [['B', 'C'], ['B', 'D'], ['B', 'E'], ['C', 'D'], ['C', 'E'], ['D', 'E']], take: 'Six channels: every pair agrees on its own; nothing sits in the middle.', status: 'a mesh' },
+    mesh: { nodes: ['B', 'C', 'D', 'E'], links: [['B', 'C'], ['B', 'D'], ['B', 'E'], ['C', 'D'], ['C', 'E'], ['D', 'E']], take: 'Six channels: every pair agrees on its own; no trusted party sits in the middle.', status: 'a mesh' },
     private: { nodes: ['B', 'C'], links: [['B', 'C']], dial: ['B', 'C'], take: "B's endpoints dial out to C's; messages then flow both ways. B is never reachable from outside.", status: 'private to public' },
   };
   for (const root of Array.from(document.querySelectorAll<HTMLElement>('.sim.shapes'))) {
@@ -151,14 +151,14 @@ const refs = [
         msg.style.transform = `translate(${POS[to][0]}px, ${POS[to][1] - 34}px)`;
         status.textContent = 'delivered'; status.className = 'pill ok';
         const dial = shape === 'private' ? ` ${from === 'B' ? 'B dialled out' : 'B had dialled out'}, so the connection already exists.` : '';
-        log.innerHTML = `<span class="line">${from} → ${to} · direct channel</span><span class="ok">Delivered.</span> A channel joins ${from} and ${to} directly, so ${to} checks ${from}'s own proof and nothing in between is trusted.${dial}`;
+        log.innerHTML = `<span class="line">${from} → ${to} · direct channel</span><span class="ok">Delivered.</span> A channel joins ${from} and ${to} directly, so ${to} checks ${from}'s own proof with the channel's verifier; the endpoint in between is trusted only to deliver.${dial}`;
       } else {
         const hub = s.nodes.find((n) => n !== from && n !== to && s.links.some((p) => p.includes(from) && p.includes(n)) && s.links.some((p) => p.includes(to) && p.includes(n)));
         status.textContent = 'no channel'; status.className = 'pill bad';
         const l = document.createElementNS('http://www.w3.org/2000/svg', 'line');
         l.setAttribute('x1', String(POS[from][0])); l.setAttribute('y1', String(POS[from][1])); l.setAttribute('x2', String(POS[to][0])); l.setAttribute('y2', String(POS[to][1]));
         l.classList.add('no'); links.appendChild(l);
-        log.innerHTML = `<span class="line">${from} → ${to} · no channel</span><span class="bad">No path.</span> CLPR knows pairs and routes nothing. ${hub ? `Ledger ${hub} has a channel to each of them, but a message only crosses if an application on ${hub} receives it and sends a new message of its own to ${to}; that is the application's choice, under its own connector and verifier.` : `Open a channel between ${from} and ${to}, or build the forwarding into an application on a ledger that has both.`}`;
+        log.innerHTML = `<span class="line">${from} → ${to} · no channel</span><span class="bad">No path.</span> CLPR knows pairs and never forwards a message through a third ledger. ${hub ? `Ledger ${hub} has a channel to each of them, but a message only crosses if an application on ${hub} receives it and sends a new message of its own to ${to}; that is the application's choice, under its own connector and channel.` : `Open a channel between ${from} and ${to}, or build the forwarding into an application on a ledger that has both.`}`;
       }
     }
     for (const b of Array.from(root.querySelectorAll<HTMLButtonElement>('button[data-shape]'))) b.addEventListener('click', () => { shape = b.dataset.shape as Shape; pressed('button[data-shape]', shape, 'shape'); draw(); log.innerHTML = `<span class="line">shape: ${shape}</span>${SHAPES[shape].take}`; });

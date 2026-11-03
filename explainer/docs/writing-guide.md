@@ -47,7 +47,7 @@ the right column is what the developer page adds.
 | state proof | the validators' signature on a summary of the ledger, plus the path to one line | state proof |
 | endpoint | the program that carries messages and proofs between ledgers; it can delay, not forge | endpoint (relay); the sync protocol over gRPC |
 | CLPR Service | the protocol's own part of each ledger: queues, channels, checks, payment | CLPR Service (native in Hiero nodes; Solidity on EVM) |
-| outbound queue | where a ledger keeps the messages it has sent until they are answered | outbound queue, per channel, sliced per connector |
+| outbound queue | where a ledger keeps the messages it has sent until they are answered | outbound queue, per channel (the EVM contracts cap each connector's share) |
 | message id | the number a message is given when it is queued | message id (strictly increasing per channel) |
 | running hash | a hash of the previous running hash and the message, so one proof covers a batch | `SHA-256(previous_running_hash ‖ serialized_payload)` |
 | trust anchor | the other ledger's signing identity that a channel keeps on file | trust anchor (verifier-specific; changed only by proof) |
@@ -58,7 +58,7 @@ the right column is what the developer page adds.
 | bundle | a batch of messages with one proof | bundle |
 | endpoint manifest | each ledger's on-chain list of endpoint addresses | endpoint manifest (versioned, proven per channel) |
 | commit, reveal | the two phases of registering a channel: post a hash, then prove the key | commit-reveal registration |
-| paused | the channel stops accepting bundles until a human acts | `PAUSED` channel status |
+| paused | the channel stops taking new messages and rejects out-of-order replies until the peer corrects them, then resumes by itself | `PAUSED` channel status |
 
 ## Labelling claims
 
@@ -82,9 +82,20 @@ document vs. the Solidity). The changelog lists them so a maintainer can raise t
   at least one honest endpoint per side.
 - A single round-trip time or throughput figure. The site carries none; a demo measurement is not
   a specification property.
-- That a step with no on-chain trace was "observed". The journey marks those `inferred`.
-- That the native Hiero implementation is merged or production. At the pinned commit it is on a
-  feature branch pending approval; say that, dated to the pin.
+- That a step with no on-chain trace was "observed".
+- That nothing sits between the two ledgers. Endpoints relay every bundle: they can delay a
+  message but cannot forge one. Say "no bridge to trust", not "nothing in between".
+- That a verifier is immutable or can never change. Its address is fixed for the Channel's
+  lifetime, but the contract may sit behind an upgradeable proxy.
+- That CLPR holds no funds. The CLPR Service is the custodian of Connector funds and endpoint
+  bonds; what it never pools is user assets.
+- A latency bound such as "as fast as consensus". A message waits for the source ledger's
+  finality at the level the Channel's verifier accepts, an endpoint sync and the destination's
+  consensus.
+- The native Hiero implementation's status (approved, merged, released, switched on). No pinned
+  LFDT-CLPR repository records it, and the organization profile's "pending approval" is out of
+  date. Say only that it lives in hiero-ledger/hiero-consensus-node; the website states the status
+  and the clpr-audit skill checks it live.
 - Anything about ledgers the spec does not document as supported. The contracts repository
   contains verifier code for other proof systems; the site says it "carries verifier code" and
   stops there.
@@ -104,8 +115,7 @@ document vs. the Solidity). The changelog lists them so a maintainer can raise t
 ## Content rules shared with every engine pack
 
 - Sources are the pinned repositories only: code, documentation, tests and configuration at the pinned commits.
-- No provenance commentary and no certainty labels in the pages. `pack.json` `voice.bannedPhrases` enforces this once configured
-  (the journey's evidence markers predate the rule; remove them before enabling the gate here).
+- No provenance commentary and no certainty labels in the pages. `pack.json` `voice.bannedPhrases` enforces this once configured.
 - Design intent that the code does not contain is labelled as such or left out; where a note and the code differ, follow the code.
 - Flows cite `path:line` with a `symbol` that is on that line (`kse check-code-refs`).
 

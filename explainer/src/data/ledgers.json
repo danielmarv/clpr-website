@@ -4,7 +4,7 @@
     {
       "id": "hiero",
       "name": "Hiero networks: Hedera and private HashSpheres",
-      "proof": "A joint threshold signature by the network's validators over a summary of its state, plus the path down to one piece of data",
+      "proof": "A joint threshold signature by the network's validators over a summary of its state, plus the paths down to each record it proves",
       "status": "documented",
       "specDir": "verifiers/hiero",
       "codeDir": "src/verifiers/hiero",
@@ -39,10 +39,11 @@
       "specDir": null,
       "codeDir": "src/verifiers/evm/ethereum",
       "service": "Solidity contracts",
-      "endpoint": "The endpoint program",
+      "endpoint": "None: the endpoint program does not support it",
       "refs": [
         { "doc": "repo", "id": "clpr-smart-contracts", "path": "src/verifiers/evm/ethereum/EthMainnetVerifier.sol", "label": "EthMainnetVerifier.sol" },
-        { "doc": "repo", "id": "clpr-smart-contracts", "path": "src/verifiers/evm/ethereum/README.md", "label": "verifier README" }
+        { "doc": "repo", "id": "clpr-smart-contracts", "path": "src/verifiers/evm/ethereum/README.md", "label": "verifier README" },
+        { "doc": "repo", "id": "clpr-endpoint", "path": "clpr-relay-app/src/main/java/org/hiero/clpr/relay/app/ProofType.java", "label": "endpoint proof types" }
       ]
     },
     {
@@ -67,9 +68,10 @@
       "specDir": null,
       "codeDir": "src/verifiers/evm/avalanche",
       "service": "Solidity contracts",
-      "endpoint": "The endpoint program",
+      "endpoint": "None: the endpoint program does not support it",
       "refs": [
-        { "doc": "repo", "id": "clpr-smart-contracts", "path": "src/verifiers/evm/avalanche/MockAvalancheVerifier.sol", "label": "MockAvalancheVerifier.sol" }
+        { "doc": "repo", "id": "clpr-smart-contracts", "path": "src/verifiers/evm/avalanche/MockAvalancheVerifier.sol", "label": "MockAvalancheVerifier.sol" },
+        { "doc": "repo", "id": "clpr-endpoint", "path": "clpr-relay-app/src/main/java/org/hiero/clpr/relay/app/ProofType.java", "label": "endpoint proof types" }
       ]
     }
   ]

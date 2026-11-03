@@ -10,7 +10,7 @@ import { design, pinned } from '../../../lib/sources';
   kind="spec"
   minWidth={720}
 >
-  <svg viewBox="0 0 720 364" role="img" aria-label="A stack of four layers numbered from the bottom. One, Network: channel, endpoint, verifier contract, gRPC stream, protobuf; two ledgers can connect. Two, Messaging: message queues, bundles, running hashes, state proofs; two ledgers can pass messages. Three, Payment and Routing: connector contracts, application interfaces, slashing; messages are paid for, submitters reimbursed, misbehaving connectors punished. Four, Application: remote contract calls, asset movement, atomic swaps; applications address a destination ledger, application and connector.">
+  <svg viewBox="0 0 720 364" role="img" aria-label="A stack of four layers numbered from the bottom. One, Network: channel, endpoint, verifier contract, gRPC stream, protobuf; two ledgers can connect. Two, Messaging: message queues, bundles, running hashes, state proofs; two ledgers can pass messages. Three, Payment and Routing: connector contracts, application interfaces, slashing; messages are paid for, submitters reimbursed where a connector can pay, misbehaving connectors punishable. Four, Application: remote contract calls, asset movement, atomic swaps; applications address a destination ledger, application and connector.">
     <defs>
       <marker id="fls-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--text-3)" /></marker>
     </defs>
@@ -33,8 +33,8 @@ import { design, pinned } from '../../../lib/sources';
     <text x="64" y="150" class="t mono">slashing</text>
     <line x1="420" y1="129" x2="434" y2="129" class="line" marker-end="url(#fls-arrow)" />
     <text x="444" y="118" class="t small">Messages are paid for, submitters</text>
-    <text x="444" y="132" class="t small">reimbursed, misbehaving</text>
-    <text x="444" y="146" class="t small">connectors punished.</text>
+    <text x="444" y="132" class="t small">reimbursed where a connector can pay,</text>
+    <text x="444" y="146" class="t small">misbehaving connectors punishable.</text>
 
     <!-- 2 messaging -->
     <circle cx="34" cy="211" r="9" class="d-grey" /><text x="34" y="215" class="t small center b">2</text>

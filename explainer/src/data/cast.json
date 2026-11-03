@@ -1,11 +1,11 @@
 {
-  "$comment": "The cast: a plain definition and the protocol definition for each actor, paraphrasing design §2.1 and the organization profile terminology list.",
+  "$comment": "The cast: a plain definition and the protocol definition for each actor, paraphrasing design §2.1 and the organization profile terminology list; a row also cites the specification where it adds to them.",
   "cast": [
     {
       "name": "Application",
       "color": "var(--a)",
       "plain": "The program that wants to talk to another ledger. It implements two callbacks: one for when a message arrives, one for when a reply comes back.",
-      "spec": "A contract implementing IClprApplication: onClprMessage and onClprResponse. It sends by calling IClprService.sendMessage.",
+      "spec": "On EVM: a contract implementing IClprApplication (onClprMessage and onClprResponse) that sends by calling IClprService.sendMessage. Each platform defines its own callback interface.",
       "refs": [
         {
           "doc": "design",
@@ -17,6 +17,11 @@
           "id": "org-profile",
           "path": "profile/README.md",
           "label": "organization profile terminology"
+        },
+        {
+          "doc": "spec",
+          "anchor": "application-delivery",
+          "label": "spec, Application Delivery"
         }
       ]
     },
@@ -61,8 +66,8 @@
     {
       "name": "Verifier contract",
       "color": "var(--ok)",
-      "plain": "The specialist that knows how to check one particular ledger's signatures and proofs. Each channel picks one when it is created and can never change it.",
-      "spec": "An immutable contract implementing verifyConfig and verifyBundle. It authenticates state proofs from the peer against the channel's trust anchor and decodes bundle content into the local format.",
+      "plain": "The specialist that knows how to check one particular ledger's signatures and proofs. Each channel picks one when it is created and keeps that address for life, though the code behind it may be upgradeable.",
+      "spec": "A contract implementing verifyConfig and verifyBundle, at an address fixed for the channel's lifetime; it may sit behind an upgradeable proxy. It authenticates state proofs from the peer against the channel's trust anchor and decodes bundle content into the local format.",
       "refs": [
         {
           "doc": "design",
@@ -74,6 +79,11 @@
           "id": "org-profile",
           "path": "profile/README.md",
           "label": "organization profile terminology"
+        },
+        {
+          "doc": "spec",
+          "anchor": "88-upgradeable-verifier-contracts",
+          "label": "spec §8.8"
         }
       ]
     },
@@ -81,7 +91,7 @@
       "name": "Trust anchor",
       "color": "var(--ok)",
       "plain": "Who is allowed to sign for the other ledger right now. Stored per channel and only ever updated by a proof that the previous signers approved the change.",
-      "spec": "Opaque, verifier-defined bytes encoding the peer ledger's current signing authority. For Hiero: the ledger_id. For QBFT: the validator set hash plus epoch data. Rotated only through verifyBundle.",
+      "spec": "Opaque, verifier-defined bytes encoding the peer ledger's current signing authority. For Hiero: the ledger_id. For QBFT: the validator set hash, the code hash and the epoch data. Rotated only through verifyBundle.",
       "refs": [
         {
           "doc": "design",

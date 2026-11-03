@@ -5,7 +5,7 @@
       "id": "ledger-configuration",
       "marker": "‼️",
       "title": "Anyone can register a channel claiming any chain id",
-      "plain": "Channel creation needs nobody's permission, so anyone can register a ledger configuration with any chain id they like. An application has to check for itself that a channel really leads to the ledger it intends; a channel's existence proves nothing about its peer.",
+      "plain": "Channel creation needs nobody's permission, so anyone can construct a ledger configuration with any chain id they like. An application has to check for itself that a channel really leads to the ledger it intends; a channel's existence proves nothing about its peer.",
       "refs": [
         {
           "doc": "design",
@@ -44,7 +44,7 @@
       "id": "stake-sizing",
       "marker": "‼️",
       "title": "How large a connector's stake must be is not yet quantified",
-      "plain": "A connector's locked stake must cover the worst case: on the receiving side, the cost of running in-flight messages from a connector that has run dry; on the sending side, the fines for failed deliveries. A bond that is too small lets an attacker drain endpoints faster than fines can repay them. The minimum is a design parameter still to be quantified before production.",
+      "plain": "A connector's locked stake must cover the worst case: on the receiving side, the cost of running in-flight messages from a connector that has run dry; on the sending side, the fines for failed deliveries. A bond that is too small lets an attacker drain endpoints of more execution cost than the fines can repay. The minimum is a design parameter still to be quantified before production.",
       "refs": [
         {
           "doc": "design",

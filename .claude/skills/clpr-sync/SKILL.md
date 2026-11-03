@@ -164,7 +164,8 @@ today; the provenance table on both pages regenerates from the manifest at build
 
 Then run the `clpr-audit` skill on the sections and data rows you changed (all of them after a
 large sync): `pnpm exec kse audit-input` pairs each section's text with the passages its refs
-cite at the new pins, and the skill judges every statement. The bar before the changelog entry is
+cite at the new pins, `node .claude/skills/clpr-audit/repo-input.mjs` (from the repository root)
+does the same for the website's copy, and the skill judges every statement. The bar before the changelog entry is
 zero drifted and zero unsupported findings; an `illustration` verdict is only acceptable inside a
 section flagged `illustration: true` in `sections.json`.
 

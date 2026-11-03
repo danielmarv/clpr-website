@@ -1,16 +1,16 @@
 ---
-/** The EVM reference contracts: one immutable router that owns all state, five DELEGATECALL logic modules that write its storage, and the committed storage layout that endpoints prove against. Draws on the contracts repository's docs/architecture.md. */
+/** The EVM reference contracts: one immutable router that owns all state, five DELEGATECALL logic modules that write its storage, and the committed storage layout CI guards, whose slots the endpoint's proofs depend on. Draws on the contracts repository's docs/architecture.md. */
 import Figure from '@kse/components/Figure.astro';
 import { pinned, sol } from '../../../lib/sources';
 ---
 <Figure
   lead="One router, five modules, one storage layout."
-  caption="ClprService.sol never changes and holds every byte of state; each call is DELEGATECALLed to a logic module that writes into the router's own storage. Endpoints read storage-layout.json to know which slots to prove, so the snapshot is committed and CI regenerates and diffs it on every change."
+  caption="ClprService.sol never changes and holds every byte of state; each call is DELEGATECALLed to a logic module that writes into the router's own storage. Because every module writes into that one layout, storage-layout.json is committed and CI regenerates and diffs it on every change; the endpoint's proofs depend on the same slots."
   source={[{ label: 'contracts docs/architecture.md', href: pinned('clpr-smart-contracts', 'docs/architecture.md') }, { label: 'ClprService.sol', href: sol('src/ClprService.sol') }]}
   kind="impl"
   minWidth={720}
 >
-  <svg viewBox="0 0 720 440" role="img" aria-label="A caller at the top sends a call to ClprService.sol, an immutable router that holds all state. The router fans out by DELEGATECALL to five logic modules: ChannelLogic, MessagingLogic, BundleLogic, ConnectorLogic and AdminLogic. Dashed lines from every module lead down into one box, ClprServiceStorage.sol, the shared storage layout; a libraries box feeds it too. From the storage box a green arrow leads to storage-layout.json, a committed snapshot that CI diffs, and an Endpoint box points at that file to say it derives proof slots from it. A separate box lists the pure helpers ClprProtobuf and ClprTypes.">
+  <svg viewBox="0 0 720 440" role="img" aria-label="A caller at the top sends a call to ClprService.sol, an immutable router that holds all state. The router fans out by DELEGATECALL to five logic modules: ChannelLogic, MessagingLogic, BundleLogic, ConnectorLogic and AdminLogic. Dashed lines from every module lead down into one box, ClprServiceStorage.sol, the shared storage layout; a libraries box feeds it too. From the storage box a green arrow leads to storage-layout.json, a committed snapshot that CI diffs, and an Endpoint box points at that file to say its proofs depend on the same slots. A separate box lists the pure helpers ClprProtobuf and ClprTypes.">
     <defs>
       <marker id="evm-router-arrow" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9 Z" fill="var(--text-3)"/></marker>
       <marker id="evm-router-arrow-ok" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9 Z" fill="var(--ok)"/></marker>
@@ -83,10 +83,10 @@ import { pinned, sol } from '../../../lib/sources';
     <line x1="590" y1="362" x2="562" y2="362" class="line c" marker-end="url(#evm-router-arrow-c)"/>
     <rect x="592" y="332" width="98" height="60" rx="8" class="d-c"/>
     <text x="641" y="352" class="t b center">Endpoint</text>
-    <text x="641" y="369" class="t small center">derives proof</text>
-    <text x="641" y="385" class="t small center">slots from it</text>
+    <text x="641" y="369" class="t small center">proves the</text>
+    <text x="641" y="385" class="t small center">same slots</text>
 
     <!-- takeaway -->
-    <text x="360" y="424" class="t take center">One contract owns the state; modules borrow its storage; endpoints prove against the committed layout.</text>
+    <text x="360" y="424" class="t take center">One contract owns the state; modules borrow its storage; CI guards the layout that proofs depend on.</text>
   </svg>
 </Figure>

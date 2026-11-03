@@ -56,9 +56,10 @@ for (const path of ['/', '/developers/']) {
     const overlap = (p, q) => [Math.min(p.right, q.right) - Math.max(p.left, q.left), Math.min(p.bottom, q.bottom) - Math.max(p.top, q.top)];
     const out = [];
     let drawings = 0, labels = 0;
-    for (const svg of document.querySelectorAll('.fig svg, .sim svg')) {
-      const host = svg.closest('.fig, .sim');
-      const name = host.classList.contains('fig')
+    for (const svg of document.querySelectorAll('.fig svg, .sim svg, .trailer svg')) {
+      const host = svg.closest('.fig, .sim, .trailer');
+      const name = host.classList.contains('trailer') ? 'the hero animation'
+        : host.classList.contains('fig')
         ? `figure "${host.querySelector('figcaption b')?.textContent.trim()}"`
         : `simulation "${host.querySelector('.sim__head h3, .sim__head h4')?.textContent.trim()}"`;
       const edge = svg.getBoundingClientRect();
@@ -67,6 +68,12 @@ for (const path of ['/', '/developers/']) {
       const room = ROOM * (svg.viewBox.baseVal.width ? edge.width / svg.viewBox.baseVal.width : 1);
       const tight = (b, r) => b.left < r.left + room || b.right > r.right - room;
       const boxes = [...svg.querySelectorAll('rect')].filter((r) => shown(r, svg) && painted(r)).map((r) => r.getBoundingClientRect()).filter((b) => b.width > 8 && b.height > 8);
+      // Ledger orbs (art-orb circles and ellipses) hold labels too: a label inside one keeps its room inside it.
+      const orbs = [...svg.querySelectorAll('circle.art-orb, ellipse.art-orb')].filter((c) => shown(c, svg)).map((c) => {
+        const b = c.getBoundingClientRect();
+        return { x: b.left + b.width / 2, y: b.top + b.height / 2, rx: b.width / 2, ry: b.height / 2 };
+      });
+      const within = (x, y, o, inset) => ((x - o.x) / (o.rx - inset)) ** 2 + ((y - o.y) / (o.ry - inset)) ** 2 <= 1;
       const texts = [...svg.querySelectorAll('text')].filter((t) => t.textContent.trim() && shown(t, svg)).map((t) => ({ text: t.textContent.trim().replace(/\s+/g, ' ').slice(0, 48), b: t.getBoundingClientRect() }));
       labels += texts.length;
       for (const [i, { text, b }] of texts.entries()) {
@@ -75,6 +82,11 @@ for (const path of ['/', '/developers/']) {
         const holders = boxes.filter((r) => cx > r.left && cx < r.right && cy > r.top && cy < r.bottom);
         const own = holders.sort((p, q) => p.width * p.height - q.width * q.height)[0];
         if (own && tight(b, own)) out.push(`${name}: "${text}" is within ${ROOM} units of its box's edge, or past it`);
+        // The smaller holder decides: a ledger drawn on a background panel is the label's real frame.
+        const nearest = orbs.filter((o) => within(cx, cy, o, 0)).sort((p, q) => p.rx * p.ry - q.rx * q.ry)[0];
+        const orb = nearest && (!own || Math.PI * nearest.rx * nearest.ry < own.width * own.height) ? nearest : null;
+        const corners = [[b.left, b.top], [b.right, b.top], [b.left, b.bottom], [b.right, b.bottom]];
+        if (orb && corners.some(([x, y]) => !within(x, y, orb, room))) out.push(`${name}: "${text}" is within ${ROOM} units of its ledger's edge, or past it`);
         // A box that does not hold the label but overlaps it: the label crosses that box's edge.
         const crossed = boxes.find((r) => !holders.includes(r) && overlap(b, r).every((d, k) => d > (k ? 3 : 2)));
         if (crossed) out.push(`${name}: "${text}" runs into a box`);

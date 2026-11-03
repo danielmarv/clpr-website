@@ -5,7 +5,7 @@ import { design, spec } from '../../../lib/sources';
 ---
 <Figure
   lead="Buggy versus lying."
-  caption="A verifier that makes mistakes is caught: its garbled messages do not match the running hashes and the bundle is rejected. A verifier that lies produces running hashes that match its own lies, and nothing in the protocol can tell. Anyone can create a channel with any verifier, so vetting verifiers is human work."
+  caption="A verifier bug that garbles messages is caught: the garbled messages do not match the running hashes and the bundle is rejected. A verifier that lies produces running hashes that match its own lies, and nothing in the protocol can tell. Anyone can create a channel with any verifier, so vetting verifiers is human work."
   source={[{ label: 'design §2.3', href: design('23-trust-model') }, { label: 'spec §8.2', href: spec('82-trust-model') }]}
   kind="spec"
   minWidth={760}
@@ -71,6 +71,6 @@ import { design, spec } from '../../../lib/sources';
     <line x1="418" y1="208" x2="454" y2="208" class="line bad" marker-end="url(#bl-arrow-bad)"/>
     <line x1="574" y1="208" x2="610" y2="208" class="line bad dash" marker-end="url(#bl-arrow-bad)"/>
 
-    <text x="380" y="284" class="t take center">The running hash chain catches mistakes; only people catch liars. A channel is only as good as its verifier.</text>
+    <text x="380" y="284" class="t take center">The running hash chain catches garbled messages; only people catch a verifier that lies.</text>
   </svg>
 </Figure>

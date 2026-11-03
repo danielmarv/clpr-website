@@ -27,13 +27,14 @@ html[lang]:root {
   --lift: none;
   --lift-sm: none;
 
-  /* Actors, from the website's range: violet for messages, magenta for proofs, peach for highlights. */
+  /* Actors, as the website draws them: violet for Ledger A and messages, pink for Ledger B and proofs,
+     peach for money (the website's Connector coins), magenta for whatever sits between. */
   --a: #8b7bff;  --a-soft: rgb(139 123 255 / 0.18);
-  --b: #ffb49a;  --b-soft: rgb(255 180 154 / 0.16);
+  --b: #f27fbd;  --b-soft: rgb(242 127 189 / 0.16);
   --c: #d56ad8;  --c-soft: rgb(213 106 216 / 0.18);
   --ok: #4fd8a8; --ok-soft: rgb(79 216 168 / 0.16);
   --bad: #ff6b5e; --bad-soft: rgb(255 107 94 / 0.16);
-  --money: #f27fbd; --money-soft: rgb(242 127 189 / 0.16);
+  --money: #ffb49a; --money-soft: rgb(255 180 154 / 0.16);
   --grey: #8f8cab; --grey-soft: rgb(255 255 255 / 0.06);
 
   --display: "Sora", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -51,6 +52,16 @@ html[lang]:root {
 
 /* ---------- frame ---------- */
 html body { font-size: 1.0625rem; }
+/* The website's page background (its no-WebGL aurora in src/app/globals.css), so the explainer reads as part of it. */
+html body {
+  background:
+    radial-gradient(ellipse 60% 50% at 78% 22%, rgb(108 55 235 / 0.28), transparent 70%),
+    radial-gradient(ellipse 50% 40% at 90% 45%, rgb(200 42 128 / 0.16), transparent 70%),
+    radial-gradient(ellipse 90% 50% at 50% 0%, rgb(33 18 113 / 0.5), transparent 70%),
+    linear-gradient(180deg, #1a1540, #0f0c26);
+  background-color: var(--bg);
+  background-attachment: fixed;
+}
 @media (min-width: 720px) { html body { font-size: 1.0625rem; line-height: 1.7; } }
 html .progress { z-index: 50; }
 html .progress > i { background: var(--gradient-brand); }
@@ -94,28 +105,45 @@ html .site-btn.ghost { color: rgb(255 255 255 / 0.8); }
 html .site-btn.ghost:hover { color: #fff; background: rgb(255 255 255 / 0.06); }
 html .site-btn.primary { background: #fff; color: var(--bg); }
 html .site-btn.primary:hover { background: #ece9ff; }
-@media (max-width: 40rem) { html .site-btn.primary { display: none; } html .site-subnav .label { display: none; } }
+@media (max-width: 40rem) { html .site-btn.primary { display: none; } }
 
 html .site-subnav { border-bottom: 1px solid var(--line); background: rgb(255 255 255 / 0.02); }
-html .site-subnav .shell { display: flex; flex-wrap: wrap; align-items: center; gap: 0 1.25rem; min-height: 2.75rem; font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; }
-html .site-subnav .label { color: var(--text-3); margin-right: 0.25rem; }
-html .site-subnav a { color: var(--text-2); text-decoration: none; padding: 0.8rem 0 0.7rem; border-bottom: 2px solid transparent; }
+/* The two pages as the website's navigation pills: Sora, sentence case, the current one lit. */
+html .site-subnav .shell { display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem; min-height: 3rem; font-family: var(--font); font-size: 0.8125rem; letter-spacing: 0; text-transform: none; }
+html .site-subnav .label { display: inline-flex; align-items: center; gap: 0.625rem; color: var(--text-3); margin-right: 0.75rem; }
+html .site-subnav .label::before { content: ""; width: 1.5rem; height: 1px; background: linear-gradient(90deg, var(--signal-glow), var(--proof-glow)); }
+html .site-subnav a { color: rgb(255 255 255 / 0.6); text-decoration: none; padding: 0.375rem 0.875rem; border-radius: 999px; transition: color 150ms, background-color 150ms; }
 html .site-subnav a:hover { color: #fff; }
-html .site-subnav a[aria-current="page"] { color: #fff; border-bottom-color: var(--signal); }
+html .site-subnav a[aria-current="page"] { color: #fff; background: rgb(255 255 255 / 0.09); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.08); }
+/* On phones the label goes so both pages fit one row. It sits after the label's own rule so it wins. */
+@media (max-width: 40rem) { html .site-subnav .label { display: none; } }
 
 /* ---------- hero and headings ---------- */
 html .hero { border-bottom: 1px solid var(--line); }
-html .hero .kicker { color: var(--signal-ink); }
+/* Eyebrows as the website's section eyebrows: Sora 500, sentence case, a gradient tick before them.
+   Callout tags and inline group labels keep the engine's mono. */
+html :is(.hero .kicker, .part-tag, .act-band .act-no, .read-pct) { font-family: var(--font); font-size: 0.8125rem; font-weight: 500; letter-spacing: 0; text-transform: none; color: var(--text-2); }
+html .hero .kicker { display: inline-flex; align-items: center; gap: 0.625rem; }
+html :is(.hero .kicker, .part-tag)::before { content: ""; flex: none; width: 1.5rem; height: 1px; background: linear-gradient(90deg, var(--signal-glow), var(--proof-glow)); }
+html .part-tag .num { font-family: var(--font); }
 html .hero h1 {
-  font-weight: 600; letter-spacing: -0.03em;
+  font-weight: 300; letter-spacing: -0.04em;
   background-image: linear-gradient(180deg, #ffffff 30%, rgb(214 210 240 / 0.62) 110%);
   -webkit-background-clip: text; background-clip: text; color: transparent;
 }
-html .hero h1 em { font-style: normal; font-weight: 600; background-image: var(--gradient-brand); -webkit-background-clip: text; background-clip: text; color: transparent; }
+html .hero h1 em { font-style: normal; font-weight: 400; background-image: var(--gradient-brand); -webkit-background-clip: text; background-clip: text; color: transparent; }
 html .hero .lede { color: var(--text-2); }
-html .route a { border: 1px solid var(--line-strong); border-radius: 999px; background: var(--mist); color: #fff; }
+html .route a { border: 1px solid var(--line-strong); border-radius: 999px; background: var(--mist); color: #fff; font-family: var(--font); font-size: 0.875rem; font-weight: 400; letter-spacing: 0; text-transform: none; padding: 0.5rem 1rem; }
+html .route a b { font-family: var(--mono); font-weight: 500; color: var(--text-3); }
 html .route a:hover { border-color: #fff; }
-html .act-band h2, html main > section > h2, html main > section > h3, html .sim__head h3, html .sim__head h4, html .step-card h4, html .check summary { font-weight: 600; letter-spacing: -0.02em; }
+/* Headings as the website's: light, tight, white fading to lavender. */
+html :is(.act-band h2, main > section > h2) {
+  font-weight: 300; letter-spacing: -0.035em;
+  background-image: linear-gradient(180deg, #ffffff 30%, rgb(214 210 240 / 0.62) 110%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+html main > section > h2 { font-weight: 400; letter-spacing: -0.03em; }
+html main > section > h3, html .sim__head h3, html .sim__head h4, html .step-card h4, html .check summary { font-weight: 500; letter-spacing: -0.02em; }
 html .act-band .act-no::after { background: var(--line-strong); }
 html .toc-inline { border-color: var(--line); background: var(--panel); }
 
@@ -133,9 +161,20 @@ html .toc a[aria-current="true"] .num { color: var(--signal-ink); }
 html .toc a.done::after { font-weight: 400; }
 
 /* ---------- plates: figures, simulations, boxes ---------- */
-html .fig, html .wide, html .check, html .table-wrap, html .step-list { border-color: var(--line); background: var(--panel); }
-html .sim { border: 1px solid var(--line); background: var(--panel); box-shadow: var(--shadow); }
+html .wide, html .check, html .table-wrap, html .step-list { border-color: var(--line); background: var(--panel); }
+/* Figures and simulations sit on the website's glass panels. */
+html :is(.fig, .sim) {
+  border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: 0 1px 0 rgb(255 255 255 / 0.04) inset;
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.04), rgb(255 255 255 / 0.012)), rgb(22 18 50 / 0.55);
+  -webkit-backdrop-filter: blur(18px) saturate(1.4); backdrop-filter: blur(18px) saturate(1.4);
+}
 html .sim__head, html .sim__controls, html .sim__log { border-color: var(--line); }
+/* The two simulations drawn wider than the 840px column (the journey and the architecture map) spill
+   into the right margin on wide screens instead of scrolling. From 1240px the page stops growing, so
+   the margin right of the column is 50vw - 550px; 16px of it stays clear. Below that they scroll. */
+@media (min-width: 1240px) {
+  html main .sim:is(.journey, .archmap) { margin-right: calc(-1 * clamp(0px, 50vw - 566px, 140px)); }
+}
 html .callout { border-color: var(--line); }
 html .callout.key { border-left-color: var(--signal); }
 html .check .a { border-left-color: var(--ok); }
@@ -270,3 +309,59 @@ html .site-footer__legal > a svg { width: 0.875rem; height: 0.875rem; fill: none
   html .site-footer__backing { margin-top: 4rem; }
   html .site-footer .site-footer__wordmark { margin-top: 4rem; }
 }
+
+/* ---------- figures in the website's light ----------
+   Every drawing's boxes and lines take the website's glow, so the plates read like its art.
+   Figures stay static markup; nothing here needs a script. */
+html :is(.fig, .sim, .trailer) svg :is(.d-a, .d-b, .d-c, .d-ok, .d-bad, .d-money) { stroke-width: 1.25; filter: drop-shadow(0 0 6px var(--glow, transparent)); }
+/* Opaque, as the website's node cards are: dark with a little of the tone mixed in, so a line drawn
+   behind a box never shows through its label. */
+html svg .d-a { fill: #221e49; --glow: rgb(139 123 255 / 0.4); }
+html svg .d-b { fill: #2f1e41; --glow: rgb(242 127 189 / 0.4); }
+html svg .d-c { fill: #2b1c44; --glow: rgb(213 106 216 / 0.4); }
+html svg .d-ok { fill: #1b293e; --glow: rgb(79 216 168 / 0.35); }
+html svg .d-bad { fill: #301c36; --glow: rgb(255 107 94 / 0.35); }
+html svg .d-money { fill: #30253d; --glow: rgb(255 180 154 / 0.35); }
+html svg .d-surface, html svg .d-grey { fill: #100d26; stroke: rgb(255 255 255 / 0.14); }
+html :is(.fig, .sim, .trailer) svg .line { stroke-linecap: round; filter: drop-shadow(0 0 3px var(--glow, transparent)); }
+html svg .line.a { --glow: rgb(139 123 255 / 0.6); }
+html svg .line.b { --glow: rgb(242 127 189 / 0.6); }
+html svg .line.c { --glow: rgb(213 106 216 / 0.6); }
+html svg .line.ok { --glow: rgb(79 216 168 / 0.5); }
+html svg .line.money { --glow: rgb(255 180 154 / 0.5); }
+
+/* ---------- the website's drawing vocabulary (art-*) ----------
+   The landing page's actors, as classes on plain SVG shapes. `.claude/skills/clpr-figure/art.mjs`
+   writes the markup; docs/figures.md says which actor gets which shape. Tones: a (Ledger A, violet),
+   b (Ledger B, pink), c (magenta), money (peach), ok, bad. */
+html svg .art-orb { fill: var(--tone-wash); stroke: var(--tone-line); stroke-width: 1; }
+html svg .art-validator { fill: #fff; opacity: 0.8; filter: drop-shadow(0 0 3px var(--tone)); }
+html svg .art-star { fill: #fff; filter: drop-shadow(0 0 4px var(--tone)) drop-shadow(0 0 10px var(--tone)); }
+html svg .art-halo { fill: none; stroke: var(--tone-line); stroke-width: 1; }
+html svg .art-endpoint { fill: #0b0a13; stroke: var(--tone); stroke-width: 1.5; filter: drop-shadow(0 0 4px var(--tone-glow)); }
+html svg .art-verifier { fill: #0b0a13; stroke: #f27fbd; stroke-width: 1.4; filter: drop-shadow(0 0 4px rgb(242 127 189 / 0.5)); }
+html svg .art-fibre { fill: none; stroke-width: 0.9; stroke-linecap: round; opacity: 0.55; }
+/* A lane keeps the gradient its stroke attribute names (art.mjs lane); every other bundle takes its tone. */
+html svg .art-fibre:not(.lane) { stroke: var(--tone); }
+html svg .art-coin { fill: #0b0a13; stroke: #ffb49a; stroke-width: 1.6; }
+html svg .art-coin-dot { fill: #ffb49a; }
+html svg .art-ring { fill: none; stroke: #f27fbd; stroke-width: 1.4; filter: drop-shadow(0 0 4px rgb(242 127 189 / 0.6)); }
+html svg :is(.art-orb, .art-validator, .art-star, .art-halo, .art-endpoint, .art-fibre) { --tone: #9d8bff; --tone-line: rgb(157 139 255 / 0.5); --tone-wash: rgb(139 123 255 / 0.09); --tone-glow: rgb(157 139 255 / 0.5); }
+html svg :is(.art-orb, .art-validator, .art-star, .art-halo, .art-endpoint, .art-fibre).b { --tone: #f27fbd; --tone-line: rgb(242 127 189 / 0.5); --tone-wash: rgb(242 127 189 / 0.09); --tone-glow: rgb(242 127 189 / 0.5); }
+html svg :is(.art-orb, .art-validator, .art-star, .art-halo, .art-endpoint, .art-fibre).c { --tone: #d56ad8; --tone-line: rgb(213 106 216 / 0.5); --tone-wash: rgb(213 106 216 / 0.09); --tone-glow: rgb(213 106 216 / 0.5); }
+html svg :is(.art-orb, .art-validator, .art-star, .art-halo, .art-endpoint, .art-fibre).money { --tone: #ffb49a; --tone-line: rgb(255 180 154 / 0.5); --tone-wash: rgb(255 180 154 / 0.09); --tone-glow: rgb(255 180 154 / 0.5); }
+html svg :is(.art-orb, .art-validator, .art-star, .art-halo, .art-endpoint, .art-fibre).ok { --tone: #4fd8a8; --tone-line: rgb(79 216 168 / 0.5); --tone-wash: rgb(79 216 168 / 0.08); --tone-glow: rgb(79 216 168 / 0.45); }
+html svg :is(.art-orb, .art-validator, .art-star, .art-halo, .art-endpoint, .art-fibre).bad { --tone: #ff6b5e; --tone-line: rgb(255 107 94 / 0.5); --tone-wash: rgb(255 107 94 / 0.08); --tone-glow: rgb(255 107 94 / 0.45); }
+html svg .art-validator.dim { opacity: 0.35; }
+
+/* Motion, for simulations and the hero only (figures stay still): a bead travels along an
+   offset-path set on the element; reduced motion parks it at --rest. */
+@keyframes art-travel { from { offset-distance: 0%; } to { offset-distance: 100%; } }
+@keyframes art-pulse { 0%, 100% { opacity: 0.25; } 50% { opacity: 1; } }
+html svg .art-move { offset-rotate: 0deg; animation: art-travel var(--dur, 4s) var(--delay, 0s) ease-in-out infinite both; }
+html svg .art-breathe { animation: art-pulse var(--dur, 3s) var(--delay, 0s) ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  html svg .art-move { animation: none; offset-distance: var(--rest, 50%); }
+  html svg .art-breathe { animation: none; opacity: 1; }
+}
+html svg .art-bundle { fill: rgb(11 10 19 / 0.6); stroke: #f27fbd; stroke-width: 1.3; stroke-dasharray: 3 3; }

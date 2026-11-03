@@ -1,0 +1,473 @@
+{
+  "$comment": "Where each block of site.ts gets its facts. Not read by the app; the clpr-audit skill pairs each block's text with these passages (explainer/.upstream at the pins in explainer/src/data/sources.json). Ref shapes match the explainer's: {doc: design|spec, anchor} or {doc: repo, id, path}. A block with claims: false carries no claims about CLPR. live lists facts that change outside the pinned repositories; the audit re-runs each check and records the result.",
+  "blocks": {
+    "links": {
+      "claims": false
+    },
+    "nav": {
+      "claims": false
+    },
+    "headerCta": {
+      "claims": false
+    },
+    "hero": {
+      "refs": [
+        {
+          "doc": "design",
+          "anchor": "1-executive-summary",
+          "label": "design §1"
+        },
+        {
+          "doc": "design",
+          "anchor": "23-trust-model",
+          "label": "design §2.3"
+        },
+        {
+          "doc": "repo",
+          "id": "org-profile",
+          "path": "profile/README.md",
+          "label": "org profile"
+        }
+      ],
+      "live": [
+        "hiero-native"
+      ]
+    },
+    "story": {
+      "refs": [
+        {
+          "doc": "design",
+          "anchor": "22-high-level-message-flow",
+          "label": "design §2.2"
+        },
+        {
+          "doc": "design",
+          "anchor": "23-trust-model",
+          "label": "design §2.3"
+        },
+        {
+          "doc": "design",
+          "anchor": "323-bundle-transport",
+          "label": "design §3.2.3"
+        },
+        {
+          "doc": "design",
+          "anchor": "32-messaging-layer",
+          "label": "design §3.2"
+        }
+      ]
+    },
+    "guarantees": {
+      "refs": [
+        {
+          "doc": "design",
+          "anchor": "23-trust-model",
+          "label": "design §2.3"
+        },
+        {
+          "doc": "design",
+          "anchor": "310-the-clpr-service",
+          "label": "design §3.1.0"
+        },
+        {
+          "doc": "design",
+          "anchor": "312-endpoint-manifest",
+          "label": "design §3.1.2"
+        },
+        {
+          "doc": "design",
+          "anchor": "313-establishing-and-updating-channels",
+          "label": "design §3.1.3"
+        },
+        {
+          "doc": "design",
+          "anchor": "315-verifier-contracts",
+          "label": "design §3.1.5"
+        },
+        {
+          "doc": "design",
+          "anchor": "32-messaging-layer",
+          "label": "design §3.2"
+        },
+        {
+          "doc": "design",
+          "anchor": "323-bundle-transport",
+          "label": "design §3.2.3"
+        },
+        {
+          "doc": "spec",
+          "anchor": "41-running-hash-computation",
+          "label": "spec §4.1"
+        }
+      ]
+    },
+    "walkthrough": {
+      "refs": [
+        {
+          "doc": "design",
+          "anchor": "22-high-level-message-flow",
+          "label": "design §2.2"
+        }
+      ]
+    },
+    "demo": {
+      "refs": [
+        {
+          "doc": "design",
+          "anchor": "22-high-level-message-flow",
+          "label": "design §2.2"
+        },
+        {
+          "doc": "design",
+          "anchor": "314-endpoint-communication-protocol",
+          "label": "design §3.1.4"
+        },
+        {
+          "doc": "design",
+          "anchor": "323-bundle-transport",
+          "label": "design §3.2.3"
+        },
+        {
+          "doc": "design",
+          "anchor": "325-bundle-verification",
+          "label": "design §3.2.5"
+        },
+        {
+          "doc": "design",
+          "anchor": "315-verifier-contracts",
+          "label": "design §3.1.5"
+        },
+        {
+          "doc": "design",
+          "anchor": "332-sending-a-message",
+          "label": "design §3.3.2"
+        },
+        {
+          "doc": "design",
+          "anchor": "333-receiving-routing-and-paying",
+          "label": "design §3.3.3"
+        },
+        {
+          "doc": "design",
+          "anchor": "328-response-ordering-and-correlation",
+          "label": "design §3.2.8"
+        },
+        {
+          "doc": "design",
+          "anchor": "312-endpoint-manifest",
+          "label": "design §3.1.2"
+        },
+        {
+          "doc": "repo",
+          "id": "org-profile",
+          "path": "profile/README.md",
+          "label": "org profile"
+        }
+      ]
+    },
+    "origins": {
+      "refs": [
+        {
+          "doc": "repo",
+          "id": "org-profile",
+          "path": "profile/README.md",
+          "label": "org profile"
+        }
+      ],
+      "live": [
+        "hiero-native",
+        "lab-status"
+      ]
+    },
+    "comparison": {
+      "refs": [
+        {
+          "doc": "design",
+          "anchor": "1-executive-summary",
+          "label": "design §1"
+        },
+        {
+          "doc": "design",
+          "anchor": "23-trust-model",
+          "label": "design §2.3"
+        },
+        {
+          "doc": "design",
+          "anchor": "310-the-clpr-service",
+          "label": "design §3.1.0"
+        },
+        {
+          "doc": "design",
+          "anchor": "312-endpoint-manifest",
+          "label": "design §3.1.2"
+        },
+        {
+          "doc": "design",
+          "anchor": "313-establishing-and-updating-channels",
+          "label": "design §3.1.3"
+        },
+        {
+          "doc": "design",
+          "anchor": "315-verifier-contracts",
+          "label": "design §3.1.5"
+        },
+        {
+          "doc": "design",
+          "anchor": "34-application-layer",
+          "label": "design §3.4"
+        }
+      ]
+    },
+    "layers": {
+      "refs": [
+        {
+          "doc": "design",
+          "anchor": "3-architecture",
+          "label": "design §3"
+        },
+        {
+          "doc": "design",
+          "anchor": "33-payment--routing-layer",
+          "label": "design §3.3"
+        },
+        {
+          "doc": "design",
+          "anchor": "334-failure-consequences-and-slashing",
+          "label": "design §3.3.4"
+        },
+        {
+          "doc": "spec",
+          "anchor": "51-channel-registration",
+          "label": "spec §5.1"
+        },
+        {
+          "doc": "repo",
+          "id": "org-profile",
+          "path": "profile/README.md",
+          "label": "org profile"
+        }
+      ]
+    },
+    "extensibility": {
+      "refs": [
+        {
+          "doc": "design",
+          "anchor": "310-the-clpr-service",
+          "label": "design §3.1.0"
+        },
+        {
+          "doc": "design",
+          "anchor": "312-endpoint-manifest",
+          "label": "design §3.1.2"
+        },
+        {
+          "doc": "design",
+          "anchor": "315-verifier-contracts",
+          "label": "design §3.1.5"
+        },
+        {
+          "doc": "spec",
+          "anchor": "88-upgradeable-verifier-contracts",
+          "label": "spec §8.8"
+        },
+        {
+          "doc": "repo",
+          "id": "org-profile",
+          "path": "profile/README.md",
+          "label": "org profile"
+        }
+      ],
+      "live": [
+        "hiero-native"
+      ]
+    },
+    "repositories": {
+      "refs": [
+        {
+          "doc": "repo",
+          "id": "org-profile",
+          "path": "profile/README.md",
+          "label": "org profile"
+        },
+        {
+          "doc": "repo",
+          "id": "clpr-spec",
+          "path": "LICENSE",
+          "label": "clpr-spec LICENSE"
+        },
+        {
+          "doc": "repo",
+          "id": "clpr-smart-contracts",
+          "path": "README.md",
+          "label": "clpr-smart-contracts README"
+        },
+        {
+          "doc": "repo",
+          "id": "clpr-endpoint",
+          "path": "README.md",
+          "label": "clpr-endpoint README"
+        },
+        {
+          "doc": "repo",
+          "id": "governance",
+          "path": "README.md",
+          "label": "governance README"
+        },
+        {
+          "doc": "spec",
+          "anchor": "clpr-protocol-specification",
+          "label": "spec, introduction"
+        },
+        {
+          "doc": "repo",
+          "id": "governance",
+          "path": "lf-decentralized-trust-labs_Charter.pdf",
+          "label": "Labs charter (PDF)"
+        },
+        {
+          "doc": "repo",
+          "id": "org-profile",
+          "path": "CONTRIBUTING.md",
+          "label": "org profile CONTRIBUTING"
+        },
+        {
+          "doc": "repo",
+          "id": "governance",
+          "path": "GOVERNANCE.md",
+          "label": "governance GOVERNANCE.md"
+        }
+      ],
+      "live": [
+        "hiero-native",
+        "spec-license"
+      ]
+    },
+    "glossary": {
+      "refs": [
+        {
+          "doc": "design",
+          "anchor": "21-common-terminology",
+          "label": "design §2.1"
+        },
+        {
+          "doc": "design",
+          "anchor": "311-ledger-identity-and-configuration",
+          "label": "design §3.1.1"
+        },
+        {
+          "doc": "design",
+          "anchor": "315-verifier-contracts",
+          "label": "design §3.1.5"
+        },
+        {
+          "doc": "repo",
+          "id": "org-profile",
+          "path": "profile/README.md",
+          "label": "org profile"
+        }
+      ]
+    },
+    "involvement": {
+      "refs": [
+        {
+          "doc": "repo",
+          "id": "governance",
+          "path": "README.md",
+          "label": "governance README"
+        },
+        {
+          "doc": "repo",
+          "id": "org-profile",
+          "path": "profile/README.md",
+          "label": "org profile"
+        },
+        {
+          "doc": "repo",
+          "id": "org-profile",
+          "path": "CONTRIBUTING.md",
+          "label": "org profile CONTRIBUTING"
+        },
+        {
+          "doc": "repo",
+          "id": "governance",
+          "path": "lf-decentralized-trust-labs_Charter.pdf",
+          "label": "Labs charter (PDF)"
+        },
+        {
+          "doc": "repo",
+          "id": "governance",
+          "path": "GOVERNANCE.md",
+          "label": "governance GOVERNANCE.md"
+        }
+      ],
+      "live": [
+        "spec-license",
+        "lab-status"
+      ]
+    },
+    "footer": {
+      "refs": [
+        {
+          "doc": "repo",
+          "id": "org-profile",
+          "path": "profile/README.md",
+          "label": "org profile"
+        }
+      ],
+      "live": [
+        "hiero-native",
+        "spec-license"
+      ]
+    },
+    "site": {
+      "refs": [
+        {
+          "doc": "design",
+          "anchor": "1-executive-summary",
+          "label": "design §1"
+        },
+        {
+          "doc": "repo",
+          "id": "org-profile",
+          "path": "profile/README.md",
+          "label": "org profile"
+        }
+      ]
+    }
+  },
+  "live": {
+    "hiero-native": {
+      "claim": "Status of the native Hiero CLPR Service: HIP-1535, the pull request, the first release that ships it and whether it is on by default. No pinned LFDT-CLPR repository records this (the organization profile still says pending).",
+      "checks": [
+        "gh api repos/hiero-ledger/hiero-improvement-proposals/contents/HIP/hip-1535.md -q .content | base64 -d | grep -m1 '^status:'",
+        "gh pr view 27029 -R hiero-ledger/hiero-consensus-node --json state,mergedAt",
+        "gh api 'repos/hiero-ledger/hiero-consensus-node/releases?per_page=30' -q '.[] | select((.body // \"\") | test(\"(?i)clpr\")) | .tag_name'",
+        "gh api 'repos/hiero-ledger/hiero-consensus-node/contents/hedera-node/hedera-config/src/main/java/com/hedera/node/config/data/ClprConfig.java' -q .content | base64 -d | grep -m1 -A1 'defaultValue = \"false\"'"
+      ],
+      "recorded": {
+        "date": "2026-11-02",
+        "result": "HIP-1535 status: Approved; PR #27029 merged 2026-09-22; first listed in the v0.78.1 release notes; clpr.enabled defaults to false"
+      }
+    },
+    "spec-license": {
+      "claim": "The licence the clpr-spec repository carries, against the Labs charter's rule for specifications.",
+      "checks": [
+        "gh api repos/LFDT-CLPR/clpr-spec/license -q .license.spdx_id"
+      ],
+      "recorded": {
+        "date": "2026-11-02",
+        "result": "Apache-2.0; the charter (governance repository, §6.b.iv) says specifications are developed under the Community Specification License 1.0"
+      }
+    },
+    "lab-status": {
+      "claim": "Whether the LFDT lab proposal for CLPR was accepted.",
+      "checks": [
+        "gh issue view 5 -R LF-Decentralized-Trust/lab-proposals --json state,labels -q '.state + \" \" + ([.labels[].name]|join(\",\"))'"
+      ],
+      "recorded": {
+        "date": "2026-11-02",
+        "result": "CLOSED Approved (2026-09-11)"
+      }
+    }
+  }
+}

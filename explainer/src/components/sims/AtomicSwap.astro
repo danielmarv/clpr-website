@@ -61,7 +61,7 @@ const refs = [{ doc: 'design', anchor: '343-n-ledger-atomic-swap-2pc', label: 'd
     <span class="spacer"></span>
     <button class="btn" type="button" data-role="reset">Reset</button>
   </div>
-  <div class="sim__log" data-role="log">Two-phase commit, carried as ordinary CLPR messages: first "get ready", then "commit" or "roll back". Every message gets exactly one reply, which is what the tally relies on.</div>
+  <div class="sim__log" data-role="log">Two-phase commit, carried as ordinary CLPR messages: first "get ready", then "commit" or "roll back". Every data message gets exactly one reply, which is what the tally relies on.</div>
 </div>
 <style is:global>
   .sim.swap [data-role^="lock"] { transition: fill 250ms, stroke 250ms; }
@@ -82,7 +82,7 @@ const refs = [{ doc: 'design', anchor: '343-n-ledger-atomic-swap-2pc', label: 'd
     const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
     const wait = (ms: number) => new Promise((r) => setTimeout(r, reduced ? 0 : ms));
     let runId = 0;
-    const IDLE = 'Two-phase commit, carried as ordinary CLPR messages: first "get ready", then "commit" or "roll back". Every message gets exactly one reply, which is what the tally relies on.';
+    const IDLE = 'Two-phase commit, carried as ordinary CLPR messages: first "get ready", then "commit" or "roll back". Every data message gets exactly one reply, which is what the tally relies on.';
     function setState(k: string, cls: string, text: string) {
       const lock = $(`[data-role="lock${k}"]`); lock.classList.remove('ready', 'done', 'undone'); if (cls) lock.classList.add(cls);
       $(`[data-role="state${k}"]`).textContent = text;
@@ -127,7 +127,7 @@ const refs = [{ doc: 'design', anchor: '343-n-ledger-atomic-swap-2pc', label: 'd
         if (!(await carry(id, 'B', 'A', 'reply: undone'))) return;
         env.setAttribute('hidden', '');
         status.textContent = 'rolled back'; status.className = 'pill bad';
-        log.innerHTML = '<span class="line">done · nothing landed</span><span class="bad">Rolled back everywhere.</span> No ledger kept a change the others did not. CLPR carried six messages and six replies; the decision was the application\'s.';
+        log.innerHTML = '<span class="line">done · nothing landed</span><span class="bad">Rolled back everywhere.</span> No ledger kept a change the others did not. CLPR carried three messages and three replies; the decision was the application\'s.';
       } else {
         setState('C', 'ready', 'ready, not final');
         if (!(await carry(id, 'C', 'A', 'reply: ready'))) return;

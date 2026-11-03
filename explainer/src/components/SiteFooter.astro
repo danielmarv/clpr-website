@@ -117,7 +117,7 @@ const hexagon = 'M0 -8.5L7.4 -4.25V4.25L0 8.5L-7.4 4.25V-4.25Z';
     <div class="site-footer__legal">
       <div>
         {PACK.footer.map((html) => <p class="about" set:html={html.replace('{{orgUrl}}', SOURCES.org.url).replace('{{labUrl}}', SOURCES.org.labUrl ?? '')} />)}
-        <p>© {year} CLPR contributors. Code is licensed under Apache-2.0; the specification under the Community Specification License 1.0. LF Decentralized Trust is a project of The Linux Foundation.</p>
+        <p>© {year} CLPR contributors. Code is licensed under Apache-2.0; under the Labs charter, specifications are developed under the Community Specification License 1.0. LF Decentralized Trust is a project of The Linux Foundation.</p>
       </div>
       <a href="#main">Back to top<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 7-7 7 7" /><path d="M12 19V5" /></svg></a>
     </div>

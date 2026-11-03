@@ -146,7 +146,7 @@ const centre = (i: number) => 40 + i * 145 + 55;
       }
       setCaption('sealed: this line can no longer be changed or removed');
       phase(3);
-      log.innerHTML = '<span class="line">sealed</span>The line is <span class="ok">final</span>. Agreeing on it is called <strong>consensus</strong>; the fact that it can never be undone is called <strong>finality</strong>. Both matter later: CLPR only ever carries lines that a whole network has sealed.';
+      log.innerHTML = '<span class="line">sealed</span>The line is <span class="ok">final</span>. Agreeing on it is called <strong>consensus</strong>; the fact that it can never be undone is called <strong>finality</strong>. Both matter later: how final a line must be before CLPR carries it is set by each channel\'s verifier.';
       root.removeAttribute('aria-busy');
     }
     propose.addEventListener('click', () => { if (root.getAttribute('aria-busy') !== 'true') run(); });

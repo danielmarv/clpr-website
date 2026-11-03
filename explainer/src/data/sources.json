@@ -6,7 +6,7 @@
     "lab": "LF Decentralized Trust Labs",
     "labUrl": "https://www.lfdecentralizedtrust.org/"
   },
-  "lastSynced": "2026-09-30",
+  "lastSynced": "2026-11-02",
   "sources": [
     {
       "id": "clpr-spec",
@@ -39,8 +39,8 @@
       "id": "governance",
       "repo": "https://github.com/LFDT-CLPR/governance",
       "branch": "main",
-      "commit": "498d4f4b71a62572ec337dc85d29cd4dfd2069c3",
-      "committedAt": "2026-09-17T08:05:33-07:00",
+      "commit": "1447ae097c7e1d43c39cb35ee364ac76a050030f",
+      "committedAt": "2026-10-28T13:05:37-07:00",
       "role": "Lab governance: LF Decentralized Trust Labs charter, teams and repository permissions. Source for the governance section.",
       "watch": ["teams.yml", "*.pdf", "CODEOWNERS", "*.md"]
     },
@@ -48,8 +48,8 @@
       "id": "org-profile",
       "repo": "https://github.com/LFDT-CLPR/.github",
       "branch": "main",
-      "commit": "263fb3945a75e157ee6e607fa9fd2c203f52cf80",
-      "committedAt": "2026-09-22T04:06:02-07:00",
+      "commit": "528e9c0b1a82f07debd494a52c76642b758582d9",
+      "committedAt": "2026-10-28T04:11:01-07:00",
       "role": "Organization profile README: lab scope, terminology, the four layers and the extension process. Source for the 'what CLPR is' framing and the LFDT section.",
       "watch": ["profile/README.md"]
     }

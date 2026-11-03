@@ -48,7 +48,7 @@ const defFill = `${(Math.min(defCharge, DEF.balance) / Math.max(DEF.balance, def
   </div>
   <div class="sim__log sim__log--tall" data-role="log">
     <span class="line" data-role="line">charge = {defCost} × (1 + {DEF.margin}/100) = {defCharge} units</span>
-    <span data-role="prose">The submitter fronted the transaction fee and is repaid with a margin on top. There is no protocol treasury and nobody on the sending side is paid. The margin is the profit for whoever runs the endpoint; drag the balance down to see what happens when the promise to pay is broken.</span>
+    <span data-role="prose">The submitter fronted the transaction fee and is repaid with a margin on top. There is no protocol treasury and nobody on the sending side is paid for this delivery. The margin is the profit for whoever runs the endpoint; drag the balance down to see what happens when the promise to pay is broken.</span>
   </div>
 </div>
 
@@ -151,7 +151,7 @@ const defFill = `${(Math.min(defCharge, DEF.balance) / Math.max(DEF.balance, def
         set('source', 'the source connector is fined too, paid to the Ledger A submitter. Repeated failures escalate to a ban and forfeited stake.');
         setStatus('CONNECTOR_UNDERFUNDED', 'bad');
         line.textContent = `charge = ${cost} × (1 + ${margin}/100) = ${charge} units > balance ${balance}; fine ${FINE} from stake`;
-        prose.textContent = 'The application is not called, or only with the gas the connector can afford. The connector promised to pay and cannot, so its stake is slashed to compensate the submitter, and the failure travels home as the reply. Whether the fine fully covers the submitter depends on how the platform sizes stakes: this is the stake-to-exposure invariant as something each platform must calibrate.';
+        prose.textContent = 'The application is not called. (The EVM contracts differ: they call it with only the gas the connector can afford, and reply CONNECTOR_UNDERFUNDED only when it can afford none.) The connector promised to pay and cannot, so its stake is slashed to compensate the submitter, and the failure travels home as the reply. Whether the fine fully covers the submitter depends on how the platform sizes stakes: this is the stake-to-exposure invariant as something each platform must calibrate.';
       } else {
         title.textContent = 'Happy path';
         set('charge', `${charge} units = ${cost} × (1 + ${margin}/100)`);
@@ -162,7 +162,7 @@ const defFill = `${(Math.min(defCharge, DEF.balance) / Math.max(DEF.balance, def
         set('source', 'the reply is delivered to the sending application; no fine');
         setStatus('SUCCESS', 'ok');
         line.textContent = `charge = ${cost} × (1 + ${margin}/100) = ${charge} units`;
-        prose.textContent = 'The submitter fronted the transaction fee and is repaid with a margin on top. There is no protocol treasury and nobody on the sending side is paid. The margin is the profit for whoever runs the endpoint; drag the balance down to see what happens when the promise to pay is broken.';
+        prose.textContent = 'The submitter fronted the transaction fee and is repaid with a margin on top. There is no protocol treasury and nobody on the sending side is paid for this delivery. The margin is the profit for whoever runs the endpoint; drag the balance down to see what happens when the promise to pay is broken.';
       }
     }
     for (const el of Array.from(root.querySelectorAll('input'))) el.addEventListener('input', render);

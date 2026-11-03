@@ -10,7 +10,7 @@ import { design, spec } from '../../../lib/sources';
   kind="spec"
   minWidth={760}
 >
-  <svg viewBox="0 0 760 488" role="img" aria-label="An endpoint submits proof bytes to the verifier contract, which also receives the stored trust anchor and channel context and returns verified contents. The CLPR Service logic checks those contents against the stored channel state, updates the state only if every check passes, and dispatches each message to applications on ledger B.">
+  <svg viewBox="0 0 760 488" role="img" aria-label="An endpoint submits proof bytes to the verifier contract, which also receives the stored trust anchor and channel context and returns verified contents. The CLPR Service logic checks those contents against the stored channel state, updates the state only if every check passes (out-of-order replies only set the channel PAUSED), and dispatches each message to applications on ledger B.">
     <defs>
       <marker id="vvs-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--text-3)" /></marker>
       <marker id="vvs-arrow-c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--c)" /></marker>
@@ -69,13 +69,15 @@ import { design, spec } from '../../../lib/sources';
     <!-- state update, only on success -->
     <path d="M250,400 H106 V212" class="line ok" marker-end="url(#vvs-arrow-ok)" />
     <text x="114" y="270" class="t small">updated only if</text>
-    <text x="114" y="284" class="t small">every check passes</text>
+    <text x="114" y="284" class="t small">every check passes;</text>
+    <text x="114" y="298" class="t small">out-of-order replies</text>
+    <text x="114" y="312" class="t small">only set PAUSED</text>
 
     <!-- applications -->
     <rect x="600" y="344" width="144" height="92" rx="8" class="d-b" />
     <text x="672" y="366" class="t b center">Applications on B</text>
-    <text x="672" y="384" class="t small center">per message:</text>
-    <text x="672" y="398" class="t small center">authorize, pay, call,</text>
+    <text x="672" y="384" class="t small center">per message: resolve</text>
+    <text x="672" y="398" class="t small center">connector, pay, call,</text>
     <text x="672" y="412" class="t small center">enqueue the reply</text>
 
     <line x1="550" y1="390" x2="598" y2="390" class="line b" marker-end="url(#vvs-arrow-b)" />

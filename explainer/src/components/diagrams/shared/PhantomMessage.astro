@@ -5,12 +5,12 @@ import { design, spec } from '../../../lib/sources';
 ---
 <Figure
   lead="How sure is sure enough."
-  caption="On ledgers where recent blocks can be undone, a verifier that accepts the latest block is fast but can deliver a phantom message. One that waits for finalized blocks is slower and safe. Two channels between the same ledgers can choose differently."
+  caption="On ledgers where recent blocks can be undone, a verifier that accepts the latest block is fast but can deliver a phantom message. One that accepts finalized blocks only is slower and never delivers one. Two channels between the same ledgers can use different verifiers."
   source={[{ label: 'design §3.1.5', href: design('315-verifier-contracts') }, { label: 'spec §8.3', href: spec('83-reorg-risk') }]}
   kind="spec"
   minWidth={760}
 >
-  <svg viewBox="0 0 760 330" role="img" aria-label="Ledger A's chain of blocks: three finalized blocks, two tentative ones, then a fork where the newest block holding 'send 5 to Bo' is crossed out and replaced by a different block without it. On the right, two channels into Ledger B: the fast channel accepted the latest block and now holds a phantom message that no longer exists on A; the safe channel waits for finalized blocks and never delivered it.">
+  <svg viewBox="0 0 760 330" role="img" aria-label="Ledger A's chain of blocks: three finalized blocks, two tentative ones, then a fork where the newest block holding 'send 5 to Bo' is crossed out and replaced by a different block without it. On the right, two channels into Ledger B: the fast channel accepted the latest block and now holds a phantom message that no longer exists on A; the finalized channel waits for finalized blocks and never delivered it.">
     <defs>
       <marker id="phm-arrow" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9 Z" fill="var(--text-3)"/></marker>
       <marker id="phm-arrow-bad" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9 Z" fill="var(--bad)"/></marker>
@@ -74,14 +74,14 @@ import { design, spec } from '../../../lib/sources';
     <text x="630" y="180" class="t small center">"send 5 to Bo" ran on Ledger B;</text>
     <text x="630" y="196" class="t small center">the line no longer exists on A</text>
 
-    <!-- channel safe -->
+    <!-- channel finalized -->
     <path d="M494,130 C508,130 508,250 518,250" class="line ok dash" marker-end="url(#phm-arrow-ok)"/>
     <rect x="520" y="218" width="220" height="64" rx="10" class="d-ok"/>
-    <text x="630" y="238" class="t b center">Channel "safe"</text>
+    <text x="630" y="238" class="t b center">Channel "finalized"</text>
     <text x="630" y="256" class="t small center">verifier accepts finalized blocks only</text>
     <text x="630" y="272" class="t small center">still waiting; it never delivers it</text>
 
     <!-- takeaway -->
-    <text x="380" y="312" class="t take center">Fast or safe is the verifier's choice; the specification recommends finalized for anything valuable.</text>
+    <text x="380" y="312" class="t take center">The verifier sets how final a block must be; anything valuable belongs on a finalized-only channel.</text>
   </svg>
 </Figure>

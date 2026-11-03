@@ -70,7 +70,7 @@ const arrow = `url(#${markerId})`;
         <line x1="190" y1="115" x2="320" y2="115" class="line c" marker-end={arrow} />
         <line x1="440" y1="115" x2="570" y2="115" class="line c" marker-end={arrow} />
         <text x="655" y="170" class="t small center" style="fill:var(--ok)">B checks A's signature itself</text>
-        <text x="20" y="218" class="t mono takeaway">security = Ledger A's own validators</text>
+        <text x="20" y="218" class="t mono takeaway">security = A's validators + B's verifier</text>
       </g>
       <!-- the message on its way: starts just right of Ledger A, moved by the script -->
       <g transform="translate(212,115)">
@@ -142,7 +142,7 @@ const arrow = `url(#${markerId})`;
       offline: { ok: false, b: 'hears nothing', log: '<span class="warn">Stalled.</span> If fewer than three members are online, nothing is delivered.', stall: true },
     },
     clpr: {
-      steal: { ok: true, b: 'rejects it', log: '<span class="ok">Rejected.</span> The endpoint holds no key that Ledger B cares about. What B checks is the signature of Ledger A\'s own validators on a proof that the message is in A\'s sealed state. An endpoint cannot produce that signature, so a stolen endpoint key forges nothing.' },
+      steal: { ok: true, b: 'rejects it', log: '<span class="ok">Rejected.</span> None of the endpoint\'s keys can make Ledger B accept a message. What B checks is the signature of Ledger A\'s own validators on a proof that the message is in A\'s sealed state. An endpoint cannot produce that signature, so a stolen endpoint key forges nothing.' },
       tamper: { ok: true, b: 'rejects it', log: '<span class="ok">Rejected.</span> The message is folded into a running hash chain that the proof commits to. Change one byte and the running hash B recomputes no longer matches the proven one. The endpoint only wasted its own transaction fee.' },
       offline: { ok: false, b: 'hears nothing, for now', log: '<span class="warn">Delayed, not broken.</span> An endpoint can refuse or delay, but it cannot forge. Messages wait in Ledger A\'s queue until any honest endpoint, even a brand-new one, carries them across. Safety never depended on the endpoint; only liveness does.', stall: true },
     },
