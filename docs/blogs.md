@@ -41,8 +41,6 @@ title = "My First Post"
 date = 2026-11-15
 draft = false
 featured_image = "/images/blog/my-first-post/cover.jpg"
-image_credit = "Photographer Name on Unsplash"
-image_credit_link = "https://unsplash.com/photos/the-photo"
 categories = ["Blog"]
 tags = ["Specification", "Community"]
 duration = "4 min read"
@@ -74,19 +72,27 @@ Quote someone as a block quote, with the attribution as its last line:
 Link to the site's own pages with root paths (`/issues/`, `/governance/`, `/plumbing/`); links to
 other sites open in a new tab.
 
-### 4. Add images
+### 4. Add the banner
 
-Every post shows a photograph: the featured image on the blog page, on the cards and beside the post's
-title. Use images, not drawings or diagrams, for it; a diagram belongs in the body.
+Every post has a featured image, shown on the blog page, on the cards and beside the post's title. As
+on hiero.org, it is a banner: the CLPR mark and wordmark on the brand's gradient, the post's title in
+IBM Plex Mono, and "CLPR BLOG" at the foot. Render it with
 
-Put images in `public/images/blog/<post>/` and reference them from the site root, for example
-`featured_image = "/images/blog/my-first-post/cover.jpg"` or `![Diagram](/images/blog/my-first-post/diagram.png)`.
-Use an image you may publish: your own, the project's, or one under a licence that allows it (the
-current posts use photos under the [Unsplash License](https://unsplash.com/license)). Name its author
-in `image_credit` (and link the source in `image_credit_link`); the post shows the credit under the
-photo. A 16:9 crop fits everywhere, at about 1600 × 900 and under 400 KB; re-saving it also strips
-camera metadata such as the place it was taken. Without a featured image, a post uses
-`/images/blog/default.jpg`.
+```bash
+node scripts/blog-image.mjs my-first-post
+```
+
+which writes `public/images/blog/my-first-post/cover.jpg` (1600 × 900, the title kept inside the middle
+4:3 so every crop the blog uses shows it), and name it in the front matter:
+`featured_image = "/images/blog/my-first-post/cover.jpg"`. Run the script again when the title changes.
+Without a featured image, a post shows the default banner, `/images/blog/default.jpg`
+(`node scripts/blog-image.mjs --default` renders it).
+
+A post may use a photograph instead, when it is one you may publish: your own, the project's, or one
+under a licence that allows it. Name its author in `image_credit` (and its source in
+`image_credit_link`); the post shows the credit under the photo. Crop it to 16:9, about 1600 × 900 and
+under 400 KB. Images in the body go in `public/images/blog/<post>/` too, for example
+`![Diagram](/images/blog/my-first-post/diagram.png)`.
 
 ### 5. Preview
 
@@ -105,8 +111,8 @@ Run `pnpm lint` and `pnpm build`, and sign off every commit (`git commit -s`).
 | `date` | Required | Orders the posts, newest first; posts of the same day go by slug. `2026-11-15` or `2026-11-15T09:30:00Z`. |
 | `abstract` | Strongly recommended | The cards, the standfirst under the title and the page description. |
 | `[[authors]]` with `name` | Recommended | The byline on the blog page and the author block beside the post. |
-| `featured_image` | Recommended | A 16:9 photo; falls back to `/images/blog/default.jpg`. |
-| `image_credit`, `image_credit_link` | With a featured image | Who took the photo and where it comes from, shown under it. |
+| `featured_image` | Recommended | The post's banner from `scripts/blog-image.mjs`; falls back to `/images/blog/default.jpg`. |
+| `image_credit`, `image_credit_link` | For a photograph | Who took it and where it comes from, shown under it. |
 | `slug` | Optional | Defaults to the file name without `.md`. |
 | `duration` | Optional | Otherwise the reading time is counted from the body, at 200 words a minute. |
 | `draft` | Optional | `true` leaves the post out. |
@@ -121,4 +127,5 @@ Each author takes `name`, and optionally `title`, `organization` (shown together
 - The file is in `content/posts/` and ends in `.md`.
 - The front matter is between `+++` lines, with a title, a date and an abstract.
 - Every fact has a source in the post's `## Sources` list.
-- Image paths resolve, and the post renders at `/blog/<slug>/` in the light and the dark theme.
+- The banner is rendered and named in `featured_image`, and the post renders at `/blog/<slug>/` in the
+  light and the dark theme.

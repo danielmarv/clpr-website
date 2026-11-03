@@ -108,6 +108,7 @@ src/
   lib/headings.ts      A post's section ids, shared by its contents list and its rendered headings
 content/posts/         The blog posts, one Markdown file each; _index.md holds the blog page's title
 docs/blogs.md          How to write a blog post
+scripts/blog-image.mjs Renders a post's banner (and the default one) with Playwright, in the site's fonts
   lib/theme.ts         The theme choice: storage key, the before-paint script, watching for changes
 public/logos/          Official LFDT, Hashgraph, Hedera and Hiero logos in their own colours, each with a white
                        version for the dark theme (*-white.svg; Hiero keeps its crimson mark). The explainer
@@ -207,8 +208,9 @@ from the CLPR presentation on [hashgraph.com/clpr](https://hashgraph.com/clpr/).
   newest post at size with the next two beside it (`BlogLead`; while there are fewer, a card of what to
   follow fills the column), then the rest as a grid paged nine at a time (`BlogPostList`). A post has
   its photo and credit beside the title, the prose with a rail (authors, contents, share), a reading
-  progress bar, then the older and newer posts and more from the blog. Every post shows a photograph
-  (`featured_image`, or `public/images/blog/default.jpg`), never a drawing. `docs/blogs.md` is the guide to writing one; the audit reads the
+  progress bar, then the older and newer posts and more from the blog. As on hiero.org, a post's image
+  is a banner (the CLPR mark, the title in IBM Plex Mono, "CLPR BLOG"), rendered by
+  `scripts/blog-image.mjs`; `public/images/blog/default.jpg` stands in for a post without one. `docs/blogs.md` is the guide to writing one; the audit reads the
   posts with the `blog` block.
 - **Use cases.** The four patterns the design outlines (§3.4), each with a small looping diagram
   (`UseCaseArt`, on `ComponentArt`'s clock), introduced as applications that are not specified yet;

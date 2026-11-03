@@ -7,9 +7,8 @@ import { parse as parseToml } from "toml";
 
 const POSTS_DIR = path.join(process.cwd(), "content", "posts");
 const BLOG_INDEX_FILE = path.join(POSTS_DIR, "_index.md");
-/** The photo of a post whose front matter names no featured_image, and its credit. */
+/** The image of a post whose front matter names no featured_image: the CLPR banner (scripts/blog-image.mjs). */
 export const FALLBACK_IMAGE = "/images/blog/default.jpg";
-const FALLBACK_CREDIT = { name: "S A on Unsplash", link: "https://unsplash.com/photos/blury-lights-illuminate-fiber-optic-cables-eMoMpSKE8eE" };
 const WORDS_PER_MINUTE = 200;
 
 export interface PostAuthor {
@@ -26,7 +25,7 @@ export interface PostMeta {
   date: string;
   abstract?: string;
   featuredImage: string;
-  /** Who took the featured image, shown under it on the post's page. */
+  /** Who made the featured image, when it is not the project's own; shown under it on the post's page. */
   imageCredit?: { name: string; link?: string };
   /** Reading time as the front matter states it, when a post states one. */
   duration?: string;
@@ -113,11 +112,7 @@ function buildMeta(data: Record<string, unknown>, filename: string, content: str
     date: parseDate(data.date),
     abstract: text(data.abstract) ?? text(data.description),
     featuredImage: text(data.featured_image) ?? FALLBACK_IMAGE,
-    imageCredit: data.featured_image
-      ? data.image_credit
-        ? { name: String(data.image_credit), link: text(data.image_credit_link) }
-        : undefined
-      : FALLBACK_CREDIT,
+    imageCredit: data.image_credit ? { name: String(data.image_credit), link: text(data.image_credit_link) } : undefined,
     duration: text(data.duration),
     readingMinutes: readingMinutes(content),
     authors: Array.isArray(data.authors)
