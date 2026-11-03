@@ -9,7 +9,7 @@
 import { createServer } from 'node:http';
 import { readFile, stat } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
-import { join, extname } from 'node:path';
+import { join, extname, resolve, sep } from 'node:path';
 
 import { chromium } from 'knowledge-site-engine/scripts/lib/playwright.mjs';
 import { dist } from 'knowledge-site-engine/scripts/lib/pack.mjs';
@@ -19,12 +19,18 @@ if (!existsSync(join(dist, 'index.html'))) {
   process.exit(1);
 }
 const types = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.svg': 'image/svg+xml', '.woff2': 'font/woff2' };
+// Serves dist/ only, on loopback only: a path that resolves outside dist/ gets 403, a missing file 404.
+const root = resolve(dist);
 const server = createServer(async (req, res) => {
-  let file = join(dist, decodeURIComponent(new URL(req.url, 'http://x').pathname));
+  let file;
+  try { file = resolve(root, '.' + decodeURIComponent(new URL(req.url, 'http://x').pathname)); } catch { res.writeHead(400); res.end(); return; }
+  if (file !== root && !file.startsWith(root + sep)) { res.writeHead(403); res.end(); return; }
   try { if ((await stat(file)).isDirectory()) file = join(file, 'index.html'); } catch {}
-  try { res.writeHead(200, { 'content-type': types[extname(file)] || 'application/octet-stream' }); res.end(await readFile(file)); } catch { res.writeHead(404); res.end(); }
+  let body;
+  try { body = await readFile(file); } catch { res.writeHead(404); res.end(); return; }
+  res.writeHead(200, { 'content-type': types[extname(file)] || 'application/octet-stream' }); res.end(body);
 });
-await new Promise((r) => server.listen(0, r));
+await new Promise((r) => server.listen(0, '127.0.0.1', r));
 const base = `http://127.0.0.1:${server.address().port}`;
 const preinstalled = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 const browser = await chromium.launch({ executablePath: process.env.PW_CHROME || (existsSync(preinstalled) ? preinstalled : undefined) });
