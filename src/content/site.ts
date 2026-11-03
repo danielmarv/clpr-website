@@ -336,7 +336,8 @@ export const involvement = {
   },
 } as const;
 
-// Quoted from the announcement of 24 September 2026, as reported that day (links.releaseCoverage).
+// Quoted from the announcement of 24 September 2026, as reported that day (links.releaseCoverage). Shown one at
+// a time as on hiero.org, each beside the white logo of the speaker's organization.
 export const voices = {
   id: "voices",
   eyebrow: "Community voices",
@@ -346,15 +347,31 @@ export const voices = {
     {
       name: "Daniela Barbosa",
       role: "General Manager of Decentralized Technologies at the Linux Foundation and Executive Director of LF Decentralized Trust",
+      logo: { name: "LF Decentralized Trust", src: "/logos/lfdt-horizontal-white.svg", width: 698.7, height: 39.1, className: "h-4 sm:h-5" },
       text: "As a new LFDT lab, CLPR will leverage open development to shape a protocol that fuels collaboration across the industry. With this contribution, Hedera is once again showing its commitment to vendor neutral, collaborative development of critical shared technologies.",
     },
     {
       name: "Dr. Leemon Baird",
       role: "Co-Founder at Hedera and Chief Scientist at Hashgraph",
+      logo: { name: "Hedera", src: "/logos/hedera-lockup-white.svg", width: 448.29, height: 138.93, className: "h-10 sm:h-12" },
       text: "That commitment to open collaboration is exactly what’s needed to solve one of the industry’s most persistent problems: network interoperability. When underpinning an application, CLPR is designed to fix that cryptographically so data, assets and messages move freely without a single point of failure to attack.",
     },
   ],
   source: { label: "From the announcement of 24 September 2026", href: "/blog/clpr-joins-lf-decentralized-trust-labs/" },
+  carousel: {
+    label: "Community quotes",
+    logoLabel: "Ecosystem voice",
+    perspectives: "Community perspectives",
+    status: "Quote {index} of {total}",
+    pause: "Pause",
+    play: "Play",
+    pauseLabel: "Pause automatic quote rotation",
+    playLabel: "Resume automatic quote rotation",
+    previous: "Previous",
+    previousLabel: "Previous quote",
+    next: "Next",
+    nextLabel: "Next quote",
+  },
 } as const;
 
 // The structure of hiero.org/tsc. CLPR's governance (GOVERNANCE.md in the governance repository) has no TSC:

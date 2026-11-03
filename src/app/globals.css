@@ -704,3 +704,25 @@
   text-transform: uppercase;
   color: var(--ink-faint);
 }
+
+/* Community voices: a quote comes in from the side it was asked for (Voices.tsx), as on hiero.org. */
+@media (prefers-reduced-motion: no-preference) {
+  .voices-slide[data-direction="next"] {
+    animation: voices-enter-next 520ms cubic-bezier(0.22, 0.85, 0.28, 1) both;
+  }
+  .voices-slide[data-direction="previous"] {
+    animation: voices-enter-previous 520ms cubic-bezier(0.22, 0.85, 0.28, 1) both;
+  }
+}
+@keyframes voices-enter-next {
+  from {
+    opacity: 0;
+    translate: 1.75rem 0;
+  }
+}
+@keyframes voices-enter-previous {
+  from {
+    opacity: 0;
+    translate: -1.75rem 0;
+  }
+}

@@ -87,7 +87,7 @@ src/
     ClprMark.tsx       The CLPR spiral logo (also the source shape for the particles)
     Hero.tsx  Extensibility.tsx  Repositories.tsx
     ThemeSwitch.tsx    The Light / Dark / System switch in the header
-    Voices.tsx         Community voices: the two quotes from the announcement of 24 September 2026
+    Voices.tsx         Community voices, after hiero.org: one quote at a time beside its organization, turning every 10s
     PageShell.tsx      The frame and opening of every page but the home page
     BlogLead.tsx  BlogPostCard.tsx  BlogPostList.tsx
                        The blog index: the newest post at size beside the next two, then the archive
