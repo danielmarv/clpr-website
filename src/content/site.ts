@@ -494,6 +494,19 @@ export const blog = {
   shareOn: "Share on {network}",
   nearby: { label: "Nearby posts", older: "Older post", newer: "Newer post" },
   more: { title: "More from the blog", all: "All posts" },
+  latestOn: "Latest post {date}",
+  photoBy: "Photo:",
+  tagsLabel: "Tags",
+  // Beside the newest post while there are fewer than three: what to follow between posts.
+  follow: {
+    title: "Follow the work",
+    body: "CLPR is built in the open. Watch the repositories, pick up an issue, or join the weekly call.",
+    links: [
+      { label: "LFDT-CLPR on GitHub", href: links.githubOrg },
+      { label: "Issue Explorer", href: "/issues/" },
+      { label: "Weekly call", href: links.weeklyCall },
+    ],
+  },
 } as const;
 
 export const footer = {

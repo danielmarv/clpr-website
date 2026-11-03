@@ -40,7 +40,9 @@ a `slug`, the file name is the address: `/blog/my-first-post/`.
 title = "My First Post"
 date = 2026-11-15
 draft = false
-featured_image = "/images/blog/my-first-post/hero.png"
+featured_image = "/images/blog/my-first-post/cover.jpg"
+image_credit = "Photographer Name on Unsplash"
+image_credit_link = "https://unsplash.com/photos/the-photo"
 categories = ["Blog"]
 tags = ["Specification", "Community"]
 duration = "4 min read"
@@ -74,10 +76,17 @@ other sites open in a new tab.
 
 ### 4. Add images
 
+Every post shows a photograph: the featured image on the blog page, on the cards and beside the post's
+title. Use images, not drawings or diagrams, for it; a diagram belongs in the body.
+
 Put images in `public/images/blog/<post>/` and reference them from the site root, for example
-`featured_image = "/images/blog/my-first-post/hero.png"` or `![Diagram](/images/blog/my-first-post/diagram.png)`.
-A 16:9 featured image fits the cards best; without one, the post uses `/images/blog/default.svg`.
-Resize photos before committing (about 1600px on the long edge and under 400 KB).
+`featured_image = "/images/blog/my-first-post/cover.jpg"` or `![Diagram](/images/blog/my-first-post/diagram.png)`.
+Use an image you may publish: your own, the project's, or one under a licence that allows it (the
+current posts use photos under the [Unsplash License](https://unsplash.com/license)). Name its author
+in `image_credit` (and link the source in `image_credit_link`); the post shows the credit under the
+photo. A 16:9 crop fits everywhere, at about 1600 × 900 and under 400 KB; re-saving it also strips
+camera metadata such as the place it was taken. Without a featured image, a post uses
+`/images/blog/default.jpg`.
 
 ### 5. Preview
 
@@ -96,7 +105,8 @@ Run `pnpm lint` and `pnpm build`, and sign off every commit (`git commit -s`).
 | `date` | Required | Orders the posts, newest first; posts of the same day go by slug. `2026-11-15` or `2026-11-15T09:30:00Z`. |
 | `abstract` | Strongly recommended | The cards, the standfirst under the title and the page description. |
 | `[[authors]]` with `name` | Recommended | The byline on the blog page and the author block beside the post. |
-| `featured_image` | Recommended | Falls back to `/images/blog/default.svg`. |
+| `featured_image` | Recommended | A 16:9 photo; falls back to `/images/blog/default.jpg`. |
+| `image_credit`, `image_credit_link` | With a featured image | Who took the photo and where it comes from, shown under it. |
 | `slug` | Optional | Defaults to the file name without `.md`. |
 | `duration` | Optional | Otherwise the reading time is counted from the body, at 200 words a minute. |
 | `draft` | Optional | `true` leaves the post out. |

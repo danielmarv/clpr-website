@@ -7,12 +7,14 @@ import { ArrowLeft, ArrowRight } from "lucide-react";
 import { ArticleContents } from "@/components/ArticleContents";
 import { BlogPostCard } from "@/components/BlogPostCard";
 import { PageShell } from "@/components/PageShell";
+import { PostImage, PostTags, readingTime } from "@/components/PostDetails";
 import { PostBody } from "@/components/PostBody";
+import { ReadingProgress } from "@/components/ReadingProgress";
 import { ShareButtons } from "@/components/ShareButtons";
-import { blog } from "@/content/site";
+import { blog, footer } from "@/content/site";
 import { extractHeadings } from "@/lib/headings";
 import { getAllPosts, getPostBySlug, type PostAuthor, type PostMeta } from "@/lib/posts";
-import { cn, format, formatDate } from "@/lib/utils";
+import { cn, formatDate } from "@/lib/utils";
 
 /** One row of the archive grid. */
 const RELATED_COUNT = 3;
@@ -31,8 +33,8 @@ export async function generateMetadata(props: PageProps<"/blog/[slug]">): Promis
   return post ? { title: post.title, description: post.abstract } : {};
 }
 
-// The structure of a post on hiero.org: the header, the prose with a rail beside it (image, authors,
-// contents, share), the older and newer posts, then more from the blog.
+// The structure of a post on hiero.org: the header, the prose with a rail beside it (authors, contents,
+// share), the older and newer posts, then more from the blog. Here the post's picture sits beside its title.
 export default async function BlogPostPage(props: PageProps<"/blog/[slug]">) {
   const { slug } = await props.params;
   const post = getPostBySlug(slug);
@@ -40,7 +42,6 @@ export default async function BlogPostPage(props: PageProps<"/blog/[slug]">) {
 
   const headings = extractHeadings(post.contentMarkdown);
   const contents = headings.length >= MIN_HEADINGS_FOR_CONTENTS ? headings : null;
-  const readingTime = post.duration ?? format(blog.readingTime, { minutes: post.readingMinutes });
 
   // getAllPosts is newest first, so the entry before this one is the newer post.
   const all = getAllPosts();
@@ -53,40 +54,66 @@ export default async function BlogPostPage(props: PageProps<"/blog/[slug]">) {
 
   return (
     <PageShell>
+      <ReadingProgress targetId="post-body" />
       <article>
-        <header className="shell pb-12 pt-16 lg:pb-14 lg:pt-24">
+        <header className="shell pb-12 pt-12 lg:pb-16 lg:pt-20">
           <Link href="/blog/" className="group inline-flex items-center gap-2 text-[0.875rem] text-fg/60 transition-colors hover:text-fg">
             <ArrowLeft className="size-4 transition-transform duration-300 group-hover:-translate-x-1" aria-hidden="true" />
             {blog.backLabel}
           </Link>
-          <p data-hero-reveal className="mt-10 flex flex-wrap gap-x-3 font-mono text-[0.75rem] uppercase tracking-[0.08em] text-faint">
-            <time dateTime={post.date}>{formatDate(post.date)}</time>
-            <span aria-hidden="true">·</span>
-            <span>{readingTime}</span>
-          </p>
-          <h1
-            data-hero-reveal
-            className="text-headline mt-4 max-w-[24ch] text-[clamp(2rem,4.4vw,3.5rem)] font-light leading-[1.07] tracking-[-0.04em] text-balance"
-          >
-            {post.title}
-          </h1>
-          {post.abstract && (
-            <p data-hero-reveal className="mt-6 max-w-[60ch] text-[1.125rem] leading-[1.65] text-muted-foreground">
-              {post.abstract}
-            </p>
-          )}
+          <div className="mt-8 grid gap-10 lg:grid-cols-12 lg:items-center lg:gap-12">
+            <div className="lg:col-span-7">
+              <p data-hero-reveal className="font-mono text-[0.75rem] uppercase tracking-[0.08em] text-faint">
+                <time dateTime={post.date}>{formatDate(post.date)}</time> · {readingTime(post)}
+              </p>
+              <h1
+                data-hero-reveal
+                className="text-headline mt-4 text-[clamp(2rem,4.4vw,3.5rem)] font-light leading-[1.07] tracking-[-0.04em] text-balance"
+              >
+                {post.title}
+              </h1>
+              {post.abstract && (
+                <p data-hero-reveal className="mt-6 max-w-[56ch] text-[1.125rem] leading-[1.65] text-muted-foreground">
+                  {post.abstract}
+                </p>
+              )}
+              <div data-hero-reveal>
+                <PostTags tags={post.tags} className="mt-6" />
+              </div>
+            </div>
+            <figure data-hero-reveal className="lg:col-span-5">
+              <PostImage post={post} sizes="(min-width: 1024px) 30rem, 100vw" priority className="panel aspect-[16/10]" />
+              {post.imageCredit && (
+                <figcaption className="mt-3 text-right text-[0.75rem] text-faint">
+                  {blog.photoBy}{" "}
+                  {post.imageCredit.link ? (
+                    <a
+                      href={post.imageCredit.link}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="underline decoration-fg/20 underline-offset-2 transition-colors hover:text-fg hover:decoration-current"
+                    >
+                      {post.imageCredit.name}
+                      <span className="sr-only"> ({footer.newTab})</span>
+                    </a>
+                  ) : (
+                    post.imageCredit.name
+                  )}
+                </figcaption>
+              )}
+            </figure>
+          </div>
         </header>
 
         {/* The prose keeps the title's left edge; the rail takes the space to its right, and moves below it under xl. */}
         <div className="border-t border-fg/[0.07]">
-          <div className="shell grid gap-12 pb-20 pt-12 xl:grid-cols-[minmax(0,1fr)_20rem] xl:gap-16 lg:pb-24">
-            <PostBody markdown={post.contentMarkdown} className="post-prose max-w-[68ch]" />
+          <div className="shell grid gap-12 pb-20 pt-12 xl:grid-cols-[minmax(0,1fr)_18rem] xl:gap-20 lg:pb-24">
+            <div id="post-body">
+              <PostBody markdown={post.contentMarkdown} className="post-prose max-w-[68ch]" />
+            </div>
 
             <aside aria-label={blog.rail.label} className="xl:sticky xl:top-24 xl:self-start">
               <div className="grid gap-8 sm:grid-cols-2 xl:grid-cols-1">
-                <span className="relative block aspect-video overflow-hidden rounded-panel border border-fg/10 bg-fg/5 sm:col-span-2 xl:col-span-1">
-                  <Image src={post.featuredImage} alt="" fill sizes="20rem" className="object-cover" />
-                </span>
                 {post.authors.length > 0 && (
                   <div>
                     <p className="text-[0.75rem] font-medium text-fg">{post.authors.length > 1 ? blog.rail.authors : blog.rail.author}</p>
@@ -112,13 +139,10 @@ export default async function BlogPostPage(props: PageProps<"/blog/[slug]">) {
         </div>
 
         {(newer || older) && (
-          <nav aria-label={blog.nearby.label} className="border-t border-fg/[0.07]">
-            {/* The links' padding hangs outside the column, so their text keeps the prose's edge. */}
-            <div className="shell py-10">
-              <div className="-mx-4 grid gap-4 sm:grid-cols-2">
-                {older ? <Neighbour post={older} direction="older" /> : <span aria-hidden="true" />}
-                {newer && <Neighbour post={newer} direction="newer" />}
-              </div>
+          <nav aria-label={blog.nearby.label} className="shell pb-20 lg:pb-24">
+            <div className="grid gap-4 sm:grid-cols-2">
+              {older ? <Neighbour post={older} direction="older" /> : <span aria-hidden="true" />}
+              {newer && <Neighbour post={newer} direction="newer" />}
             </div>
           </nav>
         )}
@@ -150,7 +174,7 @@ export default async function BlogPostPage(props: PageProps<"/blog/[slug]">) {
   );
 }
 
-/** The post either side of this one in date order. */
+/** The post either side of this one in date order, as a card with its picture. */
 function Neighbour({ post, direction }: { post: PostMeta; direction: "older" | "newer" }) {
   const older = direction === "older";
   const Arrow = older ? ArrowLeft : ArrowRight;
@@ -158,14 +182,20 @@ function Neighbour({ post, direction }: { post: PostMeta; direction: "older" | "
     <Link
       href={`/blog/${post.slug}/`}
       aria-label={`${older ? blog.nearby.older : blog.nearby.newer}: ${post.title}`}
-      className={cn("group flex flex-col gap-2 rounded-panel p-4 transition-colors hover:bg-fg/[0.04]", !older && "sm:items-end sm:text-right")}
+      className={cn(
+        "panel group flex items-center gap-5 p-4 transition-colors duration-300 hover:border-fg/15 hover:bg-fg/[0.03]",
+        !older && "sm:col-start-2 sm:flex-row-reverse sm:text-right",
+      )}
     >
-      <span className="inline-flex items-center gap-2 font-mono text-[0.75rem] uppercase tracking-[0.08em] text-faint">
-        {older && <Arrow className="size-3.5" aria-hidden="true" />}
-        {older ? blog.nearby.older : blog.nearby.newer}
-        {!older && <Arrow className="size-3.5" aria-hidden="true" />}
+      <PostImage post={post} sizes="8rem" className="aspect-[4/3] w-28 shrink-0 rounded-[0.75rem] border border-fg/[0.06]" />
+      <span className={cn("flex min-w-0 flex-col gap-1.5", !older && "sm:items-end")}>
+        <span className="inline-flex items-center gap-2 font-mono text-[0.75rem] uppercase tracking-[0.08em] text-faint">
+          {older && <Arrow className="size-3.5 transition-transform duration-300 group-hover:-translate-x-0.5" aria-hidden="true" />}
+          {older ? blog.nearby.older : blog.nearby.newer}
+          {!older && <Arrow className="size-3.5 transition-transform duration-300 group-hover:translate-x-0.5" aria-hidden="true" />}
+        </span>
+        <span className="text-[1rem] font-medium leading-snug text-fg transition-colors group-hover:text-signal-ink">{post.title}</span>
       </span>
-      <span className="text-[1.0625rem] font-medium leading-snug text-fg group-hover:text-signal-ink">{post.title}</span>
     </Link>
   );
 }

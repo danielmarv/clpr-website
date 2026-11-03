@@ -90,7 +90,9 @@ src/
     Voices.tsx         Community voices: the two quotes from the announcement of 24 September 2026
     PageShell.tsx      The frame and opening of every page but the home page
     BlogLead.tsx  BlogPostCard.tsx  BlogPostList.tsx
-                       The blog index: the newest post at size, then the archive as a paged grid
+                       The blog index: the newest post at size beside the next two, then the archive
+    PostDetails.tsx    A post's featured image, tags and reading time, shared by the cards and the post
+    ReadingProgress.tsx  The bar under the header that fills as a post is read
     PostBody.tsx       A post's Markdown (react-markdown, GitHub flavoured), styled by .post-prose
     ArticleContents.tsx  ShareButtons.tsx
                        The rail beside a post: its contents (three or more sections) and plain share links
@@ -201,10 +203,12 @@ from the CLPR presentation on [hashgraph.com/clpr](https://hashgraph.com/clpr/).
   into `site.ts`, and the audit's live check compares it with `teams.yml`. CLPR's governance has no TSC,
   so the page shows the roles it does have.
 - **Blog.** The structure of the Hiero website's blog (hiero-ledger/hiero-website): a Markdown file
-  per post in `content/posts/` with TOML front matter, read by `src/lib/posts.ts`; the index shows the
-  newest post at size (`BlogLead`) and the rest as a grid paged nine at a time (`BlogPostList`); a post
-  has its prose with a rail beside it (featured image, authors, contents, share), then the older and
-  newer posts and more from the blog. `docs/blogs.md` is the guide to writing one; the audit reads the
+  per post in `content/posts/` with TOML front matter, read by `src/lib/posts.ts`. The index shows the
+  newest post at size with the next two beside it (`BlogLead`; while there are fewer, a card of what to
+  follow fills the column), then the rest as a grid paged nine at a time (`BlogPostList`). A post has
+  its photo and credit beside the title, the prose with a rail (authors, contents, share), a reading
+  progress bar, then the older and newer posts and more from the blog. Every post shows a photograph
+  (`featured_image`, or `public/images/blog/default.jpg`), never a drawing. `docs/blogs.md` is the guide to writing one; the audit reads the
   posts with the `blog` block.
 - **Use cases.** The four patterns the design outlines (§3.4), each with a small looping diagram
   (`UseCaseArt`, on `ComponentArt`'s clock), introduced as applications that are not specified yet;
