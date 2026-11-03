@@ -238,7 +238,8 @@ from the CLPR presentation on [hashgraph.com/clpr](https://hashgraph.com/clpr/).
 - [ ] Confirm the CLPR spiral (`src/components/ClprMark.tsx`, `src/app/icon.svg`) against the
       official CLPR logo files from the LFDT / Hashgraph brand assets.
 - [ ] Decide on the typeface: keep Sora or license Styrene A.
-- [ ] Replace the footer legal line (`footer.legal` in `site.ts`) with the official LFDT lab text.
+- [x] Footer: the affiliation line and the Linux Foundation legal text that LFDT requires of its labs
+      (`footer.affiliation` and `footer.legal` in `site.ts`, mirrored in the explainer's footer).
 - [ ] Re-check the native Hiero status when a network switches CLPR on. HIP-1535 is Approved and describes
       the service as opt-in; the clpr-audit skill checks the HIP status live.
 - [ ] Reconcile the specification licence with LFDT: the Labs charter says specifications are developed

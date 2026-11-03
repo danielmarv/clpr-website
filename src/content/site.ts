@@ -15,6 +15,7 @@ export const links = {
   hiero: "https://hiero.org",
   apacheLicense: "https://www.apache.org/licenses/LICENSE-2.0",
   dco: "https://developercertificate.org/",
+  lfTrademarks: "https://www.linuxfoundation.org/legal/trademark-usage",
 } as const;
 
 export const nav = [
@@ -309,9 +310,15 @@ export const footer = {
     contributedBy: "Contributed by",
     builtInto: "Native service for",
   },
-  // Placeholder legal line. Replace with the official LFDT lab footer text before launch.
-  legal:
-    "© {year} CLPR contributors. Code is licensed under Apache-2.0; the Labs charter calls for specifications under the Community Specification License 1.0. LF Decentralized Trust is a project of The Linux Foundation.",
+  // LFDT's website requirements for projects and labs: the affiliation line, and the legal attribution
+  // word for word, with the current year. {trademarks} is the link to the Trademark Usage page.
+  affiliation: "An LF Decentralized Trust Lab",
+  license:
+    "Code is licensed under Apache-2.0; the Labs charter calls for specifications under the Community Specification License 1.0.",
+  legal: {
+    text: "© {year} The Linux Foundation. All rights reserved. The Linux Foundation has registered trademarks and uses trademarks. For a list of trademarks of The Linux Foundation, please see our {trademarks} page.",
+    trademarks: { label: "Trademark Usage", href: links.lfTrademarks },
+  },
 } as const;
 
 export const site = {
