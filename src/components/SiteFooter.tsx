@@ -89,7 +89,8 @@ function Logo({ logo }: { logo: (typeof origins.logos)[number] }) {
 
 export function SiteFooter() {
   const year = new Date().getFullYear();
-  const { backing } = footer;
+  const { backing, legal } = footer;
+  const [beforeTrademarks, afterTrademarks] = format(legal.text, { year }).split("{trademarks}");
 
   return (
     <footer className="relative z-10 overflow-x-clip border-t border-fg/7 bg-background/85 text-fg/70 backdrop-blur-xl">
@@ -157,7 +158,23 @@ export function SiteFooter() {
 
       <div className="shell relative">
         <div className="flex flex-col gap-4 border-t border-fg/7 py-6 text-[0.8125rem] text-fg/45 md:flex-row md:items-center md:justify-between md:gap-10">
-          <p className="max-w-3xl">{format(footer.legal, { year })}</p>
+          <div className="max-w-3xl space-y-2">
+            <p className="font-medium text-fg/70">{footer.affiliation}</p>
+            <p>{footer.license}</p>
+            <p>
+              {beforeTrademarks}
+              <a
+                href={legal.trademarks.href}
+                target="_blank"
+                rel="noreferrer"
+                className="text-fg/70 underline decoration-fg/25 underline-offset-2 transition-colors hover:text-fg hover:decoration-current"
+              >
+                {legal.trademarks.label}
+                <span className="sr-only"> ({footer.newTab})</span>
+              </a>
+              {afterTrademarks}
+            </p>
+          </div>
           <a href="#main" className="inline-flex shrink-0 items-center gap-1.5 text-fg/70 transition-colors hover:text-fg">
             {footer.backToTop}
             <ArrowUp className="size-3.5" aria-hidden="true" />
