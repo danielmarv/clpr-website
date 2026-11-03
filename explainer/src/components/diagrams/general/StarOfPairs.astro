@@ -5,7 +5,7 @@ import { design } from '../../../lib/sources';
 ---
 <Figure
   lead="A star is four pairs."
-  caption="One ledger holds a channel with each of four others. Every spoke is its own agreement, with a verifier chosen for it on each side and its own queues. CLPR never forwards a message through a third ledger: a message from B to C has no path unless an application on the hub receives it and sends it on as a new message of its own."
+  caption="One ledger holds a channel with each of four others. Every spoke is its own agreement, with a verifier chosen for it on each side and its own queues. CLPR defines channels between two ledgers only: a message from B to C has no path unless an application on the hub receives it and sends it on as a new message of its own."
   source={[{ label: 'design §2.1', href: design('21-common-terminology') }]}
   kind="plain"
   minWidth={720}

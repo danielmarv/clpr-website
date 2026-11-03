@@ -295,7 +295,7 @@ const faults = [
     push({
       n: '0', label: 'bundle submitted', title: 'An endpoint submits the bundle as a transaction', where: 'before §4.2',
       plain: 'An endpoint has fetched a bundle from Ledger A\'s side and now submits it to our ledger as an ordinary transaction. Everything that follows runs inside that transaction, after consensus. The submitting account has already paid the transaction fee; whether it earns anything back depends on what happens next. On the left is what our ledger already knows about this channel; on the right, what the bundle claims.',
-      proto: 'submitBundle(channel_id, bundle_payload). Bundle submission is permissionless: any account may call it. The Channel\'s own fields (acked_message_id, received_running_hash, trust_anchor_id, endpoint_manifest) and this side\'s own ChannelSyncData (status, received_message_id, next_message_id) are the stored state the algorithm checks against.',
+      proto: 'submitBundle(channel_id, bundle_payload). Bundle submission is permissionless in the specification: any account may call it (the EVM contracts restrict submitBundle to registered endpoints). The Channel\'s own fields (acked_message_id, received_running_hash, trust_anchor_id, endpoint_manifest) and this side\'s own ChannelSyncData (status, received_message_id, next_message_id) are the stored state the algorithm checks against.',
       refs: [['spec42', 'spec §4.2'], ['spec241', 'spec §2.4.1'], ['design323', 'design §3.2.3']], verdict: 'info', changed: [], log: 'Nothing has happened yet. Press Next to run step 1, or pick a fault first.',
     });
 
@@ -574,7 +574,7 @@ const faults = [
     // done
     push({
       n: '✓', label: 'bundle processed', title: 'Done: the channel has moved on', where: 'after §4.2',
-      plain: `The bundle is fully processed. We now hold Ledger A's messages through ${st.received}, our running hash equals the proven anchor, the peer's ack is recorded, and ${st.queue.filter((q) => q.type === 'REPLY' && !q.del).length} replies are waiting in our outbound queue for the next endpoint going the other way. The submitter's fee was covered by the connector charges, with margin, for the messages that were delivered, and by the slash for the one whose connector could not pay.`,
+      plain: `The bundle is fully processed. We now hold Ledger A's messages through ${st.received}, our running hash equals the proven anchor, the peer's ack is recorded, and ${st.queue.filter((q) => q.type === 'REPLY' && !q.del).length} replies are waiting in our outbound queue for the next endpoint going the other way. The submitter was paid the connector charges, with margin, for the messages that were delivered, and the slash for the one whose connector could not pay.`,
       proto: `received_message_id 42 → ${st.received}; received_running_hash = anchor_running_hash; acked_message_id 17 → ${st.acked}; next_message_id 21 → ${st.next}; status ${st.status}. Each generated reply was appended to our outbound queue and extends our own sent_running_hash: all three message types share one queue, one hash chain and one bundle transport. Ledger A will learn all of this from our ChannelSyncData in the next sync.`,
       refs: [['spec42', 'spec §4.2'], ['spec14', 'spec §1.4'], ['design322', 'design §3.2.2']], extra: '<p class="verdict is-pass">bundle accepted; all state changes committed together</p>',
       verdict: 'done', changed: [], log: 'All changes from steps 1b to 6 are committed in one transaction. Choose a fault above and step through again to see a rejection.',

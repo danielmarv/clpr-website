@@ -74,7 +74,12 @@ and never edits: its output is a report the maintainer or the `clpr-sync` skill 
      no pinned source supports.
 
    For each `website-*.md`, open that block's screenshots and judge what the drawing shows as
-   well as what it says: a label, an arrow or an empty middle is a claim. Groups are in
+   well as what it says: a label, an arrow or an empty middle is a claim. Judge actor placement
+   in every drawing, explainer figures and simulations included: Endpoint, then CLPR Service,
+   then the ledger's own Verifier; the Connector beside the Service; one Verifier per ledger. Where
+   a figure models the specification and the pinned contracts or endpoint differ (running-hash
+   fold, streaming versus single-call `sync`, update-then-dispatch order, who is charged when),
+   it must say which it shows. Groups are in
    `_GROUPS.json`; one agent per group with `_BRIEF.md` fans out well. If agents stall, judge
    in-session and say so in the report.
 3. **Check the other direction for data tables.** Does upstream list something the rows do not?

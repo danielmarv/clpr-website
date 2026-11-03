@@ -5,7 +5,7 @@ import { pinned } from '../../../lib/sources';
 ---
 <Figure
   lead="Two lanes through one relay."
-  caption="On the way out the relay notices the queue grow, builds a payload with a proof and streams it to a peer picked at random, weighted by past successes. On the way in it decodes the peer's bundle, drops messages its ledger already accepted (for EVM-format bundles) so a duplicate cannot sink the bundle as a replay, previews submitBundle with eth_call, and only then signs and pays."
+  caption="On the way out the relay notices the queue grow, builds a payload with a proof and sends it to a peer in a sync call (unary in the reference endpoint; the spec defines a stream), the peer picked at random, weighted by past successes. On the way in it decodes the peer's bundle, drops messages its ledger already accepted (for EVM-format bundles) so a duplicate cannot sink the bundle as a replay, previews submitBundle with eth_call, and only then signs and pays."
   source={[{ label: 'endpoint docs/architecture.md', href: pinned('clpr-endpoint', 'docs/architecture.md') }, { label: 'docs/sync-protocol.md', href: pinned('clpr-endpoint', 'docs/sync-protocol.md') }]}
   kind="impl"
   minWidth={760}

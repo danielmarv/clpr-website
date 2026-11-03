@@ -122,7 +122,7 @@ const arrOk = `${id}-arr-ok`;
     const words: Record<St, string> = {
       NONE: 'no channel yet', PENDING: 'PENDING: the id is claimed but nothing can be sent', ACTIVE: 'ACTIVE: messages flow both ways',
       PAUSED: 'PAUSED: replies arrived out of order; no new sends until the peer fixes it', CLOSING: 'CLOSING: no new sends; everything in flight completes',
-      DRAINED: 'DRAINED: every data message we sent was acknowledged; waiting on the peer', CLOSED: 'CLOSED: terminal; endpoints stop syncing',
+      DRAINED: 'DRAINED: every data message we sent was acknowledged; waiting on the peer', CLOSED: 'CLOSED: terminal; after one final close-notification, endpoints stop syncing',
     };
     // Where each event leads from a given state (the edge it lights and the exact trigger, for detail mode).
     const target: Record<string, Partial<Record<St, St>>> = {
@@ -182,7 +182,7 @@ const arrOk = `${id}-arr-ok`;
         else if (st === 'DRAINED') set('CLOSED', 'close', 'Recovery path: if the peer\'s endpoint can never deliver its final close-notification, the admin closes a DRAINED channel directly. Nothing is abandoned because the outbound queue is already fully acknowledged.');
       },
       ooo: () => set('PAUSED', 'ooo', 'A reply arrived that does not match the oldest unanswered data message. That means the peer\'s reply generation is broken, so the channel pauses rather than delivering out of order. The bad bundle is rejected; nothing was dispatched.'),
-      good: () => set('ACTIVE', 'good', 'A bundle with correctly ordered replies arrived. The channel resumes on its own; no admin action is needed or available.'),
+      good: () => set('ACTIVE', 'good', 'A bundle with correctly ordered replies arrived. The channel resumes on its own; no admin action is needed.'),
       peerclosing: () => set('CLOSING', 'peerclosing', 'The peer\'s sync data says CLOSING (or DRAINED, or CLOSED). Our side follows into CLOSING so both drain together.'),
       acked: () => set('DRAINED', 'acked', 'No data message with an id above acked_message_id remains in our outbound queue: the peer has everything we sent. Replies we generated while closing may still be in flight; they drain through this state.'),
       peerdrained: () => set('CLOSED', 'peerdrained', 'The peer reports DRAINED or CLOSED and our own queue is fully acknowledged (acked_message_id ≥ next_message_id − 1). Both sides are done. The endpoint\'s last duty is one close-notification bundle to the peer.'),

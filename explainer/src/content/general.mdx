@@ -251,7 +251,7 @@ Two things about the money are not settled yet: how large a connector's stake mu
 </Callout>
 
 <Check q="Who is paid when a message is delivered, and who is not?">
-Only the account that submitted the bundle on the receiving ledger, and only from the connector. Nobody on the sending side is paid for this delivery (the reply's trip back is paid the same way), there is no protocol treasury, and the endpoint that did the *sending* work earns nothing directly. Endpoints are expected to prefer partners that bring them messages in return.
+Only the account that submitted the bundle on the receiving ledger, and only from the connector. Nothing goes to the sending side for this delivery, and the reply's trip back is paid the same way, to whoever submits it on Ledger A; there is no protocol treasury, and the endpoint that did the *sending* work earns nothing directly. Endpoints are expected to prefer partners that bring them messages in return.
 </Check>
 
 </Section>
@@ -319,7 +319,7 @@ CLPR knows pairs. Stars, meshes and private-to-public links are what application
 </Callout>
 
 <Check q="Two ledgers both have a channel to the same third ledger. Can one send the other a message?">
-Not through CLPR alone. There is no channel between them, and CLPR never forwards a message through a third ledger. Either they open their own channel, or an application on the third ledger receives the message and sends a new one on, as its own message with its own proof and its own payer.
+Not through CLPR alone. There is no channel between them, and CLPR defines channels only between two ledgers. Either they open their own channel, or an application on the third ledger receives the message and sends a new one on, as its own message with its own proof and its own payer.
 </Check>
 
 </Section>

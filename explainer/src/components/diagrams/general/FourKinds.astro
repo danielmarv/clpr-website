@@ -5,7 +5,7 @@ import { design, pinned } from '../../../lib/sources';
 ---
 <Figure
   lead="The four kinds of thing."
-  caption="The specification is text. The CLPR Service is built twice, once inside Hiero nodes and once as EVM contracts. Verifiers plug into a service. The endpoint is the one piece that is not on a ledger. Tap the map below for where each lives in code."
+  caption="The specification is text. The CLPR Service is built twice, once inside Hiero nodes and once as EVM contracts. Verifiers plug into a service. On an EVM ledger the endpoint is a separate program; on Hiero it is part of the node. Tap the map below for where each lives in code."
   source={[{ label: 'design §3', href: design('3-architecture') }, { label: 'organization profile', href: pinned('org-profile', 'profile/README.md') }]}
   kind="plain"
   minWidth={720}
@@ -56,7 +56,7 @@ import { design, pinned } from '../../../lib/sources';
     <rect x="556" y="150" width="140" height="72" rx="8" class="d-c"/>
     <text x="626" y="178" class="t b center">Endpoint</text>
     <text x="626" y="196" class="t small center">the endpoint program</text>
-    <text x="626" y="210" class="t small center">runs off a ledger</text>
+    <text x="626" y="210" class="t small center">a program on EVM</text>
 
     <line x1="556" y1="186" x2="422" y2="186" class="line c" marker-end="url(#fk-arrow-c)"/>
     <text x="489" y="176" class="t small center muted">submits ordinary</text>

@@ -5,7 +5,7 @@ import { design, pinned } from '../../../lib/sources';
 ---
 <Figure
   lead="Six things CLPR does without."
-  caption="No network in the middle, no committee whose keys decide, no new token, no pool of user deposits, no single kind of ledger, and no endpoint key whose theft lets anyone forge a message. In each case the answer is the same: the receiving ledger checks the sending ledger's own validators' signature through the channel's verifier, and the rest follows."
+  caption="No network in the middle, no committee whose keys decide, no new token, no pool of user deposits, no single kind of ledger, and no endpoint key whose theft lets anyone forge a message. Checking the sending ledger's own proof through the channel's verifier removes the middleman and the committee; fees are paid in each ledger's native token, and messages, not assets, move."
   source={[{ label: 'design §1', href: design('1-executive-summary') }, { label: 'design §2.3', href: design('23-trust-model') }, { label: 'design §3.1.5', href: design('315-verifier-contracts') }, { label: 'organization profile', href: pinned('org-profile', 'profile/README.md') }]}
   kind="plain"
   minWidth={760}
@@ -59,6 +59,6 @@ import { design, pinned } from '../../../lib/sources';
     <circle cx="532" cy="240" r="7" class="d-ok" /><path d="M528,240 l3,3 l5.5,-6" fill="none" stroke="var(--ok)" stroke-width="1.8" />
     <text x="632" y="244" class="t b center ok">it can delay, not forge</text>
     <text x="623" y="266" class="t small center">endpoints carry, ledgers check</text>
-    <text x="380" y="340" class="t take center">One idea does all six: the receiving ledger checks the sending ledger's own signature.</text>
+    <text x="380" y="340" class="t take center">One idea does the most: the receiving ledger checks the sending ledger's own proof.</text>
   </svg>
 </Figure>

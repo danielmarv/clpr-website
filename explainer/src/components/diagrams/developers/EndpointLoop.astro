@@ -1,5 +1,5 @@
 ---
-/** An endpoint's loop with the dry run drawn in: watch the home outbound queue, fetch or build the proof, sync with a peer over mutual TLS, each sync one stream for one channel, dry-run what arrives against the ledger's own check, submit only what would pass. From design §3.1.4 and spec §1.5. Replaces the inline endpoint's-day SVG in the general page's section 11. */
+/** An endpoint's loop with the dry run drawn in: watch the home outbound queue, fetch or build the proof, sync with a peer (as specified: mutual TLS, one stream per channel; the reference endpoint uses one request/response call, TLS opt-in), dry-run what arrives against the ledger's own check, submit only what would pass. From design §3.1.4 and spec §1.5. Replaces the inline endpoint's-day SVG in the general page's section 11. */
 import Figure from '@kse/components/Figure.astro';
 import { design, spec } from '../../../lib/sources';
 ---

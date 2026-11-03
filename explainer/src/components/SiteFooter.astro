@@ -37,14 +37,14 @@ const external = (href: string) => /^https?:\/\//.test(href);
 const dataUrl = (svg: string) => `data:image/svg+xml,${encodeURIComponent(svg)}`;
 // Heights and the white treatment of the dark marks follow the website's footer.
 const backing = [
-  { label: 'Stewarded by', logos: [
+  { label: 'A lab of', logos: [
     { name: 'LF Decentralized Trust', href: 'https://www.lfdecentralizedtrust.org/', src: dataUrl(lfdt), width: 698.7, height: 39.1, class: 'lfdt' },
   ] },
   { label: 'Contributed by', logos: [
     { name: 'Hashgraph', href: 'https://hashgraph.com/clpr/', src: dataUrl(hashgraph), width: 654.62, height: 141.73, class: 'hashgraph invert' },
     { name: 'Hedera', href: 'https://hedera.com', src: dataUrl(hedera), width: 448.29, height: 138.93, class: 'hedera invert' },
   ] },
-  { label: 'Built natively into', logos: [
+  { label: 'Native service for', logos: [
     { name: 'Hiero', href: 'https://hiero.org', src: dataUrl(hiero), width: 64, height: 20, class: 'hiero invert' },
   ] },
 ];

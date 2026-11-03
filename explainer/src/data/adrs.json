@@ -1,5 +1,5 @@
 {
-  "$comment": "Accepted decision records in clpr-spec/ADR, one row per file; check-data.mjs fails when a file upstream has no row. summary is the general page's one-sentence reading, detail the developer page's (may carry inline <code>).",
+  "$comment": "Decision records in clpr-spec/ADR, one row per file; check-data.mjs fails when a file upstream has no row. summary is the general page's one-sentence reading, detail the developer page's (may carry inline <code>).",
   "adrs": [
     {
       "file": "2026-07-02-channel-context-verifier-interface.md",

@@ -16,14 +16,14 @@ interface Props { mode?: 'plain' | 'protocol'; href: string; }
 const { mode = 'plain', href } = Astro.props;
 const L = mode === 'plain'
   ? { a: 'Ledger A', b: 'Ledger B', ep: 'endpoint', epA: 'in the node', epB: 'a program', app: 'application', ver: 'verifier', card: 'trust anchor',
-      phases: ['Ledger A seals the message', 'its endpoint, part of the node, hands it over', "Ledger B's endpoint program submits it", 'Ledger B checks the seal', 'delivered; the reply comes back the same way'],
+      phases: ['Ledger A seals the message', 'its endpoint (in the node, on Hiero) hands it over', "Ledger B's endpoint program submits it", 'Ledger B checks the seal', 'delivered; the reply comes back the same way'],
       link: 'Watch all 28 steps' }
   : { a: 'Ledger A', b: 'Ledger B', ep: 'endpoint', epA: 'in the node', epB: 'a relay', app: 'application', ver: 'verifier', card: 'trust anchor',
-      phases: ['queued, hashed, state-proven', "the node's endpoint serves the bundle", 'the relay dry-runs and submits it', 'verifyBundle against the trust anchor', 'dispatched; the response travels back'],
+      phases: ['queued, hashed, state-proven', "a Hiero node's endpoint serves the bundle", 'the relay dry-runs and submits it', 'verifyBundle against the trust anchor', 'dispatched; the response travels back'],
       link: 'Step through all 28 steps' };
 ---
 <div class="trailer" data-paused="false">
-  <svg viewBox="0 0 560 224" role="img" aria-label="A message sealed on Ledger A is handed over by A's endpoint, which is part of its node, to Ledger B's endpoint, a separate program, which submits it to Ledger B. Ledger B checks the seal against the trust anchor on file and delivers it to the application; a reply travels back the same way.">
+  <svg viewBox="0 0 560 224" role="img" aria-label="A message sealed on Ledger A is handed over by A's endpoint (part of its node on a Hiero ledger) to Ledger B's endpoint (a separate program on an EVM ledger), which submits it to Ledger B. Ledger B checks the seal against the trust anchor on file and delivers it to the application; a reply travels back the same way.">
     <defs><linearGradient id="trailer-lane" gradientUnits="userSpaceOnUse" x1="187" y1="0" x2="313" y2="0"><stop offset="0" stop-color="#9d8bff"/><stop offset="1" stop-color="#f27fbd"/></linearGradient></defs>
     <!-- Ledger A and Ledger B, as the website draws them: a membrane with its validators on the edge -->
     <g class="art-ledger">

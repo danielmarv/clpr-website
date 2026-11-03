@@ -45,7 +45,7 @@ const parts = catalog.components.map((c) => ({ ...c, links: c.refs.map((r) => ({
       <g data-part="epA" data-tone="c" class="part" tabindex="0" role="button" aria-label="Endpoints on Hiero">
         <rect x="36" y="318" width="308" height="48" rx="8" class="d-c" />
         <text x="190" y="338" class="t center b">Endpoints · every consensus node</text>
-        <text x="190" y="356" class="t small center">fetch the proofs the node already built</text>
+        <text x="190" y="356" class="t small center">fetch state proofs, build bundles</text>
       </g>
 
       <!-- Ledger B -->
@@ -78,7 +78,7 @@ const parts = catalog.components.map((c) => ({ ...c, links: c.refs.map((r) => ({
         <rect x="368" y="300" width="204" height="80" rx="8" class="d-surface" />
         <line x1="344" y1="342" x2="368" y2="342" class="line c" /><line x1="572" y1="342" x2="596" y2="342" class="line c" />
         <text x="470" y="321" class="t center b">gRPC sync</text>
-        <text x="470" y="339" class="t small center">gRPC sync · one stream per cycle</text>
+        <text x="470" y="339" class="t small center">gRPC sync · one exchange/cycle</text>
         <text x="470" y="354" class="t small center">unproven requests,</text>
         <text x="470" y="369" class="t small center">proven bundles</text>
       </g>

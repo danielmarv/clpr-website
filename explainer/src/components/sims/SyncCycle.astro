@@ -19,7 +19,7 @@ const steps = [
   {
     phase: 'Step 0 · before the first message',
     t: 'One stream, one channel, mutual TLS',
-    plain: 'Endpoint A wants to sync one channel. It picks one of Ledger B\'s endpoints from the peer manifest that Ledger A holds for the channel and opens a gRPC stream to it. The two authenticate each other with mutual TLS: each endpoint\'s root of trust is the CA certificate published on-chain in its manifest, and what it actually presents is a short-lived Ed25519 leaf certificate its process minted at start-up. One stream is one sync cycle. Nothing is pushed unasked: each side asks for a bundle by describing its own state, and the peer shapes the bundle from that.',
+    plain: 'Endpoint A wants to sync one channel. It picks one of Ledger B\'s endpoints from the peer manifest that Ledger A holds for the channel and opens a gRPC stream to it. The two authenticate each other with mutual TLS: each endpoint\'s root of trust is the CA certificate published on-chain in its manifest, and what it actually presents is an in-memory Ed25519 leaf certificate its process minted at start-up. One stream is one sync cycle. Nothing is pushed unasked: each side asks for a bundle by describing its own state, and the peer shapes the bundle from that.',
     proto: '<code>rpc sync(stream ClprSyncPayload) returns (stream ClprSyncPayload)</code>; every payload carries the 32-byte <code>channel_id</code>. <code>ClprEndpoint.tls_certificate</code> is a DER-encoded self-signed ECDSA P-384 CA certificate (at most 512 bytes; not presented on the wire); each endpoint holds an Ed25519 leaf signed by that CA and presents it at the mTLS handshake. The connection and its TLS session MAY persist across cycles.',
     refs: [{ h: spec('grpc-endpoint-service'), l: 'spec §1.5, gRPC Endpoint Service' }, { h: spec('12-endpoint-identity'), l: 'spec §1.2' }, { h: design('314-endpoint-communication-protocol'), l: 'design §3.1.4' }, { h: design('312-endpoint-manifest'), l: 'design §3.1.2, TLS certificate' }, { h: ADR_SYNC('34-mtls-root-of-trust-model'), l: 'ADR 2026-07-14 §3.4' }],
   },
@@ -56,7 +56,7 @@ const X = { la: 60, ea: 210, eb: 560, lb: 706 };
 ---
 <div class="sim synccycle" id={id}>
   <div class="sim__head">
-    <div><span class="kind">Step-through</span><h3>One sync cycle: four messages on one stream</h3></div>
+    <div><span class="kind">Step-through</span><h3>One sync cycle as specified: four messages on one stream</h3></div>
     <span class="pill grey" data-role="clock">step 0 / 4</span>
     <div class="sim__track seg" data-role="track" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
   </div>

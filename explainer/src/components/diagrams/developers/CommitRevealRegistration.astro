@@ -15,7 +15,7 @@ import { design, spec } from '../../../lib/sources';
   kind="spec"
   minWidth={720}
 >
-  <svg viewBox="0 0 720 396" role="img" aria-label="Two phases across two ledgers. Phase 1: you post the same hash of the channel name and key on Ledger A and on Ledger B; a watcher of Ledger A sees only the hash and cannot claim a name it never saw on Ledger B. Phase 2: you reveal on both ledgers with the name, key and signature, naming the verifier and handing over proofs about the other side. Both reveals lead to a channel that is ACTIVE on both ledgers with its verifier fixed for life.">
+  <svg viewBox="0 0 720 396" role="img" aria-label="Two phases across two ledgers. Phase 1: you post a hash of the channel id and your key on Ledger A and on Ledger B (the same hash if you use the same key); a watcher of Ledger A sees only the hash and cannot claim a name it never saw on Ledger B. Phase 2: you reveal on both ledgers with the name, key and signature, naming the verifier and handing over proofs about the other side. Both reveals lead to a channel that is ACTIVE on both ledgers with its verifier fixed for life.">
     <defs>
       <marker id="cre-arrow-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--a)" /></marker>
       <marker id="cre-arrow-b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--b)" /></marker>
@@ -37,7 +37,7 @@ import { design, spec } from '../../../lib/sources';
     <!-- Phase 1 claims -->
     <rect x="80" y="92" width="200" height="60" rx="8" class="d-a" />
     <text x="180" y="114" class="t b center">Ledger A: claim</text>
-    <text x="180" y="131" class="t small center mono">hash(name + key)</text>
+    <text x="180" y="131" class="t small center mono">keccak256(id ‖ key)</text>
     <text x="180" y="146" class="t small center">nothing readable</text>
 
     <rect x="440" y="92" width="200" height="60" rx="8" class="d-b" />
@@ -83,7 +83,7 @@ import { design, spec } from '../../../lib/sources';
     <!-- ACTIVE -->
     <rect x="235" y="318" width="250" height="48" rx="8" class="d-ok" />
     <text x="360" y="338" class="t b center">Channel ACTIVE</text>
-    <text x="360" y="355" class="t small center">same name on both · verifier fixed for life</text>
+    <text x="360" y="355" class="t small center">same id on both · verifier fixed for life</text>
     <path d="M250,300 L300,316" class="line ok" marker-end="url(#cre-arrow-ok)" />
     <path d="M470,300 L420,316" class="line ok" marker-end="url(#cre-arrow-ok)" />
 

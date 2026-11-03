@@ -11,7 +11,7 @@ const msgs = ['ping', 'pay Bo 5', 'config update', 'ping', 'pay Cy 2'];
 <div class="sim rhash" id={id} aria-busy="true">
   <div class="sim__head"><div><span class="kind">Simulation</span><h3>Five messages, one chain of running hashes</h3></div><span class="pill ok" data-role="status">chain intact</span></div>
   <div class="sim__body">
-    {detail && <p class="small" style="margin:0 0 10px"><code>H<sub>n</sub> = SHA-256( H<sub>n−1</sub> ‖ payload<sub>n</sub> )</code>, with <code>H<sub>0</sub></code> = 32 zero bytes. Only <code>H<sub>5</sub></code>, the anchor, is covered by the state proof. The receiver recomputes the chain from its own stored hash and compares.</p>}
+    {detail && <p class="small" style="margin:0 0 10px"><code>H<sub>n</sub> = SHA-256( H<sub>n−1</sub> ‖ payload<sub>n</sub> )</code>, with <code>H<sub>0</sub></code> = 32 zero bytes. Only <code>H<sub>5</sub></code>, the anchor, is covered by the state proof. This is the specification's form; the pinned EVM contracts hash the payload first: <code>sha256( H<sub>n−1</sub> ‖ sha256(payload<sub>n</sub>) )</code>. The receiver recomputes the chain from its own stored hash and compares.</p>}
     <div class="table-wrap rhash__wrap" style="margin:0">
       <table>
         <thead><tr><th>#</th><th>message</th><th>running hash after it</th><th>proven?</th><th>check</th></tr></thead>
@@ -162,7 +162,7 @@ const msgs = ['ping', 'pay Bo 5', 'config update', 'ping', 'pay Cy 2'];
         log.innerHTML = intact ? `<span class="line">intact: H${n} == anchor</span>${INTACT_LOG}` : '';
       } else {
         const from = broken < 0 ? n : broken + 1;
-        log.innerHTML = `<span class="line">${op}: H${from}..H${n} differ; H${n} != anchor</span><span class="bad">Rejected.</span> From message ${broken + 1} onwards every recomputed running hash is different, so the final one no longer equals the anchor that Ledger A's validators signed. The receiver does not need to know <em>what</em> changed; a single mismatch is enough to throw the whole bundle away. This is why proving only the last message is sufficient.`;
+        log.innerHTML = `<span class="line">${op}: H${from}..H${n} differ; H${n} != anchor</span><span class="bad">Rejected.</span> From message ${broken + 1} onwards every recomputed running hash is different, so the final one no longer equals the anchor proven by Ledger A's state proof. The receiver does not need to know <em>what</em> changed; a single mismatch is enough to throw the whole bundle away. This is why proving only the last message is sufficient.`;
       }
     }
     for (const b of buttons) {

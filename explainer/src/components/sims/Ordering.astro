@@ -321,7 +321,7 @@ const replies = ['Rb1', 'Rb2', 'Rb4'];
       rb12: () => {
         const resumed = st === 'PAUSED';
         st = 'ACTIVE';
-        const ackNote = acked < 2 ? ' B can only have generated these replies after receiving Ma1 and Ma2, so its sync data acks through 2 as well.' : '';
+        const ackNote = acked < 2 ? ' In this model B has received Ma1 and Ma2 before replying, so its sync data acks through 2 as well.' : '';
         acked = Math.max(acked, 2);
         ackDeletes();
         for (const x of q) if (!x.del && (x.name === 'Ma1' || x.name === 'Ma2')) x.del = `deleted: Rb${x.id} matched`;

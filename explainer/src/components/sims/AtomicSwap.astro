@@ -127,7 +127,7 @@ const refs = [{ doc: 'design', anchor: '343-n-ledger-atomic-swap-2pc', label: 'd
         if (!(await carry(id, 'B', 'A', 'reply: undone'))) return;
         env.setAttribute('hidden', '');
         status.textContent = 'rolled back'; status.className = 'pill bad';
-        log.innerHTML = '<span class="line">done · nothing landed</span><span class="bad">Rolled back everywhere.</span> No ledger kept a change the others did not. CLPR carried three messages and three replies; the decision was the application\'s.';
+        log.innerHTML = '<span class="line">done · nothing landed</span><span class="bad">Rolled back everywhere.</span> Here every roll-back message was relayed and honoured, so no ledger kept a change the others did not. CLPR carried three messages and three replies; the decision was the application\'s.';
       } else {
         setState('C', 'ready', 'ready, not final');
         if (!(await carry(id, 'C', 'A', 'reply: ready'))) return;
@@ -142,7 +142,7 @@ const refs = [{ doc: 'design', anchor: '343-n-ledger-atomic-swap-2pc', label: 'd
         if (!(await carry(id, 'C', 'A', 'reply: done'))) return;
         env.setAttribute('hidden', '');
         status.textContent = 'committed'; status.className = 'pill ok';
-        log.innerHTML = '<span class="line">done · all three landed</span><span class="ok">Committed everywhere.</span> Three ledgers changed together. Each message was proven by its own ledger\'s validators; the tally that tied them together lived in the application.';
+        log.innerHTML = '<span class="line">done · all three landed</span><span class="ok">Committed everywhere.</span> Three ledgers changed together. Each message was verified by the channel\'s verifier against its source ledger\'s proof; the tally that tied them together lived in the application.';
       }
     }
     for (const b of Array.from(root.querySelectorAll<HTMLButtonElement>('button[data-run]'))) b.addEventListener('click', () => { void run(b.dataset.run === 'fail'); });

@@ -143,6 +143,26 @@
     [
       "\\bas safe as the two ledgers themselves\\b",
       "depends only on the two ledgers, their CLPR Services and the channel's verifier"
+    ],
+    [
+      "\\bnever forwards? a message through a third ledger\\b",
+      "CLPR defines a channel between two ledgers; forwarding through a third ledger is built by applications"
+    ],
+    [
+      "\\bnobody on the sending side is paid\\b",
+      "each charge is paid to whoever submitted the bundle, replies included"
+    ],
+    [
+      "\\bStewarded by\\b",
+      "A lab of / Hosted by (the lab is hosted by LF Decentralized Trust)"
+    ],
+    [
+      "\\bBuilt natively into\\b",
+      "Native service for (HIP-1535 specifies it; do not say it is built or merged)"
+    ],
+    [
+      "\\bone connector can serve many channels\\b|\\bone connector,? two channels\\b",
+      "a connector is registered on one Channel; one operator can run connectors on many"
     ]
   ],
   "structure": {

@@ -85,10 +85,10 @@ const refs = [
   type Shape = 'pair' | 'star' | 'mesh' | 'private';
   const POS: Record<string, [number, number]> = { A: [380, 150], B: [120, 66], C: [640, 66], D: [120, 234], E: [640, 234] };
   const SHAPES: Record<Shape, { nodes: string[]; links: [string, string][]; take: string; status: string; dial?: [string, string] }> = {
-    pair: { nodes: ['B', 'C'], links: [['B', 'C']], take: 'One channel: the simplest shape, and the only one CLPR itself knows.', status: 'a pair' },
+    pair: { nodes: ['B', 'C'], links: [['B', 'C']], take: 'One channel: the simplest shape, and the building block CLPR defines.', status: 'a pair' },
     star: { nodes: ['A', 'B', 'C', 'D', 'E'], links: [['A', 'B'], ['A', 'C'], ['A', 'D'], ['A', 'E']], take: 'Four channels, each between two ledgers; the hub holds all four.', status: 'a star' },
-    mesh: { nodes: ['B', 'C', 'D', 'E'], links: [['B', 'C'], ['B', 'D'], ['B', 'E'], ['C', 'D'], ['C', 'E'], ['D', 'E']], take: 'Six channels: every pair agrees on its own; no trusted party sits in the middle.', status: 'a mesh' },
-    private: { nodes: ['B', 'C'], links: [['B', 'C']], dial: ['B', 'C'], take: "B's endpoints dial out to C's; messages then flow both ways. B is never reachable from outside.", status: 'private to public' },
+    mesh: { nodes: ['B', 'C', 'D', 'E'], links: [['B', 'C'], ['B', 'D'], ['B', 'E'], ['C', 'D'], ['C', 'E'], ['D', 'E']], take: 'Six channels: every pair agrees on its own; no intermediary ledger or committee; each channel trusts its own verifier and the two ledgers.', status: 'a mesh' },
+    private: { nodes: ['B', 'C'], links: [['B', 'C']], dial: ['B', 'C'], take: "B's endpoints dial out to C's; messages then flow both ways. B publishes no endpoint address, so C's endpoints cannot dial it.", status: 'private to public' },
   };
   for (const root of Array.from(document.querySelectorAll<HTMLElement>('.sim.shapes'))) {
     const $ = (s: string) => root.querySelector<HTMLElement>(s)!;
@@ -158,7 +158,7 @@ const refs = [
         const l = document.createElementNS('http://www.w3.org/2000/svg', 'line');
         l.setAttribute('x1', String(POS[from][0])); l.setAttribute('y1', String(POS[from][1])); l.setAttribute('x2', String(POS[to][0])); l.setAttribute('y2', String(POS[to][1]));
         l.classList.add('no'); links.appendChild(l);
-        log.innerHTML = `<span class="line">${from} → ${to} · no channel</span><span class="bad">No path.</span> CLPR knows pairs and never forwards a message through a third ledger. ${hub ? `Ledger ${hub} has a channel to each of them, but a message only crosses if an application on ${hub} receives it and sends a new message of its own to ${to}; that is the application's choice, under its own connector and channel.` : `Open a channel between ${from} and ${to}, or build the forwarding into an application on a ledger that has both.`}`;
+        log.innerHTML = `<span class="line">${from} → ${to} · no channel</span><span class="bad">No path.</span> CLPR defines a channel between two ledgers; any forwarding through a third ledger is built by applications. ${hub ? `Ledger ${hub} has a channel to each of them, but a message only crosses if an application on ${hub} receives it and sends a new message of its own to ${to}; that is the application's choice, under its own connector and channel.` : `Open a channel between ${from} and ${to}, or build the forwarding into an application on a ledger that has both.`}`;
       }
     }
     for (const b of Array.from(root.querySelectorAll<HTMLButtonElement>('button[data-shape]'))) b.addEventListener('click', () => { shape = b.dataset.shape as Shape; pressed('button[data-shape]', shape, 'shape'); draw(); log.innerHTML = `<span class="line">shape: ${shape}</span>${SHAPES[shape].take}`; });

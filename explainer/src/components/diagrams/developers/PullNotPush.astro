@@ -13,7 +13,7 @@ import { design, spec } from '../../../lib/sources';
   kind="spec"
   minWidth={680}
 >
-  <svg viewBox="0 0 680 350" role="img" aria-label="Two endpoints as vertical lanes. The endpoint on B, on the right, tells the endpoint on A, on the left, that it has received up to message 41; the request is cheap, unproven and changes nothing. The endpoint on A answers with messages 42, 43 and 44 plus a proof sealed by Ledger A. The endpoint on B dry-runs the bundle and submits it to Ledger B, below it, which throws away anything it already has. Too low a number causes duplicates; too high a number only delays messages.">
+  <svg viewBox="0 0 680 350" role="img" aria-label="Two endpoints as vertical lanes. The endpoint on B, on the right, tells the endpoint on A, on the left, that it has received up to message 41; the request is cheap, unproven and changes nothing. The endpoint on A answers with messages 42, 43 and 44 plus a proof sealed by Ledger A. The endpoint on B dry-runs the bundle and submits it to Ledger B, below it, which rejects a stale bundle (the specification) or skips leading duplicates (the EVM contracts). Too low a number sends stale messages; too high a number only delays messages.">
     <defs>
       <marker id="pnp-arrow-c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--c)" /></marker>
       <marker id="pnp-arrow-ok" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--ok)" /></marker>
@@ -52,8 +52,8 @@ import { design, spec } from '../../../lib/sources';
 
     <rect x="395" y="270" width="250" height="52" rx="8" class="d-b" />
     <text x="520" y="291" class="t b center">Ledger B</text>
-    <text x="520" y="308" class="t small center">throws away what it already has</text>
-    <text x="380" y="289" class="t small muted end">too low a number: duplicates, discarded here;</text>
+    <text x="520" y="308" class="t small center">spec rejects stale; EVM skips</text>
+    <text x="380" y="289" class="t small muted end">too low: stale, rejected or skipped here;</text>
     <text x="380" y="304" class="t small muted end">too high: messages delayed, not lost</text>
 
     <!-- takeaway -->

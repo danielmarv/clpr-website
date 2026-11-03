@@ -5,7 +5,7 @@ import { design, spec } from '../../../lib/sources';
 ---
 <Figure
   lead="Three on-chain stretches, two off-chain gaps."
-  caption="Steps 1-6 are one transaction on the sending ledger and steps 12-19 one transaction on the receiving ledger; each succeeds or fails as a whole. The endpoint work in between (7-11, 20-21) happens off-chain, and it is re-checked the moment it comes back on chain."
+  caption="Steps 1-6 are one transaction on the sending ledger and steps 12-19 one transaction on the receiving ledger; a bundle that fails its checks is rejected whole, while one message's failure becomes a failure reply. The work in between (7-11, 20-21) happens off-chain: the ledger's validators sign, then an endpoint fetches, carries and dry-runs it, and it is re-checked the moment it comes back on chain."
   source={[{ label: 'design §2.2', href: design('22-high-level-message-flow') }, { label: 'spec §4.2', href: spec('42-bundle-verification-algorithm') }]}
   kind="plain"
   minWidth={760}

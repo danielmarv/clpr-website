@@ -623,7 +623,7 @@ Connector {
   connector_id       : bytes(32)   // primary key with channel_id
   channel_id         : bytes(32)
   connector_contract : bytes       // authorization contract on this ledger
-  admin              : bytes       // can top up, adjust, remove
+  admin              : bytes       // can top up, adjust, shut down
   balance            : uint        // pays for inbound execution
   locked_stake       : uint        // slashable
 }

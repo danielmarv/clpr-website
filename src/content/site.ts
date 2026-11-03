@@ -256,7 +256,7 @@ export const demo = {
 };
 
 export const origins = {
-  label: "Contributed by Hashgraph, built natively into Hiero and hosted as an LF Decentralized Trust lab.",
+  label: "Contributed by Hashgraph, with a native Hiero service specified in HIP-1535, and hosted as an LF Decentralized Trust lab.",
   text: "Contributed by Hashgraph under its agreement with the Hedera Governing Council. The ideas build on Dr. Leemon Baird’s proposals for cross-ledger communication. The first native implementation is part of Hiero.",
   logos: [
     // Heights are tuned per logo so the marks read at a similar optical size.
@@ -633,7 +633,7 @@ export const footer = {
     label: "Who is behind CLPR",
     stewardedBy: "A lab of",
     contributedBy: "Contributed by",
-    builtInto: "Built natively into",
+    builtInto: "Native service for",
   },
   // Placeholder legal line. Replace with the official LFDT lab footer text before launch.
   legal:

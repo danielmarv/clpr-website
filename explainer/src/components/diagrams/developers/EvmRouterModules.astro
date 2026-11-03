@@ -5,7 +5,7 @@ import { pinned, sol } from '../../../lib/sources';
 ---
 <Figure
   lead="One router, five modules, one storage layout."
-  caption="ClprService.sol never changes and holds every byte of state; each call is DELEGATECALLed to a logic module that writes into the router's own storage. Because every module writes into that one layout, storage-layout.json is committed and CI regenerates and diffs it on every change; the endpoint's proofs depend on the same slots."
+  caption="ClprService.sol is not upgradeable and holds every byte of state; each call is DELEGATECALLed to a logic module that writes into the router's own storage. Because every module writes into that one layout, storage-layout.json is committed and CI regenerates and diffs it on every change; the endpoint's proofs depend on the same slots."
   source={[{ label: 'contracts docs/architecture.md', href: pinned('clpr-smart-contracts', 'docs/architecture.md') }, { label: 'ClprService.sol', href: sol('src/ClprService.sol') }]}
   kind="impl"
   minWidth={720}

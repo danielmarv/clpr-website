@@ -135,6 +135,16 @@ document vs. the Solidity). The changelog lists them so a maintainer can raise t
 - A formula or encoding without saying whether it is the specification's or the contracts'.
   Where they differ (the running-hash fold, the QBFT trust anchor) say which one the sentence
   describes.
+- A drawing that puts the Verifier in front of the CLPR Service. The Endpoint submits a bundle
+  to the CLPR Service, which calls the ledger's own Verifier Contract; each ledger has its own.
+  A Connector sits beside the Service (its registration and locked stake are in the Service);
+  the application calls the Service, which asks the Connector.
+- A formula, a sync call or an ordering without saying whether it is the specification's or the
+  pinned reference contracts' and endpoint's. The specification streams `sync` and updates all
+  Channel state before dispatch; the reference endpoint serves a single call and the contracts
+  charge the Connector after the call. Say which one the figure shows.
+- That the sending side is never paid. A Response Message charges the source Connector the same
+  way, and the charge goes to the submitter on that ledger.
 - A reason for how ledgers or CLPR work that no source gives. Introduce it as "in general", or
   as the page's own explanation, or leave it out.
 

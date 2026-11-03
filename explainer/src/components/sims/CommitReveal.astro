@@ -47,7 +47,7 @@ const steps = [
   {
     phase: 'Step 4 · meanwhile',
     t: 'Someone is watching Ledger A',
-    plain: 'An attacker reads Ledger A and sees the registerChannel transaction. All it carries is the 32-byte hash. To claim the same id on Ledger B they would need the channel id; to ever complete a claim they would need the private key. The hash yields neither. Copying the hash onto Ledger B is useless too: completing it requires the preimage and a signature from the key.',
+    plain: 'An attacker reads Ledger A and sees the registerChannel transaction. All it carries is the 32-byte hash. To claim the same id on Ledger B they would need the channel id; to ever complete a claim they would need the private key. The hash yields neither. Copying the hash onto Ledger B does not help either: completing it requires the preimage and a signature from the key.',
     proto: 'Anti-squatting rationale: the commitment hides both <code>channel_id</code> and <code>public_key</code>. An attacker who sees it cannot derive either value, so they cannot complete the reveal phase on either ledger. <code>completeChannel</code> checks <code>keccak256(channel_id ‖ public_key)</code> against the stored commitment and verifies a signature from the keypair.',
     refs: [{ h: spec('511-anti-squatting-rationale'), l: 'spec §5.1.1' }, { h: design('313-establishing-and-updating-channels'), l: 'design §3.1.3, "Anti-squatting"' }],
   },
@@ -68,7 +68,7 @@ const steps = [
   {
     phase: 'Step 7 · done',
     t: 'Both ACTIVE; the verifier is now fixed for life',
-    plain: 'Both sides are ACTIVE and syncing may begin. The verifier each side named cannot be changed later; if the other ledger changes how its proofs look, you register a new channel with a new verifier. The commitment was deleted at reveal, and the registration keypair has no further role in the protocol.',
+    plain: 'Both sides are ACTIVE and syncing may begin. The verifier each side named cannot be changed later; if the other ledger changes how its proofs look, you register a new channel with a new verifier. The commitment was deleted at reveal, and the channel keeps no registration key.',
     proto: 'Verifier immutability: <code>verifier_contract</code> is immutable after <code>completeChannel</code>; a proof-format upgrade means a new Channel. Initial values on each side: <code>acked_message_id = 0</code>, both running hashes 32 zero bytes, own <code>ChannelSyncData</code> with <code>received_message_id = 0</code> and <code>next_message_id = 1</code>. An abandoned PENDING claim can be deleted by the admin with <code>closeChannel</code>.',
     refs: [{ h: spec('515-verifier-immutability'), l: 'spec §5.1.5' }, { h: spec('21-channel'), l: 'spec §2.1' }, { h: spec('514-admin-cleanup'), l: 'spec §5.1.4' }, { h: design('313-establishing-and-updating-channels'), l: 'design §3.1.3, "Who can close"' }],
   },

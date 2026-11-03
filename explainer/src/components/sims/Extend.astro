@@ -3,7 +3,7 @@
 import Refs from '@kse/components/Refs.astro';
 const { id = 'extend-sim' } = Astro.props as { id?: string };
 const steps = [
-  { t: 'Implement a CLPR Service and CLPR Endpoints for the new ledger type', d: 'The Service can be native to the node or a smart contract; either way it must behave exactly as the specification describes. The Endpoints read the new ledger\'s CLPR state, build state-proven bundles in the ledger\'s own data format, and speak the common sync protocol.' , show: ['svcX', 'epX'], line: 'service + endpoints on the new ledger' },
+  { t: 'Implement a CLPR Service and CLPR Endpoints for the new ledger type', d: 'The Service can be native to the node or a smart contract; either way it must conform to the behavior in the specification. The Endpoints read the new ledger\'s CLPR state, build state-proven bundles in the ledger\'s own data format, and speak the common sync protocol.' , show: ['svcX', 'epX'], line: 'service + endpoints on the new ledger' },
   { t: 'Implement a Hiero verifier that runs on the new ledger', d: 'So the new ledger can check proofs coming from Hiero.', show: ['verHonX'], line: 'Hiero verifier, runs on the new ledger' },
   { t: 'Implement a verifier for the new ledger that runs on Hiero', d: 'So Hiero can check proofs coming from the new ledger. This verifier also translates the new ledger\'s bundle format into what the receiving Service expects.', show: ['verXonH'], line: 'new-ledger verifier, runs on Hiero' },
   { t: 'Deploy each verifier to the opposite network', d: 'Verifiers are ordinary contracts on the receiving side. Deploying one is permissionless.', show: ['deployed'], line: 'both verifiers deployed' },
@@ -49,7 +49,7 @@ const steps = [
     </div>
     <p class="sim__scroll-note">Wider than a phone; scroll it sideways if you need to.</p>
     <div class="step-card" data-role="card" style="--card-min: 160px">
-      <div data-card="0"><div class="phase">Before you start</div><h4>The pattern that makes CLPR extensible</h4><p>Nothing on existing ledgers changes when a new one joins. The alignment between the new ledger's endpoint (which builds bundles in that ledger's format) and the verifier it ships for other ledgers (which reads that format) is the whole trick.</p></div>
+      <div data-card="0"><div class="phase">Before you start</div><h4>The pattern that makes CLPR extensible</h4><p>The CLPR Service implementation on existing ledgers does not change when a new one joins; they only gain a verifier and a Channel. The alignment between the new ledger's endpoint (which builds bundles in that ledger's format) and the verifier it ships for other ledgers (which reads that format) is the whole trick.</p></div>
       {steps.map((s, i) => <div data-card={i + 1} hidden><div class="phase">Step {i + 1} of 8</div><h4>{s.t}</h4><p>{s.d}</p></div>)}
     </div>
     <Refs refs={[{ doc: 'repo', id: 'org-profile', path: 'profile/README.md', label: 'organization profile README, "Example of Extension Process"' }]} />
@@ -60,7 +60,7 @@ const steps = [
     <span class="spacer"></span>
     <button class="btn" type="button" data-role="reset">Reset</button>
   </div>
-  <div class="sim__log" data-role="log"><span class="line" data-role="line">step 0 / 8 · nothing on existing ledgers changes</span>{steps.map((s, i) => <span class="line" data-line={i + 1} hidden>step {i + 1} / 8 · {s.line}</span>)}</div>
+  <div class="sim__log" data-role="log"><span class="line" data-role="line">step 0 / 8 · existing CLPR Services stay as they are</span>{steps.map((s, i) => <span class="line" data-line={i + 1} hidden>step {i + 1} / 8 · {s.line}</span>)}</div>
 </div>
 <style>
   .extend .sim__head .sim__track { flex-basis: 100%; }
