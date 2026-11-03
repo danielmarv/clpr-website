@@ -17,18 +17,25 @@ export const links = {
   dco: "https://developercertificate.org/",
   lfTrademarks: "https://www.linuxfoundation.org/legal/trademark-usage",
   openIssues: "https://github.com/search?q=org%3ALFDT-CLPR+is%3Aissue+is%3Aopen&type=issues",
+  governanceRules: "https://github.com/LFDT-CLPR/governance/blob/main/GOVERNANCE.md",
+  teams: "https://github.com/LFDT-CLPR/governance/blob/main/teams.yml",
+  labsCharter: "https://github.com/LFDT-CLPR/governance/blob/main/lf-decentralized-trust-labs_Charter.pdf",
+  contributing: "https://github.com/LFDT-CLPR/.github/blob/main/CONTRIBUTING.md",
+  weeklyCall: "https://zoom-lfx.platform.linuxfoundation.org/meetings/lf-decentralized-trust-labs?view=week",
+  lfdtRelease: "https://www.linuxfoundation.org/press/lf-decentralized-trust-adds-swift-wells-fargo-and-13-additional-new-members",
+  releaseCoverage: "https://genfinity.io/2026/09/24/hedera-hashgraph-clpr-linux-foundation-decentralized-trust-labs/",
+  earlyAdopter: "https://hashgraph.com/clpr-early-adopter-program/",
 } as const;
 
+// The site's pages; the home page's sections are linked from the footer.
 export const nav = [
-  { label: "How it works", href: "#how-it-works" },
-  { label: "Why bridgeless", href: "#protocol" },
-  { label: "Use cases", href: "#use-cases" },
-  { label: "Architecture", href: "#architecture" },
-  { label: "Code", href: "#code" },
   { label: "Explainer", href: "/plumbing/" },
+  { label: "Issue Explorer", href: "/issues/" },
+  { label: "Governance", href: "/governance/" },
+  { label: "Blog", href: "/blog/" },
 ] as const;
 
-export const headerCta = { label: "Start contributing", href: "#get-involved" } as const;
+export const headerCta = { label: "Start contributing", href: "/#get-involved" } as const;
 
 export const hero = {
   eyebrow: "An LF Decentralized Trust Lab",
@@ -37,6 +44,13 @@ export const hero = {
     "CLPR (“Clipper”) is an open protocol for reliable, in-order messaging between independent ledger networks. The destination ledger verifies the source ledger’s state proofs, so trust comes from the ledgers, not from bridges, pooled liquidity or intermediary validators.",
   primaryCta: { label: "Start contributing", href: "#get-involved" },
   secondaryCta: { label: "Read the explainer", href: "/plumbing/" },
+  // The first two numbers come from GitHub when the page is built and every hour after.
+  stats: {
+    label: "CLPR in numbers",
+    repositories: "public repositories",
+    stars: "GitHub stars",
+    earlyAdopter: { value: "3", label: "early adopter use cases", href: "/blog/cross-ledger-early-adopter-program/" },
+  },
 } as const;
 
 export const story = {
@@ -232,6 +246,7 @@ export const repositories = {
   implementsLabel: "Implements",
   runsOnLabel: "Runs on",
   rulesLabel: "How the project is run",
+  starsLabel: "GitHub stars",
   facts: [
     { term: "Code license", detail: "Apache-2.0 with DCO sign-off" },
     { term: "Status", detail: "A lab for very early open projects: the specification is still changing and some economic parameters are open" },
@@ -318,9 +333,242 @@ export const involvement = {
     },
   ],
   actions: {
-    primary: { label: "Browse open issues", href: links.openIssues },
+    primary: { label: "Browse open issues", href: "/issues/" },
     secondary: { label: "Read the specification", href: links.spec },
   },
+} as const;
+
+const quotes = {
+  barbosa: {
+    name: "Daniela Barbosa",
+    role: "General Manager of Decentralized Technologies at the Linux Foundation and Executive Director of LF Decentralized Trust",
+  },
+  baird: { name: "Dr. Leemon Baird", role: "Co-Founder at Hedera and Chief Scientist at Hashgraph" },
+} as const;
+
+// Quoted from the announcement of 24 September 2026, as reported that day (links.releaseCoverage).
+export const voices = {
+  id: "voices",
+  eyebrow: "Community voices",
+  title: "Voices from the ecosystem.",
+  lead: "Builders, partners and community leaders on what open development makes possible.",
+  quotes: [
+    {
+      ...quotes.barbosa,
+      text: "As a new LFDT lab, CLPR will leverage open development to shape a protocol that fuels collaboration across the industry. With this contribution, Hedera is once again showing its commitment to vendor neutral, collaborative development of critical shared technologies.",
+    },
+    {
+      ...quotes.baird,
+      text: "That commitment to open collaboration is exactly what’s needed to solve one of the industry’s most persistent problems: network interoperability. When underpinning an application, CLPR is designed to fix that cryptographically so data, assets and messages move freely without a single point of failure to attack.",
+    },
+  ],
+  source: { label: "From the announcement of 24 September 2026", href: "/blog/clpr-joins-lf-decentralized-trust-labs/" },
+} as const;
+
+// The roles and teams are those of GOVERNANCE.md and teams.yml in the governance repository; names are
+// the members' public GitHub names, where they give one.
+export const governancePage = {
+  metaTitle: "Governance",
+  description: "Who maintains CLPR, how decisions are made, and where the governance of the lab is kept.",
+  kicker: "CLPR technical governance",
+  title: "Who maintains CLPR",
+  lead: "CLPR is run in the open by its Maintainers, who take the decisions that affect the whole lab, and by the Committers of each repository. Anyone who contributes is a Contributor.",
+  actions: {
+    primary: { label: "Read the governance rules", href: links.governanceRules },
+    secondary: { label: "Open meeting calendar", href: links.weeklyCall },
+  },
+  about: {
+    title: "How the lab is run",
+    paragraphs: [
+      "CLPR is a lab of LF Decentralized Trust: a lightweight home under the Linux Foundation for early open projects, governed by the Labs charter. Inside the lab, the rules in the governance repository define three roles.",
+      "Decisions are made by consensus where possible. When a formal decision is needed, such as adding a Committer or a Maintainer, the Maintainers vote, in the weekly call when more than half of them are present, or otherwise in the issue or pull request over 14 days. Every decision is tracked in an issue in the governance repository.",
+    ],
+    chips: ["Public rules", "Decisions tracked in issues", "Weekly open call", "Apache-2.0"],
+  },
+  roles: [
+    {
+      name: "Maintainers",
+      body: "Take the decisions that affect the lab as a whole: new repositories, and adding or removing Committers and Maintainers. They act as stewards of CLPR and are expected to keep it diverse and community friendly.",
+    },
+    {
+      name: "Committers",
+      body: "Are named per repository. They review and merge pull requests, ladder issues for new contributors and take part in the project’s discussions.",
+    },
+    {
+      name: "Contributors",
+      body: "Anyone who opens an issue, writes code or documentation, reviews a pull request or joins a discussion. A Contributor with consistent contributions can be nominated as a Committer.",
+    },
+  ],
+  maintainersTitle: "Maintainers",
+  maintainersLead: "The clpr-maintainers team, as listed in teams.yml.",
+  committersTitle: "Committers",
+  committersLead: "Each repository has its own committer team.",
+  profileLabel: "GitHub profile",
+  maintainers: [
+    { handle: "edward-swirldslabs", name: "Edward Wertz" },
+    { handle: "hendrikebbers", name: "Hendrik Ebbers" },
+    { handle: "SimiHunjan", name: null },
+  ],
+  committers: [
+    { repository: "clpr-spec", members: [{ handle: "rbair23", name: "Richard Bair" }] },
+    {
+      repository: "clpr-smart-contracts",
+      members: [
+        { handle: "BartoszSolkaBD", name: null },
+        { handle: "bootcodes", name: "Thomas Boot" },
+        { handle: "Ferparishuertas", name: null },
+        { handle: "jasuwienas", name: null },
+        { handle: "JivkoKelchev", name: "Zhivko Kelchev" },
+        { handle: "mhess-swl", name: "Matt Hess" },
+        { handle: "Neeharika-Sompalli", name: "Neeharika Sompalli" },
+        { handle: "tinker-michaelj", name: "Michael Tinker" },
+        { handle: "viniciusjssouza", name: "Vinícius Souza" },
+      ],
+    },
+    {
+      repository: "clpr-endpoint",
+      members: [
+        { handle: "ashumahajan", name: null },
+        { handle: "lukasz-hashgraph", name: "Lukasz Gasior" },
+        { handle: "mxtartaglia-sl", name: "Maximiliano Tartaglia" },
+        { handle: "timo0", name: "Timo Brandstätter" },
+      ],
+    },
+  ],
+  sourcesTitle: "Where the work is kept",
+  sourcesLead: "The charter, the rules and the teams are public, and every change to them is a pull request.",
+  sources: [
+    { name: "LFDT Labs charter", body: "The formal scope and operating rules for CLPR as an LFDT lab.", href: links.labsCharter },
+    { name: "Governance rules", body: "The roles, decision making and voting, in GOVERNANCE.md.", href: links.governanceRules },
+    { name: "Teams", body: "Every team, its members and its rights on each repository, in teams.yml.", href: links.teams },
+    { name: "Weekly call", body: "The weekly CLPR call, open to everyone, on the LFX meeting calendar.", href: links.weeklyCall },
+  ],
+} as const;
+
+export const issueExplorer = {
+  metaTitle: "Issue Explorer",
+  description: "Every open, unassigned issue in the main CLPR repositories, filtered by difficulty or repository.",
+  kicker: "Contribute",
+  title: "Issue Explorer",
+  lead: "Every open CLPR issue that nobody has picked up yet. Filter by how much you want to take on, or by the repository you already know.",
+  // The repositories the explorer covers; the others keep their issues on GitHub (see closing).
+  repositories: ["clpr-spec", "clpr-smart-contracts", "clpr-endpoint"],
+  chips: { open: "Open", unassigned: "Unassigned", repositories: "{count} repositories" },
+  counter: "{count} open issues",
+  counterOne: "1 open issue",
+  refreshed: "Refreshed {time} from GitHub",
+  unavailable: "GitHub could not be reached when this page was built. The issues are all on GitHub itself.",
+  search: { label: "Search issues", placeholder: "Search by title, repository or label" },
+  repositoryFilter: { label: "Repository", all: "All repositories" },
+  sort: { label: "Sort", updated: "Recently active", created: "Newest", comments: "Most discussed" },
+  difficultyLabel: "Difficulty",
+  // Each level is a label on the issue; "Everything" shows them all.
+  levels: [
+    { label: "Everything", githubLabel: null, body: null },
+    { label: "Good first issue", githubLabel: "good first issue", body: "Ideal for first-time contributors new to the project." },
+    { label: "Beginner", githubLabel: "beginner", body: "Straightforward tasks that need light domain knowledge." },
+    { label: "Intermediate", githubLabel: "intermediate", body: "Moderately complex issues for developers gaining experience." },
+    { label: "Advanced", githubLabel: "advanced", body: "Challenging issues requiring deep technical expertise." },
+  ],
+  empty: "No open issue matches these filters.",
+  comments: "{count} comments",
+  opened: "opened {date}",
+  updated: "updated {date}",
+  contributing: {
+    text: "Code is Apache-2.0 and every commit needs a DCO sign-off.",
+    link: { label: "Read the contribution guidelines", href: links.contributing },
+  },
+  closing: {
+    title: "Looking further afield?",
+    body: "The explorer covers the main CLPR repositories. The governance and organization repositories keep their open issues on GitHub.",
+    cta: { label: "Search every open issue", href: links.openIssues },
+  },
+} as const;
+
+export const blog = {
+  metaTitle: "Blog",
+  description: "News and announcements from the CLPR project.",
+  kicker: "Project news",
+  title: "CLPR Blog",
+  lead: "Stay up to date with our latest news and announcements.",
+  latestLabel: "Latest post",
+  recentLabel: "Recent posts",
+  readLabel: "Read the post",
+  backLabel: "All posts",
+  sourcesLabel: "Sources",
+  posts: [
+    {
+      slug: "clpr-joins-lf-decentralized-trust-labs",
+      title: "Hedera contributes Hashgraph-developed CLPR to LFDT",
+      summary: "The bridgeless Cross-Ledger Protocol joins LFDT Labs as an openly developed codebase.",
+      date: "2026-09-24",
+      body: [
+        {
+          kind: "text",
+          text: "On 24 September 2026, Hedera contributed CLPR (“clipper”) to LF Decentralized Trust as a new lab. CLPR was developed by the Hashgraph team. It is a bridgeless cross-ledger messaging protocol: it uses state proofs so that independent ledger networks can verify each other’s state directly, with no intermediaries.",
+        },
+        {
+          kind: "text",
+          text: "Used with an application built on it, CLPR can let assets, data and messages move across ledgers without bridges, pooled liquidity or intermediary validator networks.",
+        },
+        {
+          kind: "quote",
+          ...quotes.barbosa,
+          text: "Cross ledger interoperability is key to unlocking the flow of value across networks and platforms. As a new LFDT lab, CLPR will leverage open development to shape a protocol that fuels collaboration across the industry. With this contribution, Hedera is once again showing its commitment to vendor neutral, collaborative development of critical shared technologies.",
+        },
+        {
+          kind: "text",
+          text: "As an LFDT lab, CLPR is now an openly developed codebase. The specification, the Solidity contracts for EVM ledgers, the Java endpoint and the lab’s governance are in the LFDT-CLPR organization on GitHub. Labs are where early work builds a community and invites contributions before it can become a top-level LFDT project, and CLPR is early: the specification is still changing and some economic parameters are open.",
+        },
+        {
+          kind: "quote",
+          ...quotes.baird,
+          text: "Just weeks ago marked the two-year anniversary of Hedera’s establishment as a founding Premier Member of the Linux Foundation Decentralized Trust, donating the entirety of the Hedera codebase to LFDT as Project Hiero. That commitment to open collaboration is exactly what’s needed to solve one of the industry’s most persistent problems: network interoperability. When underpinning an application, CLPR is designed to fix that cryptographically so data, assets and messages move freely without a single point of failure to attack. Today’s announcement that Hedera is donating another protocol to LFDT shows that our commitment is only growing, and we’re excited to see how developers experiment with CLPR’s capabilities.",
+        },
+        {
+          kind: "text",
+          text: "To get started, read the specification, pick an open issue in the Issue Explorer, or join the weekly call.",
+        },
+      ],
+      sources: [
+        { label: "LF Decentralized Trust press release, 24 September 2026", href: links.lfdtRelease },
+        { label: "Genfinity: Hedera contributes CLPR to LFDT Labs, 24 September 2026", href: links.releaseCoverage },
+      ],
+    },
+    {
+      slug: "cross-ledger-early-adopter-program",
+      title: "Meet the Cross-Ledger Early Adopter Program",
+      summary: "Three use cases, a hosted testnet and an assigned integration expert.",
+      date: "2026-09-24",
+      body: [
+        {
+          kind: "text",
+          text: "Alongside the contribution of CLPR to LF Decentralized Trust, Hashgraph opened a call for participants in its Cross-Ledger Early Adopter Program.",
+        },
+        {
+          kind: "text",
+          text: "The program is built around three use cases: cross-border payments and in-flight FX, cross-ledger settlement, and collateral mobility.",
+        },
+        {
+          kind: "text",
+          text: "It runs as a three-phase virtual program. Participants get access to a Hashgraph-hosted testnet, where they move test assets through a CLPR-enabled application layer, and technical participants work with an assigned integration expert.",
+        },
+        {
+          kind: "text",
+          text: "Financial institutions, fintechs, asset issuers, liquidity providers and corporations can take part. The program aims to select participants from several countries, so that cross-border regulatory and compliance questions are part of the work from the start.",
+        },
+        {
+          kind: "text",
+          text: "The program is run by Hashgraph, not by the CLPR lab, and organizations register their interest on Hashgraph’s site. The protocol itself is developed in the open in the LFDT-CLPR repositories, where anyone can contribute.",
+        },
+      ],
+      cta: { label: "The program on hashgraph.com", href: links.earlyAdopter },
+      sources: [
+        { label: "Genfinity: Hedera contributes CLPR to LFDT Labs, 24 September 2026", href: links.releaseCoverage },
+        { label: "Hashgraph: CLPR", href: links.hashgraph },
+      ],
+    },
+  ],
 } as const;
 
 export const footer = {
@@ -337,14 +585,21 @@ export const footer = {
         { label: "Use cases", href: "/#use-cases" },
         { label: "Architecture", href: "/#architecture" },
         { label: "Code", href: "/#code" },
+      ],
+    },
+    {
+      title: "Learn",
+      links: [
         { label: "The plumbing of CLPR", href: "/plumbing/" },
         { label: "For developers", href: "/plumbing/developers/" },
         { label: "Glossary", href: "/plumbing/developers/#glossary" },
+        { label: "Blog", href: "/blog/" },
       ],
     },
     {
       title: "Build",
       links: [
+        { label: "Issue Explorer", href: "/issues/" },
         { label: "Specification", href: links.spec },
         { label: "Smart contracts", href: links.smartContracts },
         { label: "Endpoint", href: links.endpoint },
@@ -356,7 +611,8 @@ export const footer = {
     {
       title: "Project",
       links: [
-        { label: "Governance", href: links.governance },
+        { label: "Maintainers and committers", href: "/governance/" },
+        { label: "Governance repository", href: links.governance },
         { label: "Lab proposal", href: links.labProposal },
         { label: "Developer Certificate of Origin", href: links.dco },
         { label: "Apache License 2.0", href: links.apacheLicense },

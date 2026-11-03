@@ -12,6 +12,13 @@ export function format(message: string, values: Record<string, string | number>)
   );
 }
 
+/** A date as "24 September 2026" (or "24 Sept 2026" when short), in UTC so server and browser agree. */
+export function formatDate(iso: string, short = false): string {
+  return new Intl.DateTimeFormat("en-GB", { day: "numeric", month: short ? "short" : "long", year: "numeric", timeZone: "UTC" }).format(
+    new Date(iso),
+  );
+}
+
 export function isExternal(href: string): boolean {
   return /^https?:\/\//.test(href);
 }

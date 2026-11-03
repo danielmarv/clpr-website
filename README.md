@@ -40,7 +40,12 @@ In Coolify, create an application from this repository and set:
 | Install / build / start  | Leave empty; Railpack detects them     |
 
 Railpack then runs `pnpm install --frozen-lockfile`, `pnpm run build` and `pnpm run start`.
-`next start` listens on port 3000 unless `PORT` is set. No environment variables are needed.
+`next start` listens on port 3000 unless `PORT` is set. No environment variables are needed;
+`GITHUB_TOKEN` is optional. The home page's numbers and the Issue Explorer come from the GitHub API
+when the site is built and at most once an hour after (`src/lib/github.ts`). Unauthenticated, the API
+allows 60 requests an hour per server, which this uses a few of; a token (no scopes needed) only helps
+when the build server shares its address with many others. When GitHub cannot be reached, the pages
+leave the numbers out.
 Coolify's Railpack support is in beta and needs the Docker Buildx plugin on the build server.
 
 To see the plan Railpack will use: `railpack info .` in a clean checkout.
@@ -51,7 +56,10 @@ To see the plan Railpack will use: `railpack info .` in a clean checkout.
 src/
   app/
     layout.tsx         Root layout, self-hosted fonts, metadata
-    page.tsx           Home page (composes the sections below)
+    page.tsx           Home page (composes the sections below; reads stars and repositories from GitHub)
+    issues/            Issue Explorer: open, unassigned issues of the main repositories, filtered in the browser
+    governance/        Who maintains CLPR: roles, Maintainers and Committers, where the rules are kept
+    blog/              Blog index and blog/[slug]/ posts (the posts are in site.ts)
     not-found.tsx      404 page (shows the spiral from the WebGL background)
     globals.css        Design tokens (shadcn semantic tokens + CLPR brand tokens), utilities
     icon.svg           Favicon (CLPR spiral on the hero gradient)
@@ -79,12 +87,16 @@ src/
     ClprMark.tsx       The CLPR spiral logo (also the source shape for the particles)
     Hero.tsx  Extensibility.tsx  Repositories.tsx
     ThemeSwitch.tsx    The Light / Dark / System switch in the header
+    Voices.tsx         Community voices: the two quotes from the announcement of 24 September 2026
+    PageShell.tsx      The frame and opening of every page but the home page
+    IssueList.tsx      The Issue Explorer's search, filters, difficulty tabs and list (client side)
     GetInvolved.tsx  SiteHeader.tsx  SiteFooter.tsx  SectionHeading.tsx  CopyCommand.tsx
     ui/                shadcn/ui-style primitives (button, input)
   content/
     site.ts            ALL copy and links. Edit content here, not in components.
     site-refs.json     Where each block of site.ts gets its facts; read only by the audit skill
-  lib/utils.ts         cn(), format() for {placeholder} messages
+  lib/utils.ts         cn(), format() for {placeholder} messages, formatDate()
+  lib/github.ts        Repositories, stars and open issues from the GitHub API, refreshed at most hourly
   lib/theme.ts         The theme choice: storage key, the before-paint script, watching for changes
 public/logos/          Official LFDT, Hashgraph, Hedera and Hiero logos in their own colours, each with a white
                        version for the dark theme (*-white.svg; Hiero keeps its crimson mark). The explainer
@@ -139,8 +151,9 @@ from the CLPR presentation on [hashgraph.com/clpr](https://hashgraph.com/clpr/).
 
 - **Story of the page.** An overview; the explainer under `/plumbing/` carries the detail. Hero (a
   network of ledgers draws itself) → pinned story as How it works (two ledgers form, a Channel
-  opens, proofs cross) → why bridgeless → use cases → architecture → code → get involved, which closes with
-  the CLPR spiral as a ribbon of light. Each section links into the explainer where it stops.
+  opens, proofs cross) → why bridgeless → use cases → architecture → code → community voices → get
+  involved, which closes with the CLPR spiral as a ribbon of light. Each section links into the
+  explainer where it stops.
 - **Background.** `ProtocolField` is one fixed WebGL2 canvas behind all content: an aurora
   shader, 9,000 (mobile) to 20,000 particles, and a network layer (`networkLayer.ts`) that
   draws real network topology on top: links as bundles of fine fibres that meet at both ends
@@ -172,6 +185,12 @@ from the CLPR presentation on [hashgraph.com/clpr](https://hashgraph.com/clpr/).
   middle (muted grey) and directly by a CLPR Channel whose proof B's Verifier checks
   (`ComparisonArt`, both on the same clock). Below each drawing the five aspects (trust, custody,
   going offline, speed, what moves) line up across the cards on a shared CSS subgrid.
+- **Pages.** The Issue Explorer, Governance and Blog pages share `PageShell` (header, footer, no WebGL
+  background) and `PageIntro` (the hero's kicker pill and type). Governance lists the Maintainers and
+  Committers from the governance repository's `teams.yml` with their GitHub avatars; the list is copied
+  into `site.ts`, and the audit's live check compares it with `teams.yml`. CLPR's governance has no TSC,
+  so the page shows the roles it does have. Blog posts are entries in `blog.posts` in `site.ts`, each
+  with its sources.
 - **Use cases.** The four patterns the design outlines (§3.4), each with a small looping diagram
   (`UseCaseArt`, on `ComponentArt`'s clock), introduced as applications that are not specified yet;
   Hiero's is drawn on a dashed Channel because the design gives it one sentence. Below them, the three
@@ -182,9 +201,9 @@ from the CLPR presentation on [hashgraph.com/clpr](https://hashgraph.com/clpr/).
 - **Open source.** The specification spans the row above its three implementations. Each
   implementation card lists the CLPR components it implements, what it runs on and, where the
   sources say so, its status. Governance and the project facts share the last row.
-- **Header.** The nav sits exactly in the middle of the bar and a marker slides to the section
-  being read (`aria-current`); beside the theme switch it needs 78rem, and below that a menu
-  button takes over. The mobile menu fills the screen, locks scrolling and closes on Escape.
+- **Header.** The nav lists the site's pages (Explainer, Issue Explorer, Governance, Blog) and marks
+  the current one (`aria-current="page"`); the home page's sections are in the footer. Beside the theme
+  switch, GitHub and Start contributing it needs 64rem, and below that a menu button takes over. The mobile menu fills the screen, locks scrolling and closes on Escape.
 - **Themes.** `ThemeSwitch` in the header offers Light, Dark and System. Light is what a visitor
   sees until they choose; System follows the computer and changes with it. The choice is
   `data-theme` on `<html>`, kept in `localStorage` as `theme`, the key the explainer reads too, so

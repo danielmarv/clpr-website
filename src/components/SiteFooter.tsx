@@ -111,7 +111,7 @@ export function SiteFooter() {
             <p className="mt-5 max-w-xs text-[0.9375rem] leading-relaxed text-fg/70">{footer.tagline}</p>
           </div>
 
-          <nav aria-label="Footer" className="grid grid-cols-2 gap-x-8 gap-y-10 sm:grid-cols-3 lg:col-span-8">
+          <nav aria-label="Footer" className="grid grid-cols-2 gap-x-8 gap-y-10 sm:grid-cols-4 lg:col-span-8">
             {footer.columns.map((column) => (
               <div key={column.title}>
                 <h2 className="text-[0.8125rem] font-medium text-fg">{column.title}</h2>

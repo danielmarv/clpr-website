@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 
 import { GitHubMark } from "@/components/GitHubMark";
@@ -22,10 +23,10 @@ export function GetInvolved() {
           <p className="mt-6 text-[1.0625rem] leading-[1.7] text-muted-foreground">{involvement.lead}</p>
           <div className="mt-10 flex flex-wrap gap-3">
             <Button asChild size="lg">
-              <a href={actions.primary.href} target="_blank" rel="noreferrer">
+              <Link href={actions.primary.href}>
                 {actions.primary.label}
-                <ArrowUpRight aria-hidden="true" />
-              </a>
+                <ArrowRight aria-hidden="true" />
+              </Link>
             </Button>
             <Button asChild size="lg" variant="secondary">
               <a href={actions.secondary.href} target="_blank" rel="noreferrer">
