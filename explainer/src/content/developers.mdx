@@ -584,7 +584,7 @@ The endpoint carries the obligation to keep the remote anchor current. Every syn
 
 <div class="table-wrap">
 <table>
-<thead><tr><th></th><th class="wrap">Hiero (TSS / hinTS)</th><th class="wrap">QBFT (Besu)</th></tr></thead>
+<thead><tr><th></th><th class="wrap">Hiero (TSS / hinTS)</th><th class="wrap">QBFT (EVM ledger)</th></tr></thead>
 <tbody>
 <tr><td>Trust anchor</td><td class="wrap"><code>ledger_id</code>: the genesis-rooted identity of the network's threshold signing key. No secondary id.</td><td class="wrap"><code>abi.encode(validator, codeHash, epochLength, epochNumber)</code>, 128 bytes; id = big-endian epoch number. The reference verifier tracks one validator address and rejects multi-validator sets; <code>verifiers/qbft</code> describes a validator-set hash in that first word.</td></tr>
 <tr><td>Proof bytes</td><td class="wrap">A <code>StateProof</code> protobuf: <code>BlockStateProof</code> (ledger_id, BLS12-381 aggregate TSS signature over a 48-byte SHA-384 block root) plus one <code>MerkleLeafProof</code> per proven leaf</td><td class="wrap">RLP 5-tuple (7 items with an endpoint manifest proof): current block header with QBFT committed seals in <code>extraData</code>, epoch-boundary headers for rotation, EIP-1186 account proof for the CLPR Service, storage proofs, serialized bundle content</td></tr>

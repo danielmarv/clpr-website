@@ -27,6 +27,16 @@
           "id": "org-profile",
           "path": "profile/README.md",
           "label": "org profile"
+        },
+        {
+          "doc": "spec",
+          "anchor": "86-untrusted-payloads",
+          "label": "spec §8.6"
+        },
+        {
+          "doc": "spec",
+          "anchor": "87-no-confidentiality",
+          "label": "spec §8.7"
         }
       ],
       "live": [
@@ -98,6 +108,21 @@
           "doc": "spec",
           "anchor": "41-running-hash-computation",
           "label": "spec §4.1"
+        },
+        {
+          "doc": "spec",
+          "anchor": "86-untrusted-payloads",
+          "label": "spec §8.6"
+        },
+        {
+          "doc": "spec",
+          "anchor": "87-no-confidentiality",
+          "label": "spec §8.7"
+        },
+        {
+          "doc": "design",
+          "anchor": "34-application-layer",
+          "label": "design §3.4"
         }
       ]
     },
@@ -245,6 +270,11 @@
           "id": "org-profile",
           "path": "profile/README.md",
           "label": "org profile"
+        },
+        {
+          "doc": "spec",
+          "anchor": "86-untrusted-payloads",
+          "label": "spec §8.6"
         }
       ]
     },
@@ -335,6 +365,16 @@
           "id": "governance",
           "path": "GOVERNANCE.md",
           "label": "governance GOVERNANCE.md"
+        },
+        {
+          "doc": "design",
+          "anchor": "334-failure-consequences-and-slashing",
+          "label": "design §3.3.4"
+        },
+        {
+          "doc": "design",
+          "anchor": "335-open-economic-design-issues",
+          "label": "design §3.3.5"
         }
       ],
       "live": [

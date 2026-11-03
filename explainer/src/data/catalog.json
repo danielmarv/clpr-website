@@ -70,7 +70,7 @@
       "k": "svcB",
       "name": "CLPR Service, contract (EVM)",
       "where": "LFDT-CLPR/clpr-smart-contracts",
-      "plain": "On EVM-compatible ledgers such as Besu networks the CLPR Service is a set of Solidity contracts. One immutable front door holds all the state and forwards each call to a module that knows how to handle it: channels, messaging, bundles, connectors, administration. Built and tested with Foundry.",
+      "plain": "On EVM ledgers the CLPR Service is a set of Solidity contracts. One immutable front door holds all the state and forwards each call to a module that knows how to handle it: channels, messaging, bundles, connectors, administration. Built and tested with Foundry.",
       "detail": "ClprService.sol is a DELEGATECALL router over ClprServiceStorage.sol; logic modules ChannelLogic, MessagingLogic, BundleLogic, ConnectorLogic, AdminLogic; state-mutating libraries BundleLib, ConnectorLib, ManifestLib; pure codecs ClprProtobuf*, ClprTypes. Read functions are not `view` (call via eth_call). storage-layout.json is a CI-checked snapshot because endpoints derive proof slots from it. Deploy through the viem CLI; clprEnabled stays false until explicitly enabled. Known divergences from the spec are listed in docs/bundle-flow.md and docs/quirks.md.",
       "refs": [
         {
@@ -103,7 +103,7 @@
       "k": "verB",
       "name": "Verifier contracts",
       "where": "LFDT-CLPR/clpr-smart-contracts/src/verifiers",
-      "plain": "The specialists that check another ledger's proofs. Each channel names one when it is created and keeps that address for life, though the contract behind it may be upgradeable. Two have full verifier specifications: one for Hiero networks (checking the network's joint threshold signature) and one for Besu QBFT networks (checking validator seals on block headers plus storage proofs). The repository also carries verifier code for other consensus families.",
+      "plain": "The specialists that check another ledger's proofs. Each channel names one when it is created and keeps that address for life, though the contract behind it may be upgradeable. Two have full verifier specifications: one for Hiero networks (checking the network's joint threshold signature) and one for EVM ledgers running QBFT (checking validator seals on block headers plus storage proofs). The repository also carries verifier code for other consensus families.",
       "detail": "hiero/HieroVerifier.sol (decodes the StateProof protobuf, derives the SHA-384 block root, calls TSSVerifier.sol for the hinTS BLS12-381 aggregate signature using EIP-2537 precompiles, walks leaf paths) with wraps/ helpers (WRAPS verification key, Poseidon/BN254); evm/qbft/QBFTVerifier.sol (committed seals, EIP-1186 account and storage proofs, epoch headers for rotation); evm/ethereum/EthMainnetVerifier.sol (sync-committee BLS light client); evm/sei/SeiCometBftVerifier.sol (CometBFT, Ed25519); evm/avalanche/MockAvalancheVerifier.sol. The spec's verifier documents describe a native verification path at 0x16e on Hiero.",
       "refs": [
         {

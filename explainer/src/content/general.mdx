@@ -124,7 +124,7 @@ The party carrying the proof is still there; CLPR calls it an **endpoint**: a pr
 <Callout kind="term">
 A **state proof** is a cryptographic proof that a specific piece of data really is in a ledger's sealed record. In CLPR, state proofs carry the evidence of what is in another ledger's record; trust also rests on the verifier chosen for the channel.
 
-A **verifier** is the specialist on the receiving ledger that knows how to check one particular kind of proof. A Hiero network and a Besu network running QBFT (a different way for validators to agree) sign things in completely different ways, so each needs its own verifier. Every channel names one verifier when it is created and keeps that address for life, though the contract at that address may be upgradeable.
+A **verifier** is the specialist on the receiving ledger that knows how to check one particular kind of proof. A Hiero network and an EVM ledger running QBFT (a different way for validators to agree) sign things in completely different ways, so each needs its own verifier. Every channel names one verifier when it is created and keeps that address for life, though the contract at that address may be upgradeable.
 
 The **trust anchor** is what the verifier checks against: the current signing identity of the other ledger, stored per channel. It changes in one way only: the current signers sign a proof that names their replacements.
 </Callout>
@@ -177,7 +177,7 @@ Before watching a message travel, meet everyone it will pass through. Each card 
 <WhoLivesWhere />
 
 <Callout kind="note" title="Hiero and Hedera">
-Two names come up constantly. **Hiero** is the open-source ledger software: the node, its APIs, its state model. **Hedera** is the public network that runs it; private networks running the same software are called HashSpheres. On Hiero, the CLPR Service is part of the node software itself. On EVM-compatible ledgers, such as Besu networks, it is a smart contract instead: a program deployed on the ledger like any other. Same protocol, two implementations at different stages: the EVM contracts still differ from the text in places, and the Hiero one is not yet merged into the main Hiero code. The simulations below show one of each.
+Two names come up constantly. **Hiero** is the open-source ledger software: the node, its APIs, its state model. **Hedera** is the public network that runs it; private networks running the same software are called HashSpheres. On Hiero, the CLPR Service is part of the node software itself. On EVM ledgers, it is a smart contract instead: a program deployed on the ledger like any other. Same protocol, two implementations at different stages: the EVM contracts still differ from the text in places, and the Hiero one is not yet merged into the main Hiero code. The simulations below show one of each.
 </Callout>
 
 </Section>

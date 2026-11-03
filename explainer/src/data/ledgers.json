@@ -18,7 +18,7 @@
     },
     {
       "id": "qbft",
-      "name": "Besu networks running QBFT",
+      "name": "EVM ledgers running QBFT",
       "proof": "A block header carrying the validators' seals, plus a proof of the storage slots that hold the data",
       "status": "documented",
       "specDir": "verifiers/qbft",

@@ -7,6 +7,7 @@ export const links = {
   endpoint: "https://github.com/LFDT-CLPR/clpr-endpoint",
   governance: "https://github.com/LFDT-CLPR/governance",
   hieroNative: "https://github.com/hiero-ledger/hiero-consensus-node/pull/27029",
+  hip1535: "https://github.com/hiero-ledger/hiero-improvement-proposals/blob/main/HIP/hip-1535.md",
   labProposal: "https://github.com/LF-Decentralized-Trust/lab-proposals/issues/5",
   lfdt: "https://www.lfdecentralizedtrust.org/",
   hashgraph: "https://hashgraph.com/clpr/",
@@ -30,7 +31,7 @@ export const hero = {
   eyebrow: "Bridgeless cross-ledger messaging",
   title: "Cross-ledger messaging with no bridge to trust.",
   lead:
-    "CLPR (“Clipper”) is an open Cross Ledger PRotocol for reliable, asynchronous, in-order message passing between independent ledger networks. Trust comes from each ledger’s own state proofs, not from bridges, pooled liquidity or intermediary validator networks. The Endpoints that carry messages between ledgers can delay them, but cannot forge them.",
+    "CLPR (“Clipper”) is an open Cross Ledger PRotocol: a messaging protocol for reliable, asynchronous, in-order message passing between independent ledger networks. The destination ledger verifies the source ledger’s state proofs, so trust comes from the ledgers, not from bridges, pooled liquidity or intermediary validator networks. Payloads are opaque to CLPR; what they mean, including any token transfer, is up to the applications. Endpoints can delay messages but cannot forge them.",
   primaryCta: { label: "Read the specification", href: links.spec },
   secondaryCta: { label: "Explore the code", href: "#code" },
   scrollCue: "Scroll to see how",
@@ -41,7 +42,7 @@ export const story = {
   label: "CLPR in three steps",
   statement: "Bridges ask two ledgers to trust a third party. CLPR lets each ledger check the other’s proofs instead.",
   ledgerA: { name: "Ledger A", role: "Source, e.g. Hiero" },
-  ledgerB: { name: "Ledger B", role: "Destination, e.g. Besu" },
+  ledgerB: { name: "Ledger B", role: "Destination, e.g. an EVM ledger" },
   chapters: [
     {
       index: "01",
@@ -69,7 +70,7 @@ export const guarantees = {
   eyebrow: "Protocol properties",
   title: "Guarantees enforced by the ledgers themselves.",
   lead:
-    "CLPR adds no third party that can forge a message. What it promises follows from each ledger’s consensus, its state proofs, the Verifier Contract the Channel is bound to and an ordered queue on each side.",
+    "CLPR adds no third party that can forge a message. What it promises follows from each ledger’s consensus, its state proofs, the Verifier Contract the Channel is bound to and an ordered queue on each side. A Channel is only as trustworthy as its Verifier Contract, and anyone can register a Channel, so applications should check which verifier it uses.",
   items: [
     {
       name: "In order, tamper-evident",
@@ -87,11 +88,11 @@ export const guarantees = {
     },
     {
       name: "Permissionless delivery",
-      body: "If an Endpoint goes offline, anyone, including the sender, can submit the proof and the Channel moves on.",
+      body: "Delivery needs someone to relay. If an Endpoint goes offline, anyone, including the sender, can submit the proof and the Channel moves on; without a relay, messages wait but are never forged.",
     },
     {
-      name: "Any payload",
-      body: "Arbitrary bytes: data, oracle feeds and contract calls. Asset transfers are application logic built on top.",
+      name: "Any payload, no interpretation",
+      body: "Arbitrary bytes: data, oracle feeds and contract calls. CLPR guarantees a payload is authentic and unaltered, not that it is correct, safe or confidential; asset transfers and all other logic belong to applications.",
     },
     {
       name: "No extra consensus layer",
@@ -108,6 +109,7 @@ export const guarantees = {
 export type DemoNodeId =
   | "a-app"
   | "a-service"
+  | "a-verifier"
   | "a-endpoint"
   | "b-endpoint"
   | "b-verifier"
@@ -138,13 +140,14 @@ export const walkthrough = {
 export const demo = {
   ariaLabel: "Step-by-step walkthrough of a message crossing a CLPR Channel",
   ledgerA: { name: "Ledger A", role: "Source, for example a Hiero network" },
-  ledgerB: { name: "Ledger B", role: "Destination, for example a Besu network" },
+  ledgerB: { name: "Ledger B", role: "Destination, for example an EVM ledger" },
   nodes: {
     "a-app": { name: "Application", note: "Sends a payload" },
     "a-service": { name: "CLPR Service", note: "Ordered outbound queue" },
+    "a-verifier": { name: "Verifier Contract", note: "Checks Ledger B’s proofs" },
     "a-endpoint": { name: "CLPR Endpoint", note: "Builds proven bundles" },
     "b-endpoint": { name: "CLPR Endpoint", note: "Submits the bundle" },
-    "b-verifier": { name: "Verifier Contract", note: "Checks the state proof" },
+    "b-verifier": { name: "Verifier Contract", note: "Checks Ledger A’s proofs" },
     "b-service": { name: "CLPR Service", note: "Routes messages in order" },
     "b-app": { name: "Application", note: "Receives the payload" },
   } satisfies Record<DemoNodeId, { name: string; note: string }>,
@@ -212,7 +215,7 @@ export const demo = {
     {
       name: "Transmit",
       title: "The bundle crosses the Channel",
-      body: "Endpoints sync the bundle to the peer ledger. Submission is permissionless: if an Endpoint goes offline, anyone, including the sender, can deliver the proof.",
+      body: "Endpoints sync the bundle to the peer ledger, where an Endpoint submits it to the CLPR Service. Submission is permissionless: if an Endpoint goes offline, anyone, including the sender, can deliver the proof.",
       active: ["a-endpoint", "b-endpoint"],
       bundle: 1,
       response: null,
@@ -222,8 +225,8 @@ export const demo = {
     {
       name: "Verify",
       title: "Ledger B checks the proof itself",
-      body: "Ledger B’s Verifier Contract checks the proof against the Channel’s trust anchor and translates the bundle into Ledger B’s own data format.",
-      active: ["b-verifier"],
+      body: "Ledger B’s CLPR Service passes the bundle to its Verifier Contract, which checks the proof against the Channel’s trust anchor and translates the bundle into Ledger B’s own data format.",
+      active: ["b-service", "b-verifier"],
       bundle: 1,
       response: null,
       proofVerified: true,
@@ -242,8 +245,8 @@ export const demo = {
     {
       name: "Respond",
       title: "Every Data Message gets exactly one response",
-      body: "Each Data Message produces exactly one Response Message with a status and reply bytes, which travels back to Ledger A over the same Channel, where Ledger A’s own Verifier Contract checks Ledger B’s proof.",
-      active: ["b-service", "a-service"],
+      body: "Each Data Message produces exactly one Response Message with a status and reply bytes, which travels back to Ledger A over the same Channel. Ledger A’s CLPR Service passes it to Ledger A’s own Verifier Contract, which checks Ledger B’s proof.",
+      active: ["b-service", "a-service", "a-verifier"],
       bundle: null,
       response: 0,
       proofVerified: true,
@@ -254,7 +257,7 @@ export const demo = {
 
 export const origins = {
   label: "Contributed by Hashgraph, built natively into Hiero and hosted as an LF Decentralized Trust lab.",
-  text: "Contributed by Hashgraph on behalf of the Hedera Governing Council, building on Dr. Leemon Baird’s approach to cross-ledger communication. The first native implementation is part of Hiero.",
+  text: "Contributed by Hashgraph under its agreement with the Hedera Governing Council. The ideas build on Dr. Leemon Baird’s proposals for cross-ledger communication. The first native implementation is part of Hiero.",
   logos: [
     // Heights are tuned per logo so the marks read at a similar optical size.
     { name: "Hashgraph", src: "/logos/hashgraph-black.svg", width: 654.62, height: 141.73, href: links.hashgraph, className: "h-6 w-auto" },
@@ -268,7 +271,7 @@ export const comparison = {
   eyebrow: "Why bridgeless",
   title: "Trust lives in the ledgers, not in a bridge.",
   lead:
-    "Most bridges add a party in the middle that has to be trusted: a validator set, a multisig or an oracle that vouches for what happened on the other chain. CLPR has no such party. Each ledger verifies the other’s state with proofs it checks itself, and the Endpoints that carry those proofs cannot forge them.",
+    "Interledger solutions often add an intermediary consensus layer or a federated bridge: a party in the middle that has to be trusted. CLPR has no such party. Each ledger verifies the other’s state with proofs it checks itself, and the Endpoints that carry those proofs cannot forge them.",
   columns: { aspect: "", bridge: "Typical bridge", clpr: "CLPR" },
   caption: "How CLPR differs from bridge-based interoperability",
   aspectsLabel: "Compare by",
@@ -343,7 +346,7 @@ export const layers = {
   items: [
     {
       name: "Application",
-      body: "A minimal API for sending and receiving message payloads. Asset transfers and cross-ledger contract calls are application logic on top of it.",
+      body: "A minimal API for sending and receiving message payloads. CLPR does not interpret them: asset transfers and cross-ledger contract calls are application logic on top of it.",
       terms: ["Data Message", "Response Message"],
     },
     {
@@ -441,6 +444,7 @@ export const repositories = {
   rulesLabel: "How the project is run",
   facts: [
     { term: "Code license", detail: "Apache-2.0 with DCO sign-off" },
+    { term: "Status", detail: "A lab for very early open projects: the specification is still changing and some economic parameters are open" },
     { term: "Specifications", detail: "The Labs charter calls for the Community Specification License 1.0; clpr-spec currently carries Apache-2.0" },
   ],
   components: {
@@ -464,19 +468,19 @@ export const repositories = {
     {
       name: "clpr-smart-contracts",
       kind: "Solidity",
-      body: "CLPR Service and Verifier Contracts for EVM networks, deployable to Hyperledger Besu today.",
+      body: "CLPR Service and Verifier Contracts for EVM ledgers.",
       href: links.smartContracts,
       implements: ["service", "verifier"],
-      runsOn: "EVM networks, Hyperledger Besu",
-      status: "Deployable today",
+      runsOn: "EVM ledgers",
+      status: "Reference implementation",
     },
     {
       name: "clpr-endpoint",
       kind: "Java",
-      body: "A CLPR Endpoint that reads EVM chain state, submits bundles to Besu networks and manages trust-anchor updates for Besu QBFT consensus.",
+      body: "A CLPR Endpoint that reads EVM chain state and submits bundles to EVM ledgers. It supports QBFT and CometBFT proof types.",
       href: links.endpoint,
       implements: ["endpoint"],
-      runsOn: "Hyperledger Besu (QBFT)",
+      runsOn: "EVM ledgers (QBFT, CometBFT)",
       status: null,
     },
     {
@@ -558,7 +562,7 @@ export const involvement = {
   eyebrow: "Get involved",
   title: "Build CLPR in the open.",
   lead:
-    "CLPR is a lab of LF Decentralized Trust, run in the open by its maintainers under LFDT’s technical oversight. Hashgraph and Hedera are the initial maintainers, and the lab is open to anyone who wants to help.",
+    "CLPR is a lab of LF Decentralized Trust, run in the open by its maintainers under LFDT’s technical oversight. Its maintainers and committers are listed in the governance repository, and the lab is open to anyone who wants to help.",
   paths: [
     {
       name: "Shape the specification",
@@ -611,6 +615,7 @@ export const footer = {
         { label: "Smart contracts", href: links.smartContracts },
         { label: "Endpoint", href: links.endpoint },
         { label: "Native Hiero integration", href: links.hieroNative },
+        { label: "HIP-1535: CLPR for Hiero", href: links.hip1535 },
         { label: "All LFDT-CLPR repositories", href: links.githubOrg },
       ],
     },
@@ -640,7 +645,7 @@ export const site = {
   expansion: "Cross Ledger Protocol",
   fullName: "CLPR — Cross Ledger Protocol",
   description:
-    "CLPR (“Clipper”) is an open, bridgeless Cross Ledger Protocol for reliable, in-order message passing between independent ledger networks. An LF Decentralized Trust Lab.",
+    "CLPR (“Clipper”) is an open, bridgeless Cross Ledger Protocol: a messaging layer for reliable, in-order message passing between independent ledger networks, with application logic left to applications. An LF Decentralized Trust Lab.",
   skipLink: "Skip to content",
   menuOpen: "Open menu",
   menuClose: "Close menu",
