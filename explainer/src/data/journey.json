@@ -205,7 +205,7 @@
       "phase": "prove",
       "label": "TSS signature",
       "title": "The Hiero network signs the block root",
-      "plain": "The sending ledger's validators jointly sign the block the message landed in. It is a single signature produced by many nodes together, and they make it as part of producing blocks anyway, not because we asked.",
+      "plain": "The sending ledger's validators jointly sign the block the message landed in. It is a single aggregate signature produced by many nodes together.",
       "protocol": "Consensus signs the block root with an aggregate BLS12-381 threshold signature (hinTS). The endpoint does not construct this: it fetches the finished StateProof, which carries that signature over the SHA-384 block root together with a Merkle path for each proven leaf.",
       "lit": [
         "chainA"
@@ -353,7 +353,7 @@
       "phase": "cross",
       "label": "verifyBundle()",
       "title": "The verifier checks the threshold signature and the Merkle paths",
-      "plain": "The destination ledger checks the source ledger's signature itself, against the identity it already trusts, and walks the proof back to the signed block. This is the step that means nobody is trusting a bridge operator.",
+      "plain": "The destination ledger checks the source ledger's signature itself, against the identity it already trusts, and walks the proof back to the signed block. This is the step where the destination checks the source ledger's own signature itself, rather than relying on a relay's say-so.",
       "protocol": "Bundle verification step 1: the service calls the Channel's verifier with (bundle_payload, Channel.trust_anchor, channel_context). For a Hiero peer the trust anchor is the ledger_id: the verifier recomputes the SHA-384 Merkle root from each leaf proof, checks the hinTS aggregate signature against the stored ledger_id, and returns sync data, the ordered messages, and the anchor id and running hash. The EVM HieroVerifier checks against its constructor's ledgerId instead, using Channel.trust_anchor as a cached keccak256 of the hinTS verification key.",
       "lit": [
         "svcB",
@@ -712,7 +712,7 @@
       "phase": "close",
       "label": "complete",
       "title": "Round trip complete",
-      "plain": "A message went to another ledger, ran there, and its answer came back. Each leg was proved to the other ledger's own validators, not to anyone running a bridge in the middle.",
+      "plain": "A message went to another ledger, ran there, and its answer came back. Each leg carried a proof of the other ledger's own consensus, checked on arrival by the channel's verifier, with no intermediary signer set in the middle.",
       "protocol": "Two bundles, two proofs, two verifications, one reply. For correctness, the only parties trusted are the two ledgers' own consensus, their CLPR Services, the verifier each channel was created with, and the applications themselves. Delivery also depended on at least one honest endpoint per side and a connector that pays.",
       "lit": [
         "appA",
@@ -1188,7 +1188,7 @@
       "label": "TSS signature",
       "title": "The Hiero network signs the block root",
       "plain": "The return leg is proved with the validators' joint signature over the block, the same mechanism the other direction used on its way out.",
-      "protocol": "Consensus signs the block root with the hinTS aggregate BLS12-381 threshold signature as part of block production; the endpoint fetches the finished StateProof.",
+      "protocol": "Consensus signs the block root with the hinTS aggregate BLS12-381 threshold signature; the endpoint fetches the finished StateProof.",
       "lit": [
         "chainA"
       ],
@@ -1377,7 +1377,7 @@
       "phase": "close",
       "label": "complete",
       "title": "Round trip complete",
-      "plain": "The reverse journey closes the same way the forward one does, proved end to end by each ledger's own validators.",
+      "plain": "The reverse journey closes the same way the forward one does, proved against each ledger's own consensus.",
       "protocol": "Two bundles, two proofs, two verifications, one reply; on the EVM side, the service contract's MessageQueued and ReplyDelivered events record the send and the delivery.",
       "lit": [
         "appA",

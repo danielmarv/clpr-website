@@ -22,7 +22,7 @@
     {
       "id": "hiero-assets",
       "name": "Native Hiero asset management",
-      "plain": "Hiero tokens, fungible and non-fungible, handled across Hiero networks by the messaging layer directly, with no smart-contract proxies in between.",
+      "plain": "Hiero tokens, fungible and non-fungible, handled across Hiero networks by the messaging layer directly, with no smart-contract proxies in between. The design outlines this in one sentence; it is not yet specified.",
       "refs": [{ "doc": "design", "anchor": "344-native-hiero-asset-management", "label": "design §3.4.4" }]
     }
   ],

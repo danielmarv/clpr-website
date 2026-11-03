@@ -91,7 +91,7 @@
       "name": "Trust anchor",
       "color": "var(--ok)",
       "plain": "Who is allowed to sign for the other ledger right now. Stored per channel and only ever updated by a proof that the previous signers approved the change.",
-      "spec": "Opaque, verifier-defined bytes encoding the peer ledger's current signing authority. For Hiero: the ledger_id. For QBFT: the validator set hash, the code hash and the epoch data. Rotated only through verifyBundle.",
+      "spec": "Opaque, verifier-defined bytes encoding the peer ledger's current signing authority. For Hiero: the ledger_id. For QBFT, in the specification: the validator set hash, the code hash and the epoch data (the EVM contracts encode a single validator address instead). Rotated only through verifyBundle.",
       "refs": [
         {
           "doc": "design",
@@ -205,7 +205,7 @@
       "name": "Running hash",
       "color": "var(--text-2)",
       "plain": "A hash of everything ever sent on a channel, updated with each message so that nothing can be inserted, removed or reordered unnoticed.",
-      "spec": "SHA-256(previous_running_hash ‖ serialized_payload), initialised to 32 zero bytes, kept separately for sent and received messages.",
+      "spec": "SHA-256(previous_running_hash ‖ serialized_payload) in the specification (the EVM contracts hash the payload first: sha256(previous ‖ sha256(payload))), initialised to 32 zero bytes, kept separately for sent and received messages.",
       "refs": [
         {
           "doc": "design",

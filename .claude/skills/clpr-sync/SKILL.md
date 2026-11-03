@@ -140,6 +140,13 @@ precise and cites sections. If a new concept appears upstream, use the specifica
 it on both pages, explain it in plain words on the general page, and add a glossary term if
 needed. Do not coin a friendlier name for it.
 
+Hold the new text to `explainer/docs/writing-guide.md` ("Things not to claim") as well as to the
+spec: CLPR is a messaging protocol that guarantees authenticity, integrity and order, not delivery
+or meaning; the site speaks neutrally for an LF Decentralized Trust lab; Hiero status is whatever
+HIP-1535 states. A fact the sync changes on one surface (the explainer, `site.ts`, the README)
+changes on all of them, and a corrected claim that could come back gets a `retiredVocab` entry in
+`src/data/pack.json`.
+
 If something in the new upstream text is ambiguous or self-contradictory, do not guess. Describe
 the ambiguity as such (the developer page already does this for several items) and mention it in
 the changelog entry so a maintainer can raise it upstream.

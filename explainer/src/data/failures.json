@@ -41,7 +41,7 @@
       "k": "uf",
       "q": "The connector on the other side has run out of funds",
       "what": "CONNECTOR_UNDERFUNDED. The destination connector's locked stake is slashed and the failure reply is queued.",
-      "pays": "Slash proceeds reimburse the destination submitter on the spot. The source connector is fined too when the reply arrives. Penalties escalate, and repeated failures may get the connector banned from the channel.",
+      "pays": "Slash proceeds reimburse the destination submitter on the spot. The source connector is fined too when the reply arrives. Penalties can escalate, and repeated failures may get the connector banned from the channel.",
       "state": "ACTIVE",
       "recovers": "Yes; the connector operator tops up or is replaced by the application.",
       "refs": [

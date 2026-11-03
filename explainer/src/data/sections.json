@@ -25,7 +25,7 @@
     },
     {
       "id": "bridges",
-      "title": "The usual fixes, and why they keep failing",
+      "title": "Why a trusted party in the middle is the weak point",
       "illustration": true,
       "refs": [
         {

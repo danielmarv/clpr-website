@@ -199,3 +199,21 @@ figure preview working, and the same drawing claims stay checkable.
 behind a box never crosses its label. `checks/browser/check-diagram-text.mjs` also holds labels
 inside ledger orbs and checks the hero. `kse preview-diagram` draws the new shapes unstyled, so
 the look is judged on the built page.
+
+## D20. Corrections are kept by gates and by the guide, not by memory
+
+**Decision.** Every claim the audits correct is recorded three ways: the wording goes into
+`writing-guide.md` ("Things not to claim"), a repeatable phrasing goes into `retiredVocab` in
+`pack.json` (so `kse check-vocab` fails on it in CI), and the `clpr-audit` and `clpr-sync` skills
+name the rule they apply. The audit gained a `non-neutral` verdict, a framing check (CLPR is a
+messaging protocol; meaning belongs to applications), a rule that Hiero is judged against HIP-1535
+only, and a cross-surface consistency check.
+
+**Why.** The explainer said the Hiero implementation was unmerged while the landing page said it
+was merged, and both pages carried claims about other designs and about maturity that no pinned
+source supports. A fix that lives only in a changed sentence comes back at the next sync.
+
+**Consequences.** "Besu" is "EVM ledger" everywhere; the Hiero status is limited to what HIP-1535
+states until a maintainer confirms the rest; the bridge comparison says "many bridges" and uses
+only what the design and HIP-1535 say about them. If a later source supports a retired claim,
+remove its pattern in the same change that adds the evidence.

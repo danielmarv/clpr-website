@@ -35,9 +35,23 @@ and never edits: its output is a report the maintainer or the `clpr-sync` skill 
   own illustrations; an unbacked statement there is `illustration`, not `unsupported`.
 - **Known overstatements.** `explainer/docs/writing-guide.md` ("Things not to claim") lists the
   claims this protocol invites and upstream does not support: nothing in between, immutable
-  verifiers, zero custody, latency bounds, endpoints as trustless, native Hiero status. Judge
-  every surface against that list. The `retiredVocab` patterns in `pack.json` flag some of them
-  mechanically; both input steps list the hits.
+  verifiers, zero custody, latency bounds, endpoints as trustless, delivery guarantees, payload
+  interpretation, vendor names for ledger types, claims about other designs, maturity, maintainers
+  and Hiero status. Judge every surface against that list. The `retiredVocab` patterns in
+  `pack.json` flag some of them mechanically (`kse check-vocab` fails on them); both input steps
+  list the hits.
+- **Framing.** CLPR is a messaging protocol. Judge every statement that implies it moves tokens,
+  interprets payloads, guarantees delivery, removes trust, or is production ready. What it
+  guarantees is authenticity, integrity and order; meaning belongs to applications.
+- **Neutrality.** The site speaks for a Linux Foundation lab. Wording about other projects, a
+  vendor or a company that no pinned source supports is `non-neutral`, whether or not it is true.
+- **Hiero is judged against HIP-1535 only** (`hiero-ledger/hiero-improvement-proposals`,
+  `HIP/hip-1535.md`) and the live check recorded in `site-refs.json`. Anything else about the Hiero
+  implementation is `unsupported` until a maintainer confirms it and a dated live check records it.
+- **One fact, one reading.** A fact stated on more than one surface (Hiero status, licences, lab
+  status, who the maintainers are, which ledgers have implementations) must read the same on the
+  landing page, the explainer and the documents. Search every surface for each live fact; a
+  disagreement is a `drifted` finding on the stale one, even when each surface is internally fine.
 
 ## Procedure
 
@@ -56,6 +70,8 @@ and never edits: its output is a report the maintainer or the `clpr-sync` skill 
    - `quote-mismatch`: quoted text that is not verbatim upstream.
    - `overstatement`: an absolute ("nothing", "never", "only", "anyone", "every") wider than the
      passage. Name what upstream says CLPR does trust.
+   - `non-neutral`: promotional wording, or a claim about another protocol, vendor or company, that
+     no pinned source supports.
 
    For each `website-*.md`, open that block's screenshots and judge what the drawing shows as
    well as what it says: a label, an arrow or an empty middle is a claim. Groups are in
@@ -63,6 +79,10 @@ and never edits: its output is a report the maintainer or the `clpr-sync` skill 
    in-session and say so in the report.
 3. **Check the other direction for data tables.** Does upstream list something the rows do not?
    `node checks/check-data.mjs` catches the countable cases.
+   Before judging, run `pnpm exec kse check-vocab` in `explainer/` and read the retired-phrase
+   section of each input: every hit is a finding already. When a finding is a phrasing that could
+   return, the fix includes a new `retiredVocab` entry in `explainer/src/data/pack.json`; an audit
+   that fixes the text but not the pattern will find the same thing next time.
 4. **Verify what is not `matches`.** Re-read each finding against the full upstream file, not only
    the extract, and drop it if the file backs the statement.
 5. **Write the report** to `explainer/.upstream/audit-<YYYY-MM-DD>.md`, or `-2`, `-3` … if that
@@ -100,7 +120,10 @@ and never edits: its output is a report the maintainer or the `clpr-sync` skill 
 | Location | Statement | Verdict | Upstream | Suggested action |
 |---|---|---|---|---|
 | website `hero.title` | "Cross-ledger messaging with nothing in between." | overstatement | design §2.3: availability depends on at least one honest endpoint per side | "no bridge to trust"; say endpoints can delay, not forge |
-| website `repositories` hiero card | "pending approval by the Hiero TSC" | drifted | live: PR #27029 merged 2026-09-22; v0.78.1 ships it, off by default | update the card and the pill |
+| website `repositories` hiero card | "pending approval by the Hiero TSC" | drifted | HIP-1535 status: Approved; the HIP calls the service opt-in | "specified by the approved HIP-1535", opt-in, with no merge date, version or default |
+| explainer general §bridges | "The usual fixes, and why they keep failing" | non-neutral | design §1 says only that other solutions "introduc[e] intermediary consensus layers or federated bridges" | "Why a trusted party in the middle is the weak point" |
+| explainer general §patterns | "Here is what people build on it" | overstatement | design §3.4: "This section is a placeholder"; the patterns are outlined only | "what the design anticipates people building", outlined, not specified |
+| website `repositories` Besu card | "deployable to Hyperledger Besu" | overstatement | the Endpoint's proof types are QBFT and CometBFT; Besu is the test stack | "EVM ledgers (QBFT, CometBFT)" |
 | website comparison, custody drawing | empty middle labelled "Nothing held" | drifted | design §3.1.0: the CLPR Service is custodian of Connector funds and endpoint bonds | "No pooled assets" |
 | explainer `cast.json` verifier | "An immutable contract" | drifted | design §3.1.5: the verifier may sit behind an upgradeable proxy | address fixed for the Channel's lifetime |
 | developers §12 endpoints | "the leaf is regenerated after 86 400 seconds by default" | matches | design §3.1.2: `leaf_certificate_validity_seconds`, default 86400 | none |

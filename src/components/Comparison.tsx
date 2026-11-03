@@ -80,7 +80,7 @@ export function Comparison() {
         aria-labelledby={`${baseId}-tab-${active}`}
         className="mt-6 grid gap-3 md:grid-cols-2"
       >
-        {/* Typical bridge: the same two ledgers, joined through a party in the middle. */}
+        {/* Many bridges: the same two ledgers, joined through a party in the middle. */}
         <article className="theme-dark panel flex flex-col p-6 sm:p-8">
           <header className="flex items-start justify-between gap-4">
             <div>

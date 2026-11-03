@@ -89,7 +89,7 @@ function strings(value, path, out) {
   return out;
 }
 
-const UNIVERSAL = /\b(every|any|all|only|never|always|nobody|no one|none|nothing|cannot|zero|exactly|whole|immutable|directly|instant|bounded)\b/i;
+const UNIVERSAL = /\b(every|any|all|only|never|always|nobody|no one|none|nothing|cannot|zero|exactly|whole|immutable|directly|instant|bounded|guarantee[sd]?|typical|most|production|deployable)\b/i;
 const RETIRED = (pack.retiredVocab ?? []).map(([pattern, term]) => [new RegExp(pattern, 'i'), term]);
 function claimNotes(lines) {
   const universal = lines.filter((line) => UNIVERSAL.test(line));

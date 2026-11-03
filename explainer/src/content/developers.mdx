@@ -89,7 +89,7 @@ Removing the intermediary does not remove trust; it shortens the list. An applic
 Two infrastructure roles sit outside the chain: the **CLPR Service Admin**, with purely protective powers (configure, close) and no economic incentive; and the **Endpoint Operator**, who moves bundles for every channel on a ledger without choosing among them.
 
 <Callout kind="gotcha">
-Channel creation is permissionless and there is no verifier allow-list. "A Channel existing on a ledger does not mean the peer is legitimate or the verifier is honest." Anyone can register a channel that claims to be Hedera mainnet with a verifier that accepts anything. Applications must evaluate the verifier contract behind a channel before using it, and connector operators, whose stake is at risk, are expected to do so most carefully.
+Channel creation is permissionless and there is no verifier allow-list. "A Channel existing on a ledger does not mean the peer is legitimate or the verifier is honest." Anyone can register a channel that names any peer ledger, with a verifier that accepts anything. Applications must evaluate the verifier contract behind a channel before using it, and connector operators, whose stake is at risk, are expected to do so most carefully.
 </Callout>
 
 **Endpoints are untrusted for safety, required for liveness.** "Even with dishonest endpoints, no fabricated messages can be accepted — but availability depends on at least one honest endpoint per side relaying bundles." A malicious connector, likewise, "cannot forge or tamper with messages" but can refuse to pay.
@@ -405,7 +405,7 @@ message ClprLedgerConfiguration {
 The deadlock is real: `max_sync_bytes` "MUST be greater than `max_message_payload_bytes` plus the protocol overhead" of a single message. "If `MaxSyncBytes` is set too low, the Channel can deadlock": the next message to send may be larger than the bundle payload can carry, halting progress indefinitely. The suggested rule of thumb is `max_sync_bytes ≥ max_message_payload_bytes × max_messages_per_bundle + proof_overhead`.
 </Callout>
 
-**Strictness.** Every limit is published, so exceeding one is "a measurable, attributable violation". Implementations MUST reject unrecognized fields, unknown message types and malformed metadata outright rather than skipping them. Defaults for the throttle values are still to be fixed; `clprEnabled` defaults to `false` and is checked dynamically on every call, giving each deployment a runtime kill switch.
+**Strictness.** Every limit is published, so exceeding one is "a measurable, attributable violation". Implementations MUST reject unrecognized fields, unknown message types and malformed metadata outright rather than skipping them. Defaults for the main throttle values are still to be fixed (the spec marks them TBD); `clprEnabled` defaults to `false` and is checked dynamically on every call, giving each deployment a runtime kill switch.
 
 <Callout kind="key">
 A peer is (ChainID, ClprServiceAddress): the chain id names a ledger, the address names which service on it.
@@ -482,7 +482,7 @@ The **local manifest** (`ClprEndpointManifest`) is service-level state: an order
 How endpoints get into the local manifest depends on the platform:
 
 - **Hiero:** every consensus node is automatically an endpoint. The manifest mirrors the roster; a node joining, leaving or rotating its identity bumps the version, stake-weight-only changes do not. No manual administration is required or permitted.
-- **Permissionless ledgers (EVM):** the admin decides. Anyone may call `registerEndpoint(endpoint_data, bond)` and enter `pending`, with a bond that may be zero if the service requires none; the admin calls `addEndpoint` to admit it to the live manifest, or to add an endpoint directly with no bond (`updateEndpointManifest` does either for a batch, one version bump for the whole batch). `removeEndpoint` by the endpoint or the admin returns the bond in full. **Endpoint bonds are never slashed**; misbehavior means eviction with a refund. Slashing applies only to connectors.
+- **Permissionless ledgers (EVM):** the admin decides. Anyone may call `registerEndpoint(endpoint_data, bond)` and enter `pending`, with a bond whose minimum the platform specification defines; the admin calls `addEndpoint` to admit it to the live manifest, or to add an endpoint directly with no bond (`updateEndpointManifest` does either for a batch, one version bump for the whole batch). `removeEndpoint` by the endpoint or the admin returns the bond in full. **Endpoint bonds are never slashed**; misbehavior means eviction with a refund. Slashing applies only to connectors.
 
 The **peer manifest** is stored per channel as `Channel.endpoint_manifest`: the authoritative directory of remote endpoints to dial. It is populated at `completeChannel` from the manifest proof passed to `verifyConfig`, truncated to `max_peer_endpoints`, and refreshed whenever `verifyBundle` returns a `new_endpoint_manifest` with a higher version, replacing the whole manifest atomically (verification step 1b).
 
@@ -503,14 +503,14 @@ Seen from the endpoint's side, the whole job is a loop: watch the home queue and
 <EndpointLoop />
 
 <Callout kind="key">
-A seat on the endpoint manifest is the admin's to grant; the bond, where one is required, is never slashed, and anyone may submit a bundle without one.
+On permissionless ledgers, a seat on the endpoint manifest is the admin's to grant; the bond is never slashed, and anyone may submit a bundle without one.
 </Callout>
 
 </Section>
 
 <Section id="sync" page="developers">
 
-Every endpoint exposes one gRPC service with one method:
+In the specification, every endpoint exposes one gRPC service with one method:
 
 ```protobuf
 service ClprEndpointService {
@@ -596,7 +596,7 @@ The endpoint carries the obligation to keep the remote anchor current. Every syn
 </table>
 </div>
 
-Both are documented under <a href={pinned('clpr-spec', 'verifiers')}>`verifiers/`</a> in the specification repository, which also prescribes the three files (`state_proof.md`, `verifier_contract.md`, `trust_anchor.md`) any new chain must add. The contracts repository additionally carries verifier code for other proof families (Ethereum beacon BLS, Sei/CometBFT, an Avalanche mock) whose status is not documented.
+Both are documented under <a href={pinned('clpr-spec', 'verifiers')}>`verifiers/`</a> in the specification repository, which also prescribes the three files (`state_proof.md`, `verifier_contract.md`, `trust_anchor.md`) any new chain must add. The contracts repository additionally carries verifier code for other proof families (Ethereum beacon BLS, Sei/CometBFT, an Avalanche mock) which have READMEs in the contracts repository but no specification in clpr-spec and no stated maturity.
 
 <TwoStateTrees />
 
@@ -664,7 +664,7 @@ On the destination, each Data Message's `connector_id` is resolved to the local 
 </table>
 </div>
 
-Penalties escalate from a fine to a ban with forfeited stake; the schedule is left to platform specifications. Two acknowledged gaps: the destination submitter is uncompensated when no connector exists at all, and endpoints are paid only on the receiving side, so pure senders face a free-rider problem mitigated by peer preference rather than payment.
+Penalties may escalate from a fine to a ban with forfeited stake; the schedule is left to platform specifications. Two acknowledged gaps: the destination submitter is uncompensated when no connector exists at all, and endpoints are paid only on the receiving side, so pure senders face a free-rider problem mitigated by peer preference rather than payment.
 
 <Callout kind="open">
 **Stake-to-exposure invariant.** "Each side's Connector bond MUST be sufficient to cover the worst-case endpoint losses on that ledger." Otherwise a connector with minimal stake can authorize a burst and drain endpoints of more execution cost than the slash reimburses. Minimum bonds are "an unresolved economic design parameter that must be quantified before production deployment". **Queue monopolization** (one connector filling the queue to `max_queue_depth`) is likewise open, with per-connector quotas, send-time escrow and priority pricing as candidates.
@@ -793,7 +793,7 @@ On Hiero the CLPR Service is a native service inside the consensus node, reachab
 
 ### The endpoint: `clpr-endpoint`
 
-A standalone Java 25 relay for EVM ledgers, built with Gradle from seven modules: protobuf/PBJ types, core domain types, a Helidon gRPC server, an outbound gRPC client, EVM interaction over JSON-RPC, sync orchestration and peer management, and the application entry point. It serves two listeners: an always-plaintext *info* port (default 9546) for chain-verifiable public data, and the *sync* data plane (default 9545), plaintext by default and mandatory mTLS when enabled, minting the Ed25519 leaf from the operator's P-384 CA key exactly as specified. Local networks are declared with a proof type (QBFT, or CometBFT for Sei); Hiero appears only as a channel's peer proof type. The `maxMessageSize` default is 1 MiB, and the config comments warn that the PBJ default of 10 KiB "is too small for production payloads". Its `QbftBundleConstructor` builds the RLP 5-tuple (7 items with a manifest proof), `AccountTransactionSubmitter` previews each `submitBundle` with `eth_call` before paying, and `HieroProofCodec` parses proofs the Hiero node produced. The repository's `docs/` folder is the map: `architecture.md` (the seven modules, the `app → sync/grpc/evm → core → proto` dependency direction, the core abstractions `TransactionSubmitter`, `ContractStateReader`, `BundlePayloadCodec`, `BundleConstructor`, `PeerSyncClient`, `PeerEndpointCache`, `CommitmentLevel`), `sync-protocol.md`, `evm-integration.md` (the contract surface it calls, EIP-1559 submission, nonce handling, and why it polls `getChannel` instead of subscribing to events), `multi-chain-design-changes.md` (the three-tier local-network → service → channel hierarchy and the checklist for adding a chain type) and `configuration.md`. Some of those documents describe work in flight, for instance a stub bundle constructor, so read them against the pinned code. Outbound: a per-channel state-change poller notices `nextMessageId` advancing, the channel's sync task reads the new messages and builds a payload, a peer is picked at random, weighted by past successes, with failing peers backed off, and the peer's `sync` RPC is invoked. Inbound: the peer's bundle is decoded; for EVM-format bundles, messages the local ledger already accepted are trimmed so a duplicate cannot sink the bundle as a replay (a Hiero proof is submitted whole); and the submitter signs and sends `submitBundle` client-side, polling for the receipt.
+A standalone Java 25 relay for EVM ledgers, built with Gradle from seven modules: protobuf/PBJ types, core domain types, a Helidon gRPC server, an outbound gRPC client, EVM interaction over JSON-RPC, sync orchestration and peer management, and the application entry point. It serves two listeners: an always-plaintext *info* port (default 9546) for chain-verifiable public data, and the *sync* data plane (default 9545), plaintext by default and mandatory mTLS when enabled, minting the Ed25519 leaf from the operator's P-384 CA key exactly as specified. The reference endpoint still serves and calls the earlier unary `sync` (one `ClprSyncPayload` each way, no `BundleRequest`); the streaming cycle described in the sync section is the specified behaviour. Local networks are declared with a proof type (QBFT, or CometBFT for Sei); Hiero appears only as a channel's peer proof type. The `maxMessageSize` default is 1 MiB, and the config comments warn that the PBJ default of 10 KiB "is too small for production payloads". Its `QbftBundleConstructor` builds the RLP 5-tuple (7 items with a manifest proof), `AccountTransactionSubmitter` previews each `submitBundle` with `eth_call` before paying, and `HieroProofCodec` parses proofs the Hiero node produced. The repository's `docs/` folder is the map: `architecture.md` (the seven modules, the `app → sync/grpc/evm → core → proto` dependency direction, the core abstractions `TransactionSubmitter`, `ContractStateReader`, `BundlePayloadCodec`, `BundleConstructor`, `PeerSyncClient`, `PeerEndpointCache`, `CommitmentLevel`), `sync-protocol.md`, `evm-integration.md` (the contract surface it calls, EIP-1559 submission, nonce handling, and why it polls `getChannel` instead of subscribing to events), `multi-chain-design-changes.md` (the three-tier local-network → service → channel hierarchy and the checklist for adding a chain type) and `configuration.md`. Some of those documents describe work in flight, for instance a stub bundle constructor, so read them against the pinned code. Outbound: a per-channel state-change poller notices `nextMessageId` advancing, the channel's sync task reads the new messages and builds a payload, a peer is picked at random, weighted by past successes, with failing peers backed off, and the peer's `sync` RPC is invoked. Inbound: the peer's bundle is decoded; for EVM-format bundles, messages the local ledger already accepted are trimmed so a duplicate cannot sink the bundle as a replay (a Hiero proof is submitted whole); and the submitter signs and sends `submitBundle` client-side, polling for the receipt.
 
 <EndpointTwoLanes />
 

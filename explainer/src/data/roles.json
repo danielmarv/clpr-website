@@ -39,7 +39,7 @@
     {
       "id": "service-admin",
       "name": "CLPR Service admin",
-      "does": "Broad but only protective powers: adjusts the ledger's published limits, admits or evicts endpoints, turns the service on or off and closes channels. Cannot create channels, register connectors or take part in the economics.",
+      "does": "Broad but only protective powers: adjusts the ledger's published limits, admits or evicts endpoints, closes channels and, where the service has a kill switch (the EVM contracts do), turns it on or off. Cannot create channels, register connectors or take part in the economics.",
       "risks": "Abuse of power, mitigated by governance; inaction, since a compromised channel left open keeps being exploited; and no in-protocol incentive, a known gap between responsibility and motivation.",
       "refs": [{ "doc": "design", "anchor": "46-clpr-service-admin", "label": "design §4.6" }]
     }

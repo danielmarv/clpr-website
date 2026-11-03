@@ -75,7 +75,7 @@ Now take two of these networks. Each is a world of its own. Nothing written in o
 
 <TwoIslands />
 
-That blindness is by design. A ledger only writes a line if every validator can check it on its own. "Go and look at the other network" fails that test: hundreds of machines cannot all look and be sure they saw the same thing at the same moment. So the two islands stay islands.
+That blindness follows from how ledgers work. In general, a ledger only writes a line if every validator can check it on its own. "Go and look at the other network" fails that test: hundreds of machines cannot all look and be sure they saw the same thing at the same moment. So the two islands stay islands.
 
 <ValidatorsCannotLook />
 
@@ -104,7 +104,7 @@ Ledger B never sees Ledger A. It sees a signature from whoever holds the key.
 Adding more keys raises the price of the attack. It does not change its shape: there is still a party in the middle whose failure Ledger B cannot detect, and every message is exactly as safe as that party. CLPR sets out to remove the party altogether.
 
 <Callout kind="plain">
-A bridge makes every message as safe as the bridge. The goal is to make every message as safe as the two ledgers themselves, and not one bit less.
+A design with a trusted party in the middle makes every message only as safe as that party. The goal is to make every message depend only on the two ledgers, their CLPR Services and the channel's verifier, with no trusted party in between.
 </Callout>
 
 <Check q="In the committee design, what exactly does Ledger B check when a message arrives?">
@@ -177,7 +177,7 @@ Before watching a message travel, meet everyone it will pass through. Each card 
 <WhoLivesWhere />
 
 <Callout kind="note" title="Hiero and Hedera">
-Two names come up constantly. **Hiero** is the open-source ledger software: the node, its APIs, its state model. **Hedera** is the public network that runs it; private networks running the same software are called HashSpheres. On Hiero, the CLPR Service is part of the node software itself. On EVM ledgers, it is a smart contract instead: a program deployed on the ledger like any other. Same protocol, two implementations at different stages: the EVM contracts still differ from the text in places, and the Hiero one is not yet merged into the main Hiero code. The simulations below show one of each.
+Two names come up constantly. **Hiero** is the open-source ledger software: the node, its APIs, its state model. **Hedera** is the public network that runs it; private networks running the same software are called HashSpheres. On Hiero, the CLPR Service is part of the node software itself. On EVM ledgers, it is a smart contract instead: a program deployed on the ledger like any other. Same protocol, two implementations at different stages: the EVM contracts still differ from the text in places, and the Hiero one is specified by HIP-1535 as an opt-in service. The simulations below show one of each.
 </Callout>
 
 </Section>
@@ -199,7 +199,7 @@ The message actually crosses at step 16; the other twenty-seven steps are the tr
 </Callout>
 
 <Check q="Which steps could a dishonest endpoint change, and what would happen?">
-None of them, usefully. Steps 7 to 11 and 20 to 21 are the endpoint's own work, but everything it produces is checked at steps 13 to 14 and 23 to 24 against signatures it cannot make. A tampered bundle is rejected and the endpoint has paid a transaction fee for nothing.
+None of them, usefully. Steps 8 to 11 and 20 to 21 are the endpoint's own work, but everything it produces is checked at steps 13 to 14 and 23 to 24 against signatures it cannot make. A tampered bundle is rejected and the endpoint has paid a transaction fee for nothing.
 </Check>
 
 </Section>
@@ -242,7 +242,7 @@ No new token and no treasury: the connector pays the endpoint that delivered, an
 An application that crashes on the receiving side is *not* the connector's fault and is *not* fined. The connector promised to pay for execution, and it did; the application simply reverted. The reply reports an application error and the sending application decides what to do. Only two outcomes are the connector's fault: it does not exist on the other side, or it cannot pay.
 </Callout>
 
-Applications choose their connector, and connectors can be as picky as they like: allow-lists, rate limits, charging a fee to the application. Several connectors can serve the same channel, and one connector can serve many channels. Connectors, like applications, are expected to check a channel's verifier before using it: a bad verifier puts the connector's locked stake at risk.
+Applications choose their connector, and connectors can be as picky as they like: allow-lists, rate limits, charging a fee to the application. Several connectors can serve the same channel, and one operator can run connectors on many channels. Connectors, like applications, are expected to check a channel's verifier before using it: a bad verifier puts the connector's locked stake at risk.
 
 <WhoPicksWhom />
 
@@ -262,7 +262,7 @@ A protocol is defined as much by what it does when things go wrong as by what it
 
 <Failures />
 
-Notice a pattern. Almost every failure is handled by *rejecting a bundle and changing nothing*: the channel stays open and the next honest bundle goes through. One failure is treated as a sign that something is broken rather than a passing glitch: replies arriving out of order. For that one, the channel is paused instead of guessing. Endpoints can only ever cause delay. The only failures that fine anyone are a connector failing to pay for a message as promised: the fine is taken from the connector's locked stake.
+Notice a pattern. A bundle that fails its checks (its proof, numbering or hashes) is *rejected, changing nothing*: the channel stays open and the next honest bundle goes through. A failure in a single message, such as an unknown or underfunded connector or an application that errors, becomes a failure reply and the rest of the bundle carries on. One failure is treated as a sign that something is broken rather than a passing glitch: replies arriving out of order. For that one, the channel is paused instead of guessing. Endpoints can only ever cause delay. The only failures that fine anyone are a connector failing to pay for a message as promised: the fine is taken from the connector's locked stake.
 
 <FailureTriage />
 
@@ -271,20 +271,20 @@ Two words used precisely throughout: **safety** (nothing false is ever accepted)
 </Callout>
 
 <Callout kind="key">
-Almost every failure is answered by rejecting a bundle and changing nothing; the only failures that are fined are a connector's broken promises.
+A bundle that fails its checks is rejected and changes nothing, a failed message becomes a failure reply, and the only failures that are fined are a connector's broken promises.
 </Callout>
 
 </Section>
 
 <Section id="patterns" page="general">
 
-Everything so far is plumbing. Here is what people build on it. A message in CLPR is just bytes with an address, and every data message gets exactly one reply (only a broken channel can leave one unresolved), so the same primitive serves four quite different jobs.
+Everything so far is plumbing. Here is what the design anticipates people building on it; it outlines these patterns only at a high level, and none is specified yet. A message in CLPR is just bytes with an address, and every data message gets exactly one reply (as long as the channel and its endpoints keep working), so the same primitive could serve four quite different jobs.
 
 <FourPatterns />
 
 <Patterns />
 
-The third pattern is worth watching, because it shows what the protocol does and does not do. Three ledgers are meant to change together or not at all. CLPR carries the messages and a reply for each; the decision to commit or roll back lives in the application that started the swap. The simulation draws one way such an application could use the protocol; the choreography is the site's illustration, the pattern is the protocol's.
+The third pattern is worth watching, because it shows what the protocol does and does not do. Three ledgers are meant to change together or not at all. CLPR carries the messages and a reply for each; the decision to commit or roll back lives in the application that started the swap. The simulation draws one way such an application could use the protocol; the choreography is the site's illustration, and the pattern itself is only outlined in the design.
 
 <AtomicSwap />
 
@@ -410,7 +410,7 @@ The two CLPR Services have no code in common. Both are written to the same text,
 
 <Repos />
 
-The ideas come from earlier proposals for cross-ledger communication and from a practical need: Hiero-based networks, public ones such as Hedera and private ones called HashSpheres, needed fast, asynchronous messaging between them that stays correct even when some participants misbehave. Under its agreement with the Hedera Governing Council, Hashgraph wrote the initial text and built the three pieces of software above; the Council wants to donate CLPR if the Lab proposal is accepted, including the brand, to be incubated as an **LF Decentralized Trust lab**, part of a Linux Foundation project whose mission is to support development of very early open projects, under the technical oversight of the LF Decentralized Trust's Technical Advisory Council. The CLPR Service built into Hiero nodes is not yet part of the main Hiero code: it sits on a separate branch, approved by the Hedera Governing Council and still pending the Hiero Technical Steering Committee.
+The ideas come from earlier proposals for cross-ledger communication and from a practical need: Hiero-based networks, public ones such as Hedera and private ones called HashSpheres, needed fast, asynchronous messaging between them that stays correct even when some participants misbehave. Under its agreement with the Hedera Governing Council, Hashgraph wrote the initial text and built initial versions of the three pieces of software above; the endpoint is a prototype. CLPR is now an **LF Decentralized Trust lab**, part of a Linux Foundation project whose mission is to support development of very early open projects, under the technical oversight of the LF Decentralized Trust's Technical Advisory Council; the Council undertook to donate the CLPR brand once the lab was accepted. The CLPR Service built into Hiero nodes is specified by HIP-1535, whose status is Approved, and is an opt-in service: networks that do not enable it are unaffected.
 
 If you remember six things, remember these.
 

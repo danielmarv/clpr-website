@@ -103,6 +103,46 @@
     [
       "\\bimmutable (smart )?contract\\b|\\bverifiers? (contracts? )?(is|are) immutable\\b",
       "a verifier whose address is fixed for the Channel's lifetime (the contract may be an upgradeable proxy)"
+    ],
+    [
+      "\\bBesu\\b",
+      "EVM ledger (name QBFT or CometBFT only as a proof type)"
+    ],
+    [
+      "\\bdeployable today\\b|\\bproduction[- ]ready\\b|\\bready for production\\b",
+      "reference implementation; the lab is for very early open projects"
+    ],
+    [
+      "\\binitial maintainers?\\b",
+      "its maintainers and committers are listed in the governance repository"
+    ],
+    [
+      "\\bguarantee[sd]? (the )?(delivery|that (it|a message) (is|will be) delivered)\\b|\\bguaranteed delivery\\b|\\bdelivery is guaranteed\\b",
+      "CLPR guarantees authenticity, integrity and order; delivery needs a relaying endpoint"
+    ],
+    [
+      "\\btypical bridges?\\b|\\bmost bridges\\b|\\ball bridges\\b|\\bbridges (always|never)\\b",
+      "many bridges, or interledger solutions that add an intermediary"
+    ],
+    [
+      "\\bnot yet (merged|part of the main Hiero)\\b|\\bpending (approval|the Hiero)\\b",
+      "Hiero status: specified by the approved HIP-1535, an opt-in service"
+    ],
+    [
+      "\\bon behalf of the Hedera Governing Council\\b",
+      "under its agreement with the Hedera Governing Council"
+    ],
+    [
+      "\\bswitched off by default\\b|\\boff by default\\b|\\bv0\\.78\\.\\d+\\b",
+      "state Hiero status only as HIP-1535 states it (Approved, opt-in)"
+    ],
+    [
+      "\\bone connector can serve many channels\\b",
+      "one operator can run connectors on many channels"
+    ],
+    [
+      "\\bas safe as the two ledgers themselves\\b",
+      "depends only on the two ledgers, their CLPR Services and the channel's verifier"
     ]
   ],
   "structure": {
@@ -110,6 +150,13 @@
       "minFlows": 0
     }
   },
-  "labels": { "callout": { "impl": "In the EVM reference code" } },
-  "themeColor": { "light": "#120f2c", "dark": "#120f2c" }
+  "labels": {
+    "callout": {
+      "impl": "In the EVM reference code"
+    }
+  },
+  "themeColor": {
+    "light": "#120f2c",
+    "dark": "#120f2c"
+  }
 }

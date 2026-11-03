@@ -191,9 +191,9 @@ from the CLPR presentation on [hashgraph.com/clpr](https://hashgraph.com/clpr/).
 - **Why bridgeless.** Two panels, the same two ledgers in each: joined through a bridge in the
   middle (muted grey) and directly by a CLPR Channel. Each aspect has its own pair of diagrams
   (`ComparisonArt`) on the same clock: validators in the middle vs. a proof checked by B's
-  Verifier; assets pooling in the bridge (a red target ring) vs. no pooled assets; a dead operator
-  vs. anyone delivering the proof; a stop for the bridge's own confirmations vs. no extra rounds;
-  mostly tokens vs. any payload.
+  Verifier; assets held in custody (a red target ring) vs. no pooled assets; an offline bridge
+  vs. anyone delivering the proof; an extra layer in the path vs. no extra rounds; value or
+  messages through the intermediary vs. any payload.
 - **Architecture.** The CSS 3D layer stack stays in view while the visitor reads the four
   layers beside it; the layer being read lights up its plate and the plates above it step
   back, so its drawing (`LayerArt`) shows through. A plate can be clicked to jump to its
@@ -272,8 +272,8 @@ from the CLPR presentation on [hashgraph.com/clpr](https://hashgraph.com/clpr/).
       official CLPR logo files from the LFDT / Hashgraph brand assets.
 - [ ] Decide on the typeface: keep Sora or license Styrene A.
 - [ ] Replace the footer legal line (`footer.legal` in `site.ts`) with the official LFDT lab text.
-- [ ] Re-check the native Hiero status when a network switches CLPR on. HIP-1535 is Approved, PR #27029
-      merged, and v0.78.1 ships it with `clpr.enabled` off by default; the clpr-audit skill checks this live.
+- [ ] Re-check the native Hiero status when a network switches CLPR on. HIP-1535 is Approved and describes
+      the service as opt-in; the clpr-audit skill checks the HIP status live.
 - [ ] Reconcile the specification licence with LFDT: the Labs charter says specifications are developed
       under the Community Specification License 1.0, but `clpr-spec`'s LICENSE file is Apache-2.0.
 - [ ] Add community channels (Discord, mailing list, calls) once LFDT sets them up.

@@ -477,16 +477,13 @@
   },
   "live": {
     "hiero-native": {
-      "claim": "Status of the native Hiero CLPR Service: HIP-1535, the pull request, the first release that ships it and whether it is on by default. No pinned LFDT-CLPR repository records this (the organization profile still says pending).",
+      "claim": "Status of the native Hiero CLPR Service: the status of HIP-1535. The pull request, the release that ships it and the default setting are not stated on the site. No pinned LFDT-CLPR repository records this (the organization profile still says pending).",
       "checks": [
-        "gh api repos/hiero-ledger/hiero-improvement-proposals/contents/HIP/hip-1535.md -q .content | base64 -d | grep -m1 '^status:'",
-        "gh pr view 27029 -R hiero-ledger/hiero-consensus-node --json state,mergedAt",
-        "gh api 'repos/hiero-ledger/hiero-consensus-node/releases?per_page=30' -q '.[] | select((.body // \"\") | test(\"(?i)clpr\")) | .tag_name'",
-        "gh api 'repos/hiero-ledger/hiero-consensus-node/contents/hedera-node/hedera-config/src/main/java/com/hedera/node/config/data/ClprConfig.java' -q .content | base64 -d | grep -m1 -A1 'defaultValue = \"false\"'"
+        "gh api repos/hiero-ledger/hiero-improvement-proposals/contents/HIP/hip-1535.md -q .content | base64 -d | grep -m1 '^status:'"
       ],
       "recorded": {
-        "date": "2026-11-02",
-        "result": "HIP-1535 status: Approved; PR #27029 merged 2026-09-22; first listed in the v0.78.1 release notes; clpr.enabled defaults to false"
+        "date": "2026-11-03",
+        "result": "HIP-1535 status: Approved; the HIP describes the service as opt-in (networks that do not enable it are unaffected)"
       }
     },
     "spec-license": {

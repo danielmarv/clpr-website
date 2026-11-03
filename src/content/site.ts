@@ -40,7 +40,7 @@ export const hero = {
 export const story = {
   id: "story",
   label: "CLPR in three steps",
-  statement: "Bridges ask two ledgers to trust a third party. CLPR lets each ledger check the other’s proofs instead.",
+  statement: "Many bridges ask two ledgers to trust a third party. CLPR lets each ledger check the other’s proofs instead.",
   ledgerA: { name: "Ledger A", role: "Source, e.g. Hiero" },
   ledgerB: { name: "Ledger B", role: "Destination, e.g. an EVM ledger" },
   chapters: [
@@ -272,14 +272,14 @@ export const comparison = {
   title: "Trust lives in the ledgers, not in a bridge.",
   lead:
     "Interledger solutions often add an intermediary consensus layer or a federated bridge: a party in the middle that has to be trusted. CLPR has no such party. Each ledger verifies the other’s state with proofs it checks itself, and the Endpoints that carry those proofs cannot forge them.",
-  columns: { aspect: "", bridge: "Typical bridge", clpr: "CLPR" },
+  columns: { aspect: "", bridge: "Many bridges", clpr: "CLPR" },
   caption: "How CLPR differs from bridge-based interoperability",
   aspectsLabel: "Compare by",
   diagrams: {
     bridge: {
-      caption: "A third party sits between the chains and holds the keys and the assets.",
+      caption: "A third party sits between the chains: a federated bridge, a validator set or a custodian.",
       middle: "Bridge",
-      middleNote: "Validators and pooled assets",
+      middleNote: "Validators or custodian",
     },
     clpr: {
       caption: "Each ledger checks the other’s state proofs itself. Endpoints build and relay them but cannot forge them.",
@@ -288,14 +288,14 @@ export const comparison = {
     ledgerA: "Ledger A",
     ledgerB: "Ledger B",
       labels: {
-      pooled: "Pooled assets",
+      pooled: "Held in custody",
       nothingHeld: "No pooled assets",
-      operatorOffline: "Operator offline",
+      operatorOffline: "Bridge offline",
       endpointOffline: "Endpoint offline",
       anyone: "Anyone can deliver",
-      waiting: "Own confirmation rounds",
+      waiting: "Extra layer",
       direct: "No extra rounds",
-      tokens: "Mostly tokens",
+      tokens: "Value or messages",
       anyPayload: "Data, feeds, calls; assets via apps",
     },
   },
@@ -303,31 +303,31 @@ export const comparison = {
     {
       aspect: "Where trust lives",
       visual: "trust",
-      bridge: "In a separate validator set, multisig or relayer network",
+      bridge: "In a separate validator set, federation or custodian",
       clpr: "In the two ledgers, through state proofs checked by Verifier Contracts",
     },
     {
       aspect: "Custody",
       visual: "custody",
-      bridge: "Assets pooled in contracts that become a target",
+      bridge: "Assets can sit with a custodian, whose keys become a target",
       clpr: "No pooled user assets: each CLPR Service holds only Connector funds and Endpoint bonds",
     },
     {
       aspect: "When something goes offline",
       visual: "offline",
-      bridge: "Transfers depend on the operator coming back",
+      bridge: "Delivery depends on the intermediary layer staying up",
       clpr: "Anyone, including the sender, can resume by submitting the proof",
     },
     {
       aspect: "Speed",
       visual: "speed",
-      bridge: "Adds the bridge’s own confirmation rounds",
+      bridge: "Goes through the intermediary layer’s own process",
       clpr: "No third consensus: source finality at the verifier’s level, an Endpoint sync, then the destination’s consensus",
     },
     {
       aspect: "What moves",
       visual: "payload",
-      bridge: "Mostly tokens",
+      bridge: "Value or messages, through the intermediary",
       clpr: "Any payload: data, oracle feeds, contract calls and asset transfers built by applications",
     },
   ],
@@ -388,7 +388,7 @@ export const extensibility = {
     },
   ],
   stepsTitle: "Connecting a new ledger to Hiero",
-  stepsLead: "Hiero’s consensus node already ships a native CLPR Service, switched off by default. Step through what the new ledger needs, and watch it come together.",
+  stepsLead: "Hiero has a native CLPR Service, specified by the approved HIP-1535. Step through what the new ledger needs, and watch it come together.",
   onboarding: {
     newLedger: "New ledger",
     hiero: "Hiero",
@@ -486,11 +486,11 @@ export const repositories = {
     {
       name: "hiero-consensus-node #27029",
       kind: "Native integration",
-      body: "The native CLPR service inside the Hiero consensus node, specified by the approved HIP-1535. Merged in September 2026 and released in v0.78.1, switched off by default.",
+      body: "The native CLPR service inside the Hiero consensus node, specified by the approved HIP-1535. An opt-in service: networks that do not enable it are unaffected.",
       href: links.hieroNative,
       implements: ["service", "endpoint"],
       runsOn: "Hiero",
-      status: "Released, off by default",
+      status: "HIP-1535 approved",
     },
   ],
   governance: {
