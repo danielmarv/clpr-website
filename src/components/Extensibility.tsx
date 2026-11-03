@@ -16,7 +16,7 @@ export function Extensibility() {
             <li key={component.name} data-motion-reveal className="panel flex flex-col overflow-hidden">
               <div
                 aria-hidden="true"
-                className="h-48 border-b border-white/[0.06] bg-[radial-gradient(60%_70%_at_50%_50%,rgb(139_123_255/0.08),transparent_75%)] px-5 pt-5"
+                className="h-48 border-b border-fg/[0.06] bg-[radial-gradient(60%_70%_at_50%_50%,rgb(139_123_255/0.08),transparent_75%)] px-5 pt-5"
               >
                 {Diagram && <Diagram />}
               </div>
@@ -35,7 +35,7 @@ export function Extensibility() {
         </p>
         <a
           href={extensibility.explainer.href}
-          className="group inline-flex shrink-0 items-center gap-2 text-[0.9375rem] font-medium text-signal-ink transition-colors hover:text-white"
+          className="group inline-flex shrink-0 items-center gap-2 text-[0.9375rem] font-medium text-signal-ink transition-colors hover:text-fg"
         >
           {extensibility.explainer.label}
           <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-1" aria-hidden="true" />

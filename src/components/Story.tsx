@@ -76,7 +76,7 @@ export function Story() {
           className="story-chapter shell absolute inset-x-0 top-1/2 -translate-y-1/2"
           data-active={phase === 0}
         >
-          <p className="max-w-[20ch] text-[clamp(2rem,5vw,4.25rem)] font-light leading-[1.1] tracking-[-0.035em] text-white">
+          <p className="max-w-[20ch] text-[clamp(2rem,5vw,4.25rem)] font-light leading-[1.1] tracking-[-0.035em] text-fg">
             {words.map((word, index) => (
               <span key={index} className="story-word" style={{ "--i": index } as CSSProperties}>
                 {word}{" "}
@@ -100,7 +100,7 @@ export function Story() {
               top: `calc(var(--${prefix}-y, 40%) + var(--ledger-r, 80px) * 1.18)`,
             }}
           >
-            <p className="inline-flex items-center gap-2 text-[0.9375rem] font-medium text-white">
+            <p className="inline-flex items-center gap-2 text-[0.9375rem] font-medium text-fg">
               <span className={cn("size-1.5 rounded-full", tone)} />
               {ledger.name}
             </p>
@@ -141,7 +141,7 @@ export function Story() {
                     aria-current={active ? "step" : undefined}
                     className="group flex w-full flex-col gap-2 py-2 text-left"
                   >
-                    <span className="block h-0.5 w-full overflow-hidden rounded-full bg-white/10">
+                    <span className="block h-0.5 w-full overflow-hidden rounded-full bg-fg/10">
                       <span
                         className={cn(
                           "block h-full rounded-full bg-linear-to-r from-signal-glow to-proof-glow transition-transform duration-700 ease-out-expo origin-left",
@@ -152,7 +152,7 @@ export function Story() {
                     <span
                       className={cn(
                         "text-[0.75rem] transition-colors",
-                        active ? "text-white" : "text-faint group-hover:text-white/80",
+                        active ? "text-fg" : "text-faint group-hover:text-fg/80",
                       )}
                     >
                       {chapter.name}

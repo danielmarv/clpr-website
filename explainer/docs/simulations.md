@@ -63,7 +63,7 @@ Rules:
   invents an epoch length, it says so on screen.
 - **Phone width and both themes.** `viewBox` SVGs scale; text at 11 px or larger; wrap very wide
   drawings in `<Figure>`. Check with `pnpm exec kse overflow <path> 400` and a screenshot in
-  dark mode (`DARK=1 pnpm exec kse shot …`).
+  dark mode (`pnpm exec kse shot … '[data-theme-choice="dark"]'`; light is the default).
 - **Accessibility.** Native `<button>`s, `aria-pressed` on toggles, `role="img"` with an
   `aria-label` on SVGs, keyboard handlers on clickable SVG groups (`tabindex="0"`, Enter/Space).
 - **No external resources, no storage, no fetches.** Everything the sim needs is in the file.
@@ -96,7 +96,7 @@ never move. Shapes come from the `clpr-figure` skill's vocabulary (docs/figures.
 1. `pnpm run build`.
 2. `pnpm exec kse shot /developers/ out.png 1280 false '#my-thing-sim [data-role="next"]|#my-thing-sim [data-role="next"]'`
    drives it a few steps and reports console errors; open the PNG.
-3. `DARK=1 pnpm exec kse shot …` for dark mode; `pnpm exec kse overflow /developers/ 400` for
+3. The same shot with '[data-theme-choice="dark"]' as the first click for dark mode; `pnpm exec kse overflow /developers/ 400` for
    phones.
 4. If the sim computes something (a hash, a fee), verify one value independently (Python's
    `hashlib`, a calculator) and keep the self-test in the component if there is one.

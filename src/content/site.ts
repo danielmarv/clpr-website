@@ -67,11 +67,13 @@ export const story = {
 export const origins = {
   label: "Contributed by Hashgraph, with a native Hiero service specified in HIP-1535, and hosted as an LF Decentralized Trust lab.",
   text: "Contributed by Hashgraph under its agreement with the Hedera Governing Council. The ideas build on Dr. Leemon Baird’s proposals for cross-ledger communication. The first native implementation is part of Hiero.",
+  // Each mark in its own colours (src), and its version for dark backgrounds (srcDark).
+  // Heights are tuned per logo so the marks read at a similar optical size.
   logos: [
-    // Heights are tuned per logo so the marks read at a similar optical size.
-    { name: "Hashgraph", src: "/logos/hashgraph-black.svg", width: 654.62, height: 141.73, href: links.hashgraph, className: "h-6 w-auto" },
-    { name: "Hedera", src: "/logos/hedera-lockup-black.svg", width: 448.29, height: 138.93, href: links.hedera, className: "h-8 w-auto" },
-    { name: "Hiero", src: "/logos/hiero.svg", width: 64, height: 20, href: links.hiero, className: "h-8 w-auto" },
+    { name: "Hashgraph", src: "/logos/hashgraph-black.svg", srcDark: "/logos/hashgraph-white.svg", width: 654.62, height: 141.73, href: links.hashgraph, className: "h-6 w-auto" },
+    { name: "Hedera", src: "/logos/hedera-lockup-black.svg", srcDark: "/logos/hedera-lockup-white.svg", width: 448.29, height: 138.93, href: links.hedera, className: "h-8 w-auto" },
+    { name: "Hiero", src: "/logos/hiero.svg", srcDark: "/logos/hiero-white.svg", width: 64, height: 20, href: links.hiero, className: "h-8 w-auto" },
+    { name: "LF Decentralized Trust", src: "/logos/lfdt-horizontal-color.svg", srcDark: "/logos/lfdt-horizontal-white.svg", width: 698.7, height: 39.1, href: links.lfdt, className: "h-3.5 w-auto" },
   ],
 } as const;
 
@@ -323,4 +325,5 @@ export const site = {
   menuClose: "Close menu",
   githubLabel: "GitHub",
   homeLabel: "CLPR home",
+  theme: { label: "Color theme", light: "Light", dark: "Dark", system: "System" },
 } as const;

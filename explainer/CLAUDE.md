@@ -23,10 +23,12 @@ documentation is in `docs/` (start at `docs/README.md`); this file is the short 
 3. **Neutral voice, donation-ready.** No personal branding, no marketing claims, no numbers
    without a source. Apache-2.0 code, CC BY 4.0 text, DCO sign-off on every commit
    (`git commit -s`).
-4. **The website's theme, phone width.** The pages wear the CLPR website's dark theme: `src/styles/site-theme.css`
-   redefines the engine's tokens (`styles/global.css`) and `Site.astro` supplies the website's header and footer;
-   never hard-code a colour or font. Everything must render at 400px wide. Wide drawings go inside `<Figure>`,
-   whose frame scrolls on phones.
+4. **The website's theme, phone width.** The pages wear the CLPR website's theme: light by default, dark
+   or the system's on the header's Light/Dark/System switch. `src/styles/site-theme.css` redefines the
+   engine's tokens (`styles/global.css`) as `light-dark()` pairs and `Site.astro` supplies the website's
+   header and footer and restores the stored choice before first paint; never hard-code a colour or font,
+   and look at both themes. Everything must render at 400px wide. Wide drawings go inside
+   `<Figure>`, whose frame scrolls on phones.
 5. **Sections are registered.** `src/data/sections.json` is the single list of sections per
    page; `<Section id page>` looks its title and number up there and the TOC is built from it.
    The same file lists the acts (groups of sections); `Section.astro` renders the act band before
@@ -77,15 +79,19 @@ Conventions every sim follows — copy `ChannelLife.astro` or `RunningHash.astro
 - `pnpm run build` — build to `dist/` (Astro).
 - `pnpm run check` — provenance, internal links, vocabulary, data rows, the generated content map and
   orphan components (run after every content change).
-- `pnpm run verify` — build, then every gate: check, anchors, browser, dark-theme sims, diagram text,
-  overflow at 400px on both pages. The command to run before calling anything done.
+- `pnpm run verify` — build, then every gate: check, anchors, browser, the `DARK=1` sim pass (the light
+  default under a dark system), diagram text, overflow at 400px on both pages, then
+  `check:dark` (the sims, diagram text and overflow again in the dark theme, through
+  `checks/browser/theme-preload.cjs`; see D21). The command to run before calling anything done.
 - `node checks/browser/check-diagram-text.mjs` — after a build, every label in every figure and
   simulation stays inside its box and the drawing, in the fonts the pages ship.
 - `pnpm exec kse check-scroll` — neither page scrolls by itself after load (a simulation once did).
 - `pnpm run check:anchors` — every upstream reference resolves in `.upstream/` (after a sync fetch).
 - `pnpm test` — build then check.
 - `pnpm exec kse shot <path> <out.png> [width] [fullPage] [clickSelector|…]` — screenshot a
-  built page; look at the PNG before calling layout done. `DARK=1` for the dark theme;
+  built page; look at the PNG before calling layout done. For the dark theme make
+  `'[data-theme-choice="dark"]'` the first click (`DARK=1` only emulates a dark system, and light is
+  the default);
   `pnpm exec kse overflow <path> 400` for phone overflow;
   `pnpm exec kse preview-diagram <Figure.astro> <out-prefix>` for a figure without a build (in the
   engine's fonts, which are narrower than the site's Sora: confirm with the diagram text check).

@@ -84,11 +84,16 @@ into an LFDT-CLPR repository points at a branch. See [provenance.md](provenance.
 
 The engine's `styles/global.css` defines the design tokens and the page furniture; components use
 only the tokens. This pack then wears the CLPR website's look: `src/styles/site-theme.css`, imported
-by `src/layouts/Site.astro`, redefines every token on `html[lang]:root` (dark indigo from the
-website's `globals.css`, Sora for display and prose, IBM Plex Mono for kickers, labels, controls and
-code, the website's panel radius) and restyles the chrome; the fonts are self-hosted from
-`src/assets/fonts/` (OFL), so nothing is fetched. The pages are dark in every setting and the engine's
-theme toggle is not rendered. `Site.astro` fills the engine layout's `header` and `footer` slots with
+by `src/layouts/Site.astro`, redefines every token on `html[lang]:root` (the website's ink on paper and dark indigo from its
+`globals.css`, Sora for display and prose, IBM Plex Mono for kickers, labels, controls and code, the
+website's panel radius) and restyles the chrome; the fonts are self-hosted from `src/assets/fonts/`
+(OFL), so nothing is fetched. The theme follows the website's rule: `<html data-theme>` holds the
+visitor's choice (`light`, `dark` or `system`), set by the header's Light/Dark/System switch and stored
+in `localStorage` under `theme`, the key the website uses, so a choice carries across. No attribute
+means light, whatever the system says; a head script in `Site.astro` restores the stored choice before
+first paint. The stylesheet turns that into `color-scheme` (light, dark, or `light dark` for system)
+and every colour token is a `light-dark(light, dark)` pair, so one declaration serves every case. The
+engine's own theme toggle, which treats no attribute as the system's setting, is not rendered. `Site.astro` fills the engine layout's `header` and `footer` slots with
 `SiteHeader.astro` and `SiteFooter.astro`, static copies of the website's header and footer. Prose sits
 at a 68ch measure; figures, simulations and tables run the full 840px column. The actor colours are
 fixed and used identically in every diagram on both pages:
