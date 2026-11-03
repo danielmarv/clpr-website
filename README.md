@@ -73,6 +73,9 @@ src/
     fibreSvg.tsx       Shared SVG pieces for the diagrams: fibre bundles, stars, membranes, hexagons
     Comparison.tsx     Bridge vs. CLPR: two cards whose aspects line up row by row
     ComparisonArt.tsx  Its two diagrams: a bridge in the middle vs. a direct Channel
+    UseCases.tsx       Use cases: the design's four application patterns, then what CLPR does not promise
+    UseCaseArt.tsx     Their four diagrams: a remote call, escrow and mint, a commit across three ledgers,
+                       a Hiero asset on a dashed (not yet specified) Channel
     ClprMark.tsx       The CLPR spiral logo (also the source shape for the particles)
     Hero.tsx  Extensibility.tsx  Repositories.tsx
     ThemeSwitch.tsx    The Light / Dark / System switch in the header
@@ -136,7 +139,7 @@ from the CLPR presentation on [hashgraph.com/clpr](https://hashgraph.com/clpr/).
 
 - **Story of the page.** An overview; the explainer under `/plumbing/` carries the detail. Hero (a
   network of ledgers draws itself) → pinned story as How it works (two ledgers form, a Channel
-  opens, proofs cross) → why bridgeless → architecture → code → get involved, which closes with
+  opens, proofs cross) → why bridgeless → use cases → architecture → code → get involved, which closes with
   the CLPR spiral as a ribbon of light. Each section links into the explainer where it stops.
 - **Background.** `ProtocolField` is one fixed WebGL2 canvas behind all content: an aurora
   shader, 9,000 (mobile) to 20,000 particles, and a network layer (`networkLayer.ts`) that
@@ -169,6 +172,10 @@ from the CLPR presentation on [hashgraph.com/clpr](https://hashgraph.com/clpr/).
   middle (muted grey) and directly by a CLPR Channel whose proof B's Verifier checks
   (`ComparisonArt`, both on the same clock). Below each drawing the five aspects (trust, custody,
   going offline, speed, what moves) line up across the cards on a shared CSS subgrid.
+- **Use cases.** The four patterns the design outlines (§3.4), each with a small looping diagram
+  (`UseCaseArt`, on `ComponentArt`'s clock), introduced as applications that are not specified yet;
+  Hiero's is drawn on a dashed Channel because the design gives it one sentence. Below them, the three
+  limits (delivery depends on Endpoints, nothing is secret, authentic is not safe).
 - **Architecture.** The three components a ledger needs (Service, Endpoints, Verifier
   Contracts), each with a small looping diagram (`ComponentArt`), then the note on Hiero's
   native service and a link to how a ledger is added in the explainer.
@@ -176,7 +183,7 @@ from the CLPR presentation on [hashgraph.com/clpr](https://hashgraph.com/clpr/).
   implementation card lists the CLPR components it implements, what it runs on and, where the
   sources say so, its status. Governance and the project facts share the last row.
 - **Header.** The nav sits exactly in the middle of the bar and a marker slides to the section
-  being read (`aria-current`); beside the theme switch it needs 70rem, and below that a menu
+  being read (`aria-current`); beside the theme switch it needs 78rem, and below that a menu
   button takes over. The mobile menu fills the screen, locks scrolling and closes on Escape.
 - **Themes.** `ThemeSwitch` in the header offers Light, Dark and System. Light is what a visitor
   sees until they choose; System follows the computer and changes with it. The choice is

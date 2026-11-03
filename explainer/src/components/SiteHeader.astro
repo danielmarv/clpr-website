@@ -17,6 +17,7 @@ const base = import.meta.env.BASE_URL.endsWith('/') ? import.meta.env.BASE_URL :
 const nav = [
   { label: 'How it works', href: '/#how-it-works' },
   { label: 'Why bridgeless', href: '/#protocol' },
+  { label: 'Use cases', href: '/#use-cases' },
   { label: 'Architecture', href: '/#architecture' },
   { label: 'Code', href: '/#code' },
   { label: 'Explainer', href: base, current: true },
@@ -51,7 +52,7 @@ const themeColor = (PACK as { themeColor: { light: string; dark: string } }).the
         ))}
       </div>
       <a class="site-btn ghost" href={SOURCES.org.url} target="_blank" rel="noreferrer"><GitHubMark /> GitHub</a>
-      <a class="site-btn primary" href="/#get-involved">Get involved</a>
+      <a class="site-btn primary" href="/#get-involved">Start contributing</a>
     </div>
   </div>
 </header>

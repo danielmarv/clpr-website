@@ -239,7 +239,7 @@ other one here, and the same header would behave differently on the two halves o
 **Consequences.** On paper the actor colours are a step deeper (`--a` #5b45e0, `--b` #c0267a and so
 on) so labels keep 4.5:1, white star and validator cores take their tone, and the dark actor bodies
 (endpoints, verifiers, coins) turn white. Lane gradients are recoloured in CSS by their `-lane` id, so
-`art.mjs` output follows the theme. The header shows the pill navigation from 70rem and drops the
+`art.mjs` output follows the theme. The header shows the pill navigation from 78rem and drops the
 "Cross Ledger Protocol" line, so the switch fits beside GitHub and the call to action. The engine's
 gates emulate only the system's setting, so `DARK=1` now drives the light default under a dark system; verify
 keeps that pass for the simulations under a dark system (it does not itself assert that the page stayed

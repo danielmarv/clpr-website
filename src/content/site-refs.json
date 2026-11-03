@@ -120,6 +120,50 @@
         }
       ]
     },
+    "useCases": {
+      "refs": [
+        {
+          "doc": "design",
+          "anchor": "34-application-layer",
+          "label": "design §3.4"
+        },
+        {
+          "doc": "design",
+          "anchor": "341-remote-smart-contract-call",
+          "label": "design §3.4.1"
+        },
+        {
+          "doc": "design",
+          "anchor": "342-escrow-mint-then-burn",
+          "label": "design §3.4.2"
+        },
+        {
+          "doc": "design",
+          "anchor": "343-n-ledger-atomic-swap-2pc",
+          "label": "design §3.4.3"
+        },
+        {
+          "doc": "design",
+          "anchor": "344-native-hiero-asset-management",
+          "label": "design §3.4.4"
+        },
+        {
+          "doc": "design",
+          "anchor": "23-trust-model",
+          "label": "design §2.3"
+        },
+        {
+          "doc": "spec",
+          "anchor": "86-untrusted-payloads",
+          "label": "spec §8.6"
+        },
+        {
+          "doc": "spec",
+          "anchor": "87-no-confidentiality",
+          "label": "spec §8.7"
+        }
+      ]
+    },
     "extensibility": {
       "refs": [
         {
