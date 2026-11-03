@@ -357,84 +357,72 @@ export const voices = {
   source: { label: "From the announcement of 24 September 2026", href: "/blog/clpr-joins-lf-decentralized-trust-labs/" },
 } as const;
 
-// The roles and teams are those of GOVERNANCE.md and teams.yml in the governance repository; names are
-// the members' public GitHub names, where they give one.
+// The structure of hiero.org/tsc. CLPR's governance (GOVERNANCE.md in the governance repository) has no TSC:
+// its Maintainers take the general decisions, so the page is theirs. Members appear once they are listed
+// in members.list; until then the page shows empty cards and points to teams.yml.
+type GovernanceMember = { name: string; role?: string; github?: string; photo?: string; bio?: string };
+
 export const governancePage = {
   metaTitle: "Governance",
-  description: "Who maintains CLPR, how decisions are made, and where the governance of the lab is kept.",
+  description: "Who maintains CLPR, how the lab takes its decisions, and where its governance is kept.",
   kicker: "CLPR technical governance",
-  title: "Who maintains CLPR",
-  lead: "CLPR is run in the open by its Maintainers, who take the decisions that affect the whole lab, and by the Committers of each repository. Anyone who contributes is a Contributor.",
+  title: "The maintainers of CLPR",
+  lead: "The Maintainers take the decisions that affect the CLPR lab as a whole, in the open and under the Labs charter of LF Decentralized Trust.",
   actions: {
-    primary: { label: "Read the governance rules", href: links.governanceRules },
+    primary: { label: "View the governance rules", href: links.governanceRules },
     secondary: { label: "Open meeting calendar", href: links.weeklyCall },
   },
   about: {
-    title: "How the lab is run",
-    paragraphs: [
-      "CLPR is a lab of LF Decentralized Trust: a lightweight home under the Linux Foundation for early open projects, governed by the Labs charter. Inside the lab, the rules in the governance repository define three roles.",
-      "Decisions are made by consensus where possible. When a formal decision is needed, such as adding a Committer or a Maintainer, the Maintainers vote, in the weekly call when more than half of them are present, or otherwise in the issue or pull request over 14 days. Every decision is tracked in an issue in the governance repository.",
-    ],
-    chips: ["Public rules", "Decisions tracked in issues", "Weekly open call", "Apache-2.0"],
+    eyebrow: "Governance",
+    title: "About the governance",
+    // {rules} is the link to GOVERNANCE.md.
+    body: "The roles, decisions and votes of the lab are set out in its {rules}, under the Labs charter of LF Decentralized Trust. Decisions are made by consensus where possible; when a vote is needed, the Maintainers hold it in the weekly call or over 14 days in the issue, and every decision is tracked in the governance repository.",
+    rulesLabel: "governance rules",
+    chips: ["Public rules", "Open weekly call", "Decisions tracked in issues"],
   },
   roles: [
     {
       name: "Maintainers",
-      body: "Take the decisions that affect the lab as a whole: new repositories, and adding or removing Committers and Maintainers. They act as stewards of CLPR and are expected to keep it diverse and community friendly.",
+      body: "Take the decisions that affect the lab as a whole: new repositories, and adding or removing Committers and Maintainers.",
     },
     {
       name: "Committers",
-      body: "Are named per repository. They review and merge pull requests, ladder issues for new contributors and take part in the project’s discussions.",
+      body: "Are named per repository. They review and merge pull requests, ladder issues for new contributors and take part in the discussions.",
     },
     {
       name: "Contributors",
-      body: "Anyone who opens an issue, writes code or documentation, reviews a pull request or joins a discussion. A Contributor with consistent contributions can be nominated as a Committer.",
+      body: "Anyone who opens an issue, writes code or documentation, or reviews a pull request. Consistent contributors can be nominated as Committers.",
     },
   ],
-  maintainersTitle: "Maintainers",
-  maintainersLead: "The clpr-maintainers team, as listed in teams.yml.",
-  committersTitle: "Committers",
-  committersLead: "Each repository has its own committer team.",
-  profileLabel: "GitHub profile",
-  maintainers: [
-    { handle: "edward-swirldslabs", name: "Edward Wertz" },
-    { handle: "hendrikebbers", name: "Hendrik Ebbers" },
-    { handle: "SimiHunjan", name: null },
-  ],
-  committers: [
-    { repository: "clpr-spec", members: [{ handle: "rbair23", name: "Richard Bair" }] },
-    {
-      repository: "clpr-smart-contracts",
-      members: [
-        { handle: "BartoszSolkaBD", name: null },
-        { handle: "bootcodes", name: "Thomas Boot" },
-        { handle: "Ferparishuertas", name: null },
-        { handle: "jasuwienas", name: null },
-        { handle: "JivkoKelchev", name: "Zhivko Kelchev" },
-        { handle: "mhess-swl", name: "Matt Hess" },
-        { handle: "Neeharika-Sompalli", name: "Neeharika Sompalli" },
-        { handle: "tinker-michaelj", name: "Michael Tinker" },
-        { handle: "viniciusjssouza", name: "Vinícius Souza" },
-      ],
+  members: {
+    eyebrow: "The maintainers",
+    title: "Who maintains CLPR",
+    body: "The Maintainers are contributors who steward CLPR and keep it open to everyone who wants to help. Their profiles are listed here as they are confirmed.",
+    countLabel: "members listed",
+    board: { label: "Current members", note: "Listed by surname" },
+    placeholders: 3,
+    placeholderName: "Profile to come",
+    noBio: "Biography not available.",
+    githubLabel: "GitHub profile",
+    empty: {
+      title: "Profiles are on their way",
+      body: "Until the profiles are listed here, every team of the lab and its members are in teams.yml in the governance repository.",
+      link: { label: "See the teams", href: links.teams },
     },
-    {
-      repository: "clpr-endpoint",
-      members: [
-        { handle: "ashumahajan", name: null },
-        { handle: "lukasz-hashgraph", name: "Lukasz Gasior" },
-        { handle: "mxtartaglia-sl", name: "Maximiliano Tartaglia" },
-        { handle: "timo0", name: "Timo Brandstätter" },
-      ],
-    },
-  ],
-  sourcesTitle: "Where the work is kept",
-  sourcesLead: "The charter, the rules and the teams are public, and every change to them is a pull request.",
-  sources: [
-    { name: "LFDT Labs charter", body: "The formal scope and operating rules for CLPR as an LFDT lab.", href: links.labsCharter },
-    { name: "Governance rules", body: "The roles, decision making and voting, in GOVERNANCE.md.", href: links.governanceRules },
-    { name: "Teams", body: "Every team, its members and its rights on each repository, in teams.yml.", href: links.teams },
-    { name: "Weekly call", body: "The weekly CLPR call, open to everyone, on the LFX meeting calendar.", href: links.weeklyCall },
-  ],
+    list: [] as GovernanceMember[],
+  },
+  resources: {
+    eyebrow: "Resources",
+    title: "Where the work is kept",
+    lead: "Read the charter and the rules, and follow the lab's governance where it happens.",
+    action: "Open resource",
+    items: [
+      { platform: "GitHub", name: "LFDT Labs charter", body: "The formal scope and operating rules for CLPR as an LFDT lab.", href: links.labsCharter },
+      { platform: "GitHub", name: "Governance rules", body: "The roles, decision making and voting, in GOVERNANCE.md.", href: links.governanceRules },
+      { platform: "GitHub", name: "Teams", body: "Every team, its members and its rights on each repository, in teams.yml.", href: links.teams },
+      { platform: "LFX", name: "Weekly call", body: "The weekly CLPR call, open to everyone, on the LFX meeting calendar.", href: links.weeklyCall },
+    ],
+  },
 } as const;
 
 export const issueExplorer = {

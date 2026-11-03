@@ -8,10 +8,6 @@ const nextConfig: NextConfig = {
   // /plumbing/ (and /plumbing/developers to /plumbing/developers/); the rewrites then serve the
   // static index.html files at those directory URLs.
   trailingSlash: true,
-  // The governance page shows the members' GitHub avatars, optimized on the server.
-  images: {
-    remotePatterns: [{ protocol: "https", hostname: "avatars.githubusercontent.com", pathname: "/**" }],
-  },
   async rewrites() {
     return [
       { source: "/plumbing/", destination: "/plumbing/index.html" },

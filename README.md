@@ -199,10 +199,12 @@ from the CLPR presentation on [hashgraph.com/clpr](https://hashgraph.com/clpr/).
   (`ComparisonArt`, both on the same clock). Below each drawing the five aspects (trust, custody,
   going offline, speed, what moves) line up across the cards on a shared CSS subgrid.
 - **Pages.** The Issue Explorer, Governance and Blog pages share `PageShell` (header, footer, no WebGL
-  background) and `PageIntro` (the hero's kicker pill and type). Governance lists the Maintainers and
-  Committers from the governance repository's `teams.yml` with their GitHub avatars; the list is copied
-  into `site.ts`, and the audit's live check compares it with `teams.yml`. CLPR's governance has no TSC,
-  so the page shows the roles it does have.
+  background) and `PageIntro` (the hero's kicker pill and type). Governance follows hiero.org/tsc:
+  a hero on the brand's colours with the governance rules and the meeting calendar, about the governance
+  and its three roles, who maintains CLPR, and where the work is kept. CLPR's governance has no TSC, so the
+  page is the Maintainers'. Their profiles go in `governancePage.members.list` in `site.ts` (name, role,
+  GitHub, a photo in `public/images/governance/`, bio); while it is empty the page shows placeholder cards
+  and points to `teams.yml`.
 - **Blog.** The structure of the Hiero website's blog (hiero-ledger/hiero-website): a Markdown file
   per post in `content/posts/` with TOML front matter, read by `src/lib/posts.ts`. The index shows the
   newest post at size with the next two beside it (`BlogLead`; while there are fewer, a card of what to

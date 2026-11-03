@@ -449,7 +449,7 @@
       }
     },
     "teams": {
-      "claim": "The Maintainers and the Committers of each repository listed on the governance page, and their roles.",
+      "claim": "The teams the governance page points to (teams.yml); the page lists no member profiles yet (governancePage.members.list is empty).",
       "checks": [
         "gh api repos/LFDT-CLPR/governance/contents/teams.yml -q .content | base64 -d"
       ],
