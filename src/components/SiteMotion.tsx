@@ -7,29 +7,23 @@ import { useEffect, useRef, type ReactNode } from "react";
 export function SiteMotion({ children }: { children: ReactNode }) {
   const root = useRef<HTMLDivElement>(null);
 
-  // Cards marked data-spotlight light up where the pointer is; elements marked
-  // data-pointer-glow follow the pointer even when it is beside them.
+  // Elements marked data-pointer-glow follow the pointer even when it is beside them.
   useEffect(() => {
     const element = root.current;
     if (!element) return;
     const pointer = { x: 0, y: 0, seen: false };
-    const track = (target: HTMLElement) => {
-      const rect = target.getBoundingClientRect();
-      target.style.setProperty("--mx", `${pointer.x - rect.left}px`);
-      target.style.setProperty("--my", `${pointer.y - rect.top}px`);
-    };
     const trackGlows = () => {
       if (!pointer.seen) return;
       element.querySelectorAll<HTMLElement>("[data-pointer-glow]").forEach((glow) => {
         const rect = glow.getBoundingClientRect();
-        if (rect.bottom > -200 && rect.top < window.innerHeight + 200) track(glow);
+        if (rect.bottom < -200 || rect.top > window.innerHeight + 200) return;
+        glow.style.setProperty("--mx", `${pointer.x - rect.left}px`);
+        glow.style.setProperty("--my", `${pointer.y - rect.top}px`);
       });
     };
     const onPointerMove = (event: PointerEvent) => {
       if (event.pointerType !== "mouse") return;
       Object.assign(pointer, { x: event.clientX, y: event.clientY, seen: true });
-      const card = (event.target as Element | null)?.closest<HTMLElement>("[data-spotlight]");
-      if (card) track(card);
       trackGlows();
     };
     element.addEventListener("pointermove", onPointerMove, { passive: true });

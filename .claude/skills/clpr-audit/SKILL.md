@@ -16,7 +16,7 @@ and never edits: its output is a report the maintainer or the `clpr-sync` skill 
 | Explainer sections and data rows, with their figures and simulations | `explainer/src/content/*.mdx`, `explainer/src/data/*.json` | each section's or row's `refs` | `kse audit-input` |
 | Explainer journey, titles, act text, pack text and page chrome | `journey.json`, `sections.json`, `pack.json`, `SiteHeader`, `SiteFooter`, `Repos`, pages | the steps' refs; design §1 and §2.3 | `repo-input.mjs` |
 | Website copy | `src/content/site.ts`, one input per export | `src/content/site-refs.json` | `repo-input.mjs` |
-| Website drawings and animations | hero, story phases, walkthrough steps, comparison tabs, onboarding steps, every section | the passages of the block that feeds them | `website-shots.mjs` |
+| Website drawings and animations | hero, story phases, the comparison and component drawings, every section | the passages of the block that feeds them | `website-shots.mjs` |
 | Text in components and the repository's documents | `src/components`, `src/app`, `README.md`, `AGENTS.md`, `CONTRIBUTING.md`, the explainer's README, CLAUDE.md and docs | design §1, org profile | `repo-input.mjs` |
 | Live facts | implementation status, releases, licences, lab status | the checks under `live` in `site-refs.json` | `repo-input.mjs --live` |
 

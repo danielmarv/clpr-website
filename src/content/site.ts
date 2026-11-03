@@ -28,17 +28,16 @@ export const nav = [
 export const headerCta = { label: "Get involved", href: "#get-involved" } as const;
 
 export const hero = {
-  eyebrow: "Bridgeless cross-ledger messaging",
+  eyebrow: "An LF Decentralized Trust Lab",
   title: "Cross-ledger messaging with no bridge to trust.",
   lead:
-    "CLPR (“Clipper”) is an open Cross Ledger PRotocol: a messaging protocol for reliable, asynchronous, in-order message passing between independent ledger networks. The destination ledger verifies the source ledger’s state proofs, so trust comes from the ledgers, not from bridges, pooled liquidity or intermediary validator networks. Payloads are opaque to CLPR; what they mean, including any token transfer, is up to the applications. Endpoints can delay messages but cannot forge them.",
-  primaryCta: { label: "Read the specification", href: links.spec },
-  secondaryCta: { label: "Explore the code", href: "#code" },
-  scrollCue: "Scroll to see how",
+    "CLPR (“Clipper”) is an open protocol for reliable, in-order messaging between independent ledger networks. The destination ledger verifies the source ledger’s state proofs, so trust comes from the ledgers, not from bridges, pooled liquidity or intermediary validators.",
+  primaryCta: { label: "Read the explainer", href: "/plumbing/" },
+  secondaryCta: { label: "Read the specification", href: links.spec },
 } as const;
 
 export const story = {
-  id: "story",
+  id: "how-it-works",
   label: "CLPR in three steps",
   statement: "Many bridges ask two ledgers to trust a third party. CLPR lets each ledger check the other’s proofs instead.",
   ledgerA: { name: "Ledger A", role: "Source, e.g. Hiero" },
@@ -65,196 +64,6 @@ export const story = {
   ],
 } as const;
 
-export const guarantees = {
-  id: "guarantees",
-  eyebrow: "Protocol properties",
-  title: "Guarantees enforced by the ledgers themselves.",
-  lead:
-    "CLPR adds no third party that can forge a message. What it promises follows from each ledger’s consensus, its state proofs, the Verifier Contract the Channel is bound to and an ordered queue on each side. A Channel is only as trustworthy as its Verifier Contract, and anyone can register a Channel, so applications should check which verifier it uses.",
-  items: [
-    {
-      name: "In order, tamper-evident",
-      body: "Messages on a Channel arrive in the order they were sent. A running-hash chain fixes that order and makes any change visible.",
-      visual: "order",
-    },
-    {
-      name: "Exactly one response",
-      body: "Every Data Message produces exactly one Response Message, with a status and reply bytes, on the same Channel.",
-      visual: "response",
-    },
-    {
-      name: "No pooled assets",
-      body: "Messages carry bytes, not tokens, so no pool of user assets sits between the ledgers. The CLPR Service on each side holds only Connector funds and Endpoint bonds.",
-    },
-    {
-      name: "Permissionless delivery",
-      body: "Delivery needs someone to relay. If an Endpoint goes offline, anyone, including the sender, can submit the proof and the Channel moves on; without a relay, messages wait but are never forged.",
-    },
-    {
-      name: "Any payload, no interpretation",
-      body: "Arbitrary bytes: data, oracle feeds and contract calls. CLPR guarantees a payload is authentic and unaltered, not that it is correct, safe or confidential; asset transfers and all other logic belong to applications.",
-    },
-    {
-      name: "No extra consensus layer",
-      body: "No bridge confirmation rounds on top. A message waits for the source ledger’s finality, at the level the Channel’s verifier accepts, then an Endpoint sync and the destination’s consensus.",
-      visual: "speed",
-    },
-  ],
-  art: {
-    bridge: "Bridge",
-    clpr: "CLPR",
-  },
-} as const;
-
-export type DemoNodeId =
-  | "a-app"
-  | "a-service"
-  | "a-verifier"
-  | "a-endpoint"
-  | "b-endpoint"
-  | "b-verifier"
-  | "b-service"
-  | "b-app";
-
-export type DemoStep = {
-  name: string;
-  title: string;
-  body: string;
-  active: DemoNodeId[];
-  /** Position of the outbound bundle on the channel, 0 (Ledger A) → 1 (Ledger B). null hides it. */
-  bundle: number | null;
-  /** Position of the response bundle, 1 (Ledger B) → 0 (Ledger A). null hides it. */
-  response: number | null;
-  proofVerified: boolean;
-  queueLength: number;
-};
-
-export const walkthrough = {
-  id: "how-it-works",
-  eyebrow: "How it works",
-  title: "Follow one message across a Channel.",
-  lead: "Seven steps from one ledger to the other and back. Let it play, or step through at your own pace.",
-  explainer: { lead: "Want the whole story, step by step?", label: "Read the full explainer: the plumbing of CLPR", href: "/plumbing/" },
-} as const;
-
-export const demo = {
-  ariaLabel: "Step-by-step walkthrough of a message crossing a CLPR Channel",
-  ledgerA: { name: "Ledger A", role: "Source, for example a Hiero network" },
-  ledgerB: { name: "Ledger B", role: "Destination, for example an EVM ledger" },
-  nodes: {
-    "a-app": { name: "Application", note: "Sends a payload" },
-    "a-service": { name: "CLPR Service", note: "Ordered outbound queue" },
-    "a-verifier": { name: "Verifier Contract", note: "Checks Ledger B’s proofs" },
-    "a-endpoint": { name: "CLPR Endpoint", note: "Builds proven bundles" },
-    "b-endpoint": { name: "CLPR Endpoint", note: "Submits the bundle" },
-    "b-verifier": { name: "Verifier Contract", note: "Checks Ledger A’s proofs" },
-    "b-service": { name: "CLPR Service", note: "Routes messages in order" },
-    "b-app": { name: "Application", note: "Receives the payload" },
-  } satisfies Record<DemoNodeId, { name: string; note: string }>,
-  channel: {
-    label: "Channel, each side bound to its own Verifier Contract",
-    emptyTitle: "No bridge in between",
-    emptyBody: "No bridge. No pooled liquidity. No intermediary validators. Endpoints carry bundles but cannot forge them.",
-    bundleTitle: "Bundle of 3 messages",
-    bundleProof: "State proof attached",
-    bundleProofVerified: "State proof verified",
-    responseTitle: "Bundle of 3 responses",
-  },
-  queue: {
-    caption: "Running-hash chain (illustrative values)",
-    messages: [
-      { id: "#1041", hash: "9f3a…c2e1" },
-      { id: "#1042", hash: "41be…7d09" },
-      { id: "#1043", hash: "c07e…19fa" },
-    ],
-  },
-  controls: {
-    previous: "Previous step",
-    next: "Next step",
-    play: "Play walkthrough",
-    pause: "Pause walkthrough",
-    steps: "Walkthrough steps",
-    position: "Step {step} of {total}",
-    keyboardHint: "Use ← and → to step through",
-  },
-  legend: {
-    message: "Message in transit",
-    proof: "State proof verified",
-  },
-  steps: [
-    {
-      name: "Send",
-      title: "An application hands over a payload",
-      body: "An application on Ledger A sends an arbitrary byte payload to its CLPR Service and names the Connector that will pay for execution on Ledger B.",
-      active: ["a-app", "a-service"],
-      bundle: null,
-      response: null,
-      proofVerified: false,
-      queueLength: 2,
-    },
-    {
-      name: "Queue",
-      title: "The message joins an ordered queue",
-      body: "The CLPR Service appends the message to the Channel’s outbound queue. Each message extends a running-hash chain, so order is fixed and tamper-evident.",
-      active: ["a-service"],
-      bundle: null,
-      response: null,
-      proofVerified: false,
-      queueLength: 3,
-    },
-    {
-      name: "Bundle",
-      title: "An Endpoint builds a state-proven bundle",
-      body: "A CLPR Endpoint batches queued messages into a bundle and attaches a state proof of Ledger A’s committed state. One proof covers every message in the bundle.",
-      active: ["a-endpoint"],
-      bundle: 0,
-      response: null,
-      proofVerified: false,
-      queueLength: 3,
-    },
-    {
-      name: "Transmit",
-      title: "The bundle crosses the Channel",
-      body: "Endpoints sync the bundle to the peer ledger, where an Endpoint submits it to the CLPR Service. Submission is permissionless: if an Endpoint goes offline, anyone, including the sender, can deliver the proof.",
-      active: ["a-endpoint", "b-endpoint"],
-      bundle: 1,
-      response: null,
-      proofVerified: false,
-      queueLength: 3,
-    },
-    {
-      name: "Verify",
-      title: "Ledger B checks the proof itself",
-      body: "Ledger B’s CLPR Service passes the bundle to its Verifier Contract, which checks the proof against the Channel’s trust anchor and translates the bundle into Ledger B’s own data format.",
-      active: ["b-service", "b-verifier"],
-      bundle: 1,
-      response: null,
-      proofVerified: true,
-      queueLength: 3,
-    },
-    {
-      name: "Deliver",
-      title: "Messages arrive in order",
-      body: "The CLPR Service checks that the Connector can pay, then routes each Data Message, in order, to its destination application. What the payload means is up to the two applications.",
-      active: ["b-service", "b-app"],
-      bundle: null,
-      response: null,
-      proofVerified: true,
-      queueLength: 3,
-    },
-    {
-      name: "Respond",
-      title: "Every Data Message gets exactly one response",
-      body: "Each Data Message produces exactly one Response Message with a status and reply bytes, which travels back to Ledger A over the same Channel. Ledger A’s CLPR Service passes it to Ledger A’s own Verifier Contract, which checks Ledger B’s proof.",
-      active: ["b-service", "a-service", "a-verifier"],
-      bundle: null,
-      response: 0,
-      proofVerified: true,
-      queueLength: 3,
-    },
-  ] satisfies DemoStep[],
-};
-
 export const origins = {
   label: "Contributed by Hashgraph, with a native Hiero service specified in HIP-1535, and hosted as an LF Decentralized Trust lab.",
   text: "Contributed by Hashgraph under its agreement with the Hedera Governing Council. The ideas build on Dr. Leemon Baird’s proposals for cross-ledger communication. The first native implementation is part of Hiero.",
@@ -272,9 +81,8 @@ export const comparison = {
   title: "Trust lives in the ledgers, not in a bridge.",
   lead:
     "Interledger solutions often add an intermediary consensus layer or a federated bridge: a party in the middle that has to be trusted. CLPR has no such party. Each ledger verifies the other’s state with proofs it checks itself, and the Endpoints that carry those proofs cannot forge them.",
-  columns: { aspect: "", bridge: "Many bridges", clpr: "CLPR" },
+  columns: { bridge: "Many bridges", clpr: "CLPR" },
   caption: "How CLPR differs from bridge-based interoperability",
-  aspectsLabel: "Compare by",
   diagrams: {
     bridge: {
       caption: "A third party sits between the chains: a federated bridge, a validator set or a custodian.",
@@ -285,91 +93,42 @@ export const comparison = {
       caption: "Each ledger checks the other’s state proofs itself. Endpoints build and relay them but cannot forge them.",
       proof: "State proof",
     },
-    ledgerA: "Ledger A",
-    ledgerB: "Ledger B",
-      labels: {
-      pooled: "Held in custody",
-      nothingHeld: "No pooled assets",
-      operatorOffline: "Bridge offline",
-      endpointOffline: "Endpoint offline",
-      anyone: "Anyone can deliver",
-      waiting: "Extra layer",
-      direct: "No extra rounds",
-      tokens: "Value or messages",
-      anyPayload: "Data, feeds, calls; assets via apps",
-    },
   },
   rows: [
     {
       aspect: "Where trust lives",
-      visual: "trust",
       bridge: "In a separate validator set, federation or custodian",
       clpr: "In the two ledgers, through state proofs checked by Verifier Contracts",
     },
     {
       aspect: "Custody",
-      visual: "custody",
       bridge: "Assets can sit with a custodian, whose keys become a target",
       clpr: "No pooled user assets: each CLPR Service holds only Connector funds and Endpoint bonds",
     },
     {
       aspect: "When something goes offline",
-      visual: "offline",
       bridge: "Delivery depends on the intermediary layer staying up",
       clpr: "Anyone, including the sender, can resume by submitting the proof",
     },
     {
       aspect: "Speed",
-      visual: "speed",
       bridge: "Goes through the intermediary layer’s own process",
       clpr: "No third consensus: source finality at the verifier’s level, an Endpoint sync, then the destination’s consensus",
     },
     {
       aspect: "What moves",
-      visual: "payload",
       bridge: "Value or messages, through the intermediary",
       clpr: "Any payload: data, oracle feeds, contract calls and asset transfers built by applications",
     },
   ],
-} as const;
-
-export const layers = {
-  id: "architecture",
-  eyebrow: "Architecture",
-  title: "Four layers, one minimal API.",
-  lead:
-    "Applications only see a small interface for sending and receiving payloads. How ledgers prove and verify each other’s state stays below it, which is what lets CLPR span very different networks.",
-  apiNote: "CLPR Application API",
-  listLabel: "CLPR protocol layers, from top to bottom",
-  termsLabel: "Terms on this layer",
-  glossaryId: "terminology",
-  items: [
-    {
-      name: "Application",
-      body: "A minimal API for sending and receiving message payloads. CLPR does not interpret them: asset transfers and cross-ledger contract calls are application logic on top of it.",
-      terms: ["Data Message", "Response Message"],
-    },
-    {
-      name: "Payment & routing",
-      body: "Connectors pay for message execution on the destination ledger and can be slashed for misbehavior. The CLPR Service routes each message to its application.",
-      terms: ["Connector", "Routing"],
-    },
-    {
-      name: "Messaging",
-      body: "An ordered, state-proven queue per Channel. Messages travel in bundles linked by a running-hash chain, so one proof extends trust to every message inside.",
-      terms: ["Message", "Bundle"],
-    },
-    {
-      name: "Network",
-      body: "Permissionless Channel registration with commit-reveal against ID squatting, the bundle sync protocol between Endpoints, and the pluggable Verifier Contract interface.",
-      terms: ["Channel", "Verifier Contract", "Trust Anchor"],
-    },
-  ],
+  caveat:
+    "A Channel is only as trustworthy as its Verifier Contract, and anyone can register a Channel, so applications should check which verifier it uses.",
+  explainer: { label: "Why a party in the middle is the weak point", href: "/plumbing/#bridges" },
 } as const;
 
 export const extensibility = {
-  id: "extensibility",
-  eyebrow: "Chain-agnostic",
+  id: "architecture",
+  eyebrow: "Architecture",
   title: "Bring any ledger that can prove its state.",
   lead:
     "CLPR is chain-agnostic. Supporting a new ledger type means building three components. The destination CLPR Service needs no change to its implementation, because each Verifier Contract translates the source ledger’s format into the local one.",
@@ -387,38 +146,9 @@ export const extensibility = {
       body: "Each checks one ledger type’s proofs, and a Channel is bound to one for its whole lifetime. They verify incoming state proofs against the Channel’s trust anchor and decode bundles into the local data format.",
     },
   ],
-  stepsTitle: "Connecting a new ledger to Hiero",
-  stepsLead: "Hiero has a native CLPR Service, specified by the approved HIP-1535. Step through what the new ledger needs, and watch it come together.",
-  onboarding: {
-    newLedger: "New ledger",
-    hiero: "Hiero",
-    service: "CLPR Service",
-    endpoints: "Endpoints",
-    verifierForHiero: "Verifies Hiero",
-    verifierForNew: "Verifies the new ledger",
-    built: "Built, not yet deployed",
-    channel: "Channel",
-    connector: "Connector",
-    applications: "Applications",
-    stepsLabel: "Steps to connect a new ledger",
-    position: "Step {step} of {total}",
-    previous: "Previous step",
-    next: "Next step",
-    play: "Play the steps",
-    pause: "Pause the steps",
-  },
-  steps: [
-    "Implement a CLPR Service and CLPR Endpoints for the new ledger type.",
-    "Implement a Hiero Verifier Contract deployable to the new ledger.",
-    "Implement a Verifier Contract for the new ledger, deployable to Hiero.",
-    "Deploy each Verifier Contract to the opposite network.",
-    "Set up a Channel between the two CLPR Services.",
-    "Share each network’s CLPR Endpoints with the other.",
-    "Bond a common Connector to the Channel.",
-    "Deploy CLPR applications configured for that Connector and Channel.",
-  ],
   footnote:
-    "Where a ledger builds its Endpoints into its validators, as Hiero does with every consensus node, that side needs no separate relay infrastructure.",
+    "Hiero has a native CLPR Service, specified by the approved HIP-1535, and builds its Endpoints into every consensus node, so that side needs no separate relay infrastructure.",
+  explainer: { label: "How a new ledger is added", href: "/plumbing/#extend" },
   art: {
     queue: "Ordered queue",
     applications: "Applications",
@@ -438,7 +168,6 @@ export const repositories = {
     "The specification is normative and language-neutral: wire formats, state and algorithms that any language can implement on any ledger. The reference implementations show one way to do it.",
   openLabel: "Open repository",
   featuredLabel: "Start here",
-  implementedBy: "Implemented by",
   implementsLabel: "Implements",
   runsOnLabel: "Runs on",
   rulesLabel: "How the project is run",
@@ -501,62 +230,6 @@ export const repositories = {
   },
 } as const;
 
-export const glossary = {
-  id: "terminology",
-  eyebrow: "Shared vocabulary",
-  title: "Terminology",
-  lead: "The terms used throughout the CLPR specification. Pick one on the map, or search for it below.",
-  filterLabel: "Filter terms",
-  filterPlaceholder: "Try “proof” or “Channel”",
-  emptyState: "No term matches “{query}”. Clear the filter to see all {count} terms.",
-  clearLabel: "Clear filter",
-  allLabel: "All",
-  categories: ["Components", "Network", "Messaging", "Trust", "Payment"],
-  relatedLabel: "Related terms",
-  position: "Term {index} of {count}",
-  previous: "Previous term",
-  next: "Next term",
-  seeIn: {
-    label: "See it in {section}",
-    sections: {
-      "how-it-works": "How it works",
-      guarantees: "Protocol properties",
-      architecture: "Architecture",
-      extensibility: "Chain-agnostic",
-    },
-    terms: {
-      "Peer Ledger": "how-it-works",
-      "State Proof": "how-it-works",
-      "CLPR Endpoint": "extensibility",
-      "CLPR Service": "extensibility",
-      Channel: "how-it-works",
-      Connector: "architecture",
-      Message: "how-it-works",
-      Bundle: "how-it-works",
-      "Data Message": "guarantees",
-      "Response Message": "guarantees",
-      "Verifier Contract": "extensibility",
-      "Trust Anchor": "extensibility",
-    },
-  },
-  terms: [
-    { term: "Peer Ledger", category: "Network", definition: "The other ledger that a network communicates with over CLPR." },
-    { term: "State Proof", category: "Trust", definition: "A cryptographic proof that a piece of data exists in a ledger’s committed state or history. State proofs are CLPR’s only mechanism of cross-ledger trust." },
-    { term: "CLPR Endpoint", category: "Components", definition: "A node that periodically exchanges configuration and messages with peer Endpoints." },
-    { term: "CLPR Service", category: "Components", definition: "Curates CLPR state per ledger, manages Channel state, routes messages to applications and coordinates payment between Connectors, applications and Endpoints." },
-    { term: "Channel", category: "Network", definition: "An on-ledger communication path to a specific peer CLPR Service, bound to one Verifier Contract for its lifetime. Several Channels may connect the same two ledgers." },
-    { term: "Connector", category: "Payment", definition: "An economic entity that authorizes messages on the source ledger and pays for their execution on the destination ledger." },
-    { term: "Message", category: "Messaging", definition: "An arbitrary byte payload plus routing metadata: one unit of cross-ledger communication." },
-    { term: "Bundle", category: "Messaging", definition: "An ordered batch of messages transmitted together between two ledgers, accompanied by a state proof." },
-    { term: "Data Message", category: "Messaging", definition: "A message carrying application content. Every Data Message produces exactly one Response Message." },
-    { term: "Response Message", category: "Messaging", definition: "Generated on the destination ledger after a Data Message is processed; carries a status and reply bytes back to the source." },
-    { term: "Control Message", category: "Messaging", definition: "A protocol message that manages Channel state, such as configuration updates, rather than carrying application data." },
-    { term: "Configuration", category: "Network", definition: "A ledger’s ChainID, protocol version and throttle parameters, as published to peers." },
-    { term: "Verifier Contract", category: "Trust", definition: "A smart contract, fixed to a Channel for its lifetime, that verifies state proofs from a remote ledger and decodes bundle content into the local ledger’s data format." },
-    { term: "Trust Anchor", category: "Trust", definition: "The verifier-defined representation of a peer ledger’s current signing authority, stored per Channel and updated only through verified proofs." },
-  ],
-} as const;
-
 export const involvement = {
   id: "get-involved",
   eyebrow: "Get involved",
@@ -580,12 +253,10 @@ export const involvement = {
       name: "Connect your ledger",
       body: "Maintain a network that can produce or verify state proofs? Help build its Service, Endpoints and Verifier Contracts, or a native integration.",
       cta: "See how a ledger is added",
-      href: links.githubOrg,
+      href: "/plumbing/#extend",
     },
   ],
-  closing: {
-    title: "Start with the specification.",
-    body: "It explains in full how two ledgers check each other’s messages without a bridge.",
+  actions: {
     primary: { label: "Read the specification", href: links.spec },
     secondary: { label: "Follow LFDT-CLPR on GitHub", href: links.githubOrg },
   },
@@ -604,8 +275,9 @@ export const footer = {
         { label: "Why bridgeless", href: "/#protocol" },
         { label: "Architecture", href: "/#architecture" },
         { label: "Code", href: "/#code" },
-        { label: "Terminology", href: "/#terminology" },
         { label: "The plumbing of CLPR", href: "/plumbing/" },
+        { label: "For developers", href: "/plumbing/developers/" },
+        { label: "Glossary", href: "/plumbing/developers/#glossary" },
       ],
     },
     {

@@ -1,88 +1,72 @@
-import { ArrowRight, ArrowUpRight, Code2, FileText, Network, type LucideIcon } from "lucide-react";
+import { ArrowRight, ArrowUpRight } from "lucide-react";
 
 import { GitHubMark } from "@/components/GitHubMark";
-import { SectionHeading } from "@/components/SectionHeading";
 import { SpiralRibbon } from "@/components/SpiralRibbon";
 import { Button } from "@/components/ui/button";
 import { involvement, origins } from "@/content/site";
-
-// One icon per path, in the order they appear in the content.
-const pathIcons: LucideIcon[] = [FileText, Code2, Network];
+import { isExternal } from "@/lib/utils";
 
 export function GetInvolved() {
+  const { actions } = involvement;
   return (
-    <>
-      <section aria-labelledby={involvement.id} className="shell py-20 lg:py-28">
-        <SectionHeading
-          id={involvement.id}
-          eyebrow={involvement.eyebrow}
-          title={involvement.title}
-          lead={involvement.lead}
-          split
-        />
-
-        <ul className="mt-14 grid gap-3 md:grid-cols-3 lg:mt-20">
-          {involvement.paths.map((path, index) => {
-            const Icon = pathIcons[index] ?? FileText;
-            return (
-              <li data-motion-reveal key={path.name}>
-                <a
-                  href={path.href}
-                  target="_blank"
-                  rel="noreferrer"
-                  data-spotlight
-                  className="panel group flex h-full flex-col p-6 transition-transform duration-300 hover:-translate-y-0.5 sm:p-7"
-                >
-                  <span className="flex size-10 items-center justify-center rounded-xl border border-white/10 bg-linear-to-b from-white/8 to-white/2 text-white">
-                    <Icon className="size-[1.125rem]" strokeWidth={1.75} aria-hidden="true" />
-                  </span>
-                  <h3 className="mt-8 text-[1.25rem] font-medium tracking-[-0.015em]">{path.name}</h3>
-                  <p className="mt-2 flex-1 text-[0.9375rem] leading-relaxed text-muted-foreground">{path.body}</p>
-                  <span className="mt-8 inline-flex items-center gap-2 text-[0.9375rem] font-medium text-white">
-                    {path.cta}
-                    <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-1" aria-hidden="true" />
-                  </span>
-                </a>
-              </li>
-            );
-          })}
-        </ul>
-
-        <p data-motion-reveal className="mt-10 max-w-[72ch] text-[0.9375rem] leading-relaxed text-faint">
-          {origins.text}
-        </p>
-      </section>
-
-      <section
-        data-scene="outro"
-        aria-labelledby="closing-title"
-        className="shell grid min-h-[92svh] content-center items-center gap-8 pb-20 pt-16 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:gap-6 lg:pb-24 lg:pt-24"
-      >
-        <SpiralRibbon className="mx-auto aspect-3/2 w-full max-w-[34rem] lg:order-2 lg:mx-0 lg:max-w-none lg:justify-self-end" />
+    <section data-scene="outro" aria-labelledby={involvement.id} className="shell py-24 lg:py-32">
+      <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:gap-6">
         <div data-motion-reveal className="max-w-xl">
+          <p className="mb-4 font-mono text-[0.75rem] uppercase tracking-[0.12em] text-signal-ink">{involvement.eyebrow}</p>
           <h2
-            id="closing-title"
-            className="text-headline text-[clamp(2.4rem,5.2vw,4.25rem)] font-light leading-[1.06] tracking-[-0.04em] text-balance"
+            id={involvement.id}
+            className="text-headline text-[clamp(2.25rem,4.6vw,3.5rem)] font-light leading-[1.08] tracking-[-0.035em] text-balance"
           >
-            {involvement.closing.title}
+            {involvement.title}
           </h2>
-          <p className="mt-6 max-w-md text-lg leading-relaxed text-muted-foreground">{involvement.closing.body}</p>
+          <p className="mt-6 text-[1.0625rem] leading-[1.7] text-muted-foreground">{involvement.lead}</p>
           <div className="mt-10 flex flex-wrap gap-3">
             <Button asChild size="lg">
-              <a href={involvement.closing.primary.href} target="_blank" rel="noreferrer">
-                {involvement.closing.primary.label}
+              <a href={actions.primary.href} target="_blank" rel="noreferrer">
+                {actions.primary.label}
                 <ArrowUpRight aria-hidden="true" />
               </a>
             </Button>
             <Button asChild size="lg" variant="secondary">
-              <a href={involvement.closing.secondary.href} target="_blank" rel="noreferrer">
+              <a href={actions.secondary.href} target="_blank" rel="noreferrer">
                 <GitHubMark />
-                {involvement.closing.secondary.label}
+                {actions.secondary.label}
               </a>
             </Button>
           </div>
         </div>
-      </section>
-    </>
+        <SpiralRibbon className="mx-auto aspect-3/2 w-full max-w-[34rem] max-lg:order-first lg:mx-0 lg:max-w-none lg:justify-self-end" />
+      </div>
+
+      <ul className="mt-16 grid gap-px overflow-hidden rounded-panel border border-white/[0.07] bg-white/[0.07] md:grid-cols-3 lg:mt-20">
+        {involvement.paths.map((path) => {
+          const external = isExternal(path.href);
+          return (
+            <li key={path.name} data-motion-reveal className="bg-background">
+              <a
+                href={path.href}
+                {...(external && { target: "_blank", rel: "noreferrer" })}
+                className="group flex h-full flex-col p-6 transition-colors duration-300 hover:bg-white/[0.03] sm:p-7"
+              >
+                <h3 className="text-[1.125rem] font-medium tracking-[-0.015em]">{path.name}</h3>
+                <p className="mt-2 flex-1 text-[0.9375rem] leading-relaxed text-muted-foreground">{path.body}</p>
+                <span className="mt-6 inline-flex items-center gap-2 text-[0.9375rem] font-medium text-signal-ink transition-colors group-hover:text-white">
+                  {path.cta}
+                  {external ? (
+                    <ArrowUpRight className="size-4" aria-hidden="true" />
+                  ) : (
+                    <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-1" aria-hidden="true" />
+                  )}
+                </span>
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+
+      <p data-motion-reveal className="mt-8 max-w-[72ch] text-[0.875rem] leading-relaxed text-faint">
+        {origins.text}
+      </p>
+    </section>
   );
 }

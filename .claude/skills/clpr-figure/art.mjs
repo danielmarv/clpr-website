@@ -94,7 +94,7 @@ const out = (() => {
       return `<circle class="art-coin" cx="${x}" cy="${y}" r="10"/><circle class="art-coin-dot" cx="${x}" cy="${y}" r="3.5"/>`;
     }
     case 'bundle': {
-      // The landing page's bundle (TermArt BundleOfThree): a dashed pill holding n message stars.
+      // The bundle as the landing page's glossary drew it (TermArt BundleOfThree, now in git history): a dashed pill holding n message stars.
       const x = num(args[0], 'x'), y = num(args[1], 'y'), n = num(args[2] ?? 3, 'n');
       const width = 13 * n + 13;
       const stars = Array.from({ length: n }, (_, k) => `<path class="art-star a" d="${starPath(x - ((n - 1) * 13) / 2 + k * 13, y, 8)}"/>`);
