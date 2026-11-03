@@ -1,8 +1,14 @@
 /* ------------------------------------------------------------------
-   The CLPR website's look, applied to the engine.
-   Tokens come from the website's src/app/globals.css (dark indigo, Sora, IBM Plex Mono, round
-   panels). html[lang]:root outranks the engine's :root and [data-theme] rules, so the pages are
-   dark in every setting; chrome overrides carry an `html` prefix for the same reason.
+   The CLPR website's look, applied to the engine, in light and dark.
+   Tokens come from the website's src/app/globals.css (ink on paper or on dark indigo, Sora, IBM
+   Plex Mono, round panels). The website's rule for the theme: <html data-theme> holds the visitor's
+   choice (light, dark or system, from the header's switch; Site.astro restores it before first
+   paint). No attribute is light, whatever the system says; dark applies for `dark`, and for
+   `system` when the system is dark. color-scheme carries that rule (light, dark, or `light dark`
+   for system), and every colour token is light-dark(light, dark), so one declaration serves every
+   case. The few non-colour tokens that differ are switched in the blocks after the tokens.
+   html[lang]:root outranks the engine's :root and [data-theme] rules, which would otherwise follow
+   the system when there is no attribute; chrome overrides carry an `html` prefix for the same reason.
    ------------------------------------------------------------------ */
 
 @font-face { font-family: "Sora"; src: url("../assets/fonts/sora-latin-wght-normal.woff2") format("woff2"); font-weight: 100 800; font-display: swap; }
@@ -10,32 +16,34 @@
 @font-face { font-family: "IBM Plex Mono"; src: url("../assets/fonts/ibm-plex-mono-latin-500-normal.woff2") format("woff2"); font-weight: 500; font-display: swap; }
 
 html[lang]:root {
-  color-scheme: dark;
-  --bg: #0c0b1d;
-  --bg-2: #111025;
-  --surface: #16152e;
-  --text: #f4f3f8;
-  --text-2: #a3a1b8;
-  --text-3: #8f8cab;       /* 6.0:1 on --bg */
-  --border: rgb(255 255 255 / 0.08);
-  --border-2: rgb(255 255 255 / 0.16);
-  --link: #b5abff;
-  --focus: #8b7bff;
-  --dots: rgb(255 255 255 / 0.06);
-  --tint: 16%;
-  --shadow: 0 1px 0 rgb(255 255 255 / 0.04) inset;
+  color-scheme: light;
+  --bg: light-dark(#f6f5fb, #0c0b1d);
+  --bg-2: light-dark(#eeecf6, #111025);
+  --surface: light-dark(#ffffff, #16152e);
+  --fg: light-dark(#120f2c, #ffffff);   /* full-strength chrome ink: ink on paper, white on indigo */
+  --text: light-dark(#120f2c, #f4f3f8);
+  --text-2: light-dark(#4f4c69, #a3a1b8);
+  --text-3: light-dark(#67647f, #8f8cab);       /* 5.2:1 on light --bg, 6.0:1 on dark */
+  --border: light-dark(rgb(18 15 44 / 0.1), rgb(255 255 255 / 0.08));
+  --border-2: light-dark(rgb(18 15 44 / 0.2), rgb(255 255 255 / 0.16));
+  --link: light-dark(#5b45e0, #b5abff);
+  --focus: light-dark(#5b45e0, #8b7bff);
+  --dots: light-dark(rgb(18 15 44 / 0.06), rgb(255 255 255 / 0.06));
+  --tint: 10%;
+  --shadow: 0 1px 2px light-dark(rgb(18 15 44 / 0.05), transparent), 0 1px 0 light-dark(transparent, rgb(255 255 255 / 0.04)) inset;
   --lift: none;
   --lift-sm: none;
 
   /* Actors, as the website draws them: violet for Ledger A and messages, pink for Ledger B and proofs,
-     peach for money (the website's Connector coins), magenta for whatever sits between. */
-  --a: #8b7bff;  --a-soft: rgb(139 123 255 / 0.18);
-  --b: #f27fbd;  --b-soft: rgb(242 127 189 / 0.16);
-  --c: #d56ad8;  --c-soft: rgb(213 106 216 / 0.18);
-  --ok: #4fd8a8; --ok-soft: rgb(79 216 168 / 0.16);
-  --bad: #ff6b5e; --bad-soft: rgb(255 107 94 / 0.16);
-  --money: #ffb49a; --money-soft: rgb(255 180 154 / 0.16);
-  --grey: #8f8cab; --grey-soft: rgb(255 255 255 / 0.06);
+     peach for money (the website's Connector coins), magenta for whatever sits between. The light
+     values are a step deeper so labels in them keep 4.5:1 on paper. */
+  --a: light-dark(#5b45e0, #8b7bff);      --a-soft: light-dark(#ecebfd, rgb(139 123 255 / 0.18));
+  --b: light-dark(#c0267a, #f27fbd);      --b-soft: light-dark(#fbe8f2, rgb(242 127 189 / 0.16));
+  --c: light-dark(#9b36a8, #d56ad8);      --c-soft: light-dark(#f5e8f8, rgb(213 106 216 / 0.18));
+  --ok: light-dark(#127a55, #4fd8a8);     --ok-soft: light-dark(#e2f4ec, rgb(79 216 168 / 0.16));
+  --bad: light-dark(#b8322a, #ff6b5e);    --bad-soft: light-dark(#fbe5e3, rgb(255 107 94 / 0.16));
+  --money: light-dark(#a84a2a, #ffb49a);  --money-soft: light-dark(#fbebe3, rgb(255 180 154 / 0.16));
+  --grey: light-dark(#6e6a8a, #8f8cab);   --grey-soft: light-dark(#efeef5, rgb(255 255 255 / 0.06));
 
   --display: "Sora", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font: "Sora", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -44,19 +52,50 @@ html[lang]:root {
   --radius-lg: 1.25rem;
 
   /* The website's own names, for the chrome below. */
-  --signal: #8b7bff; --signal-ink: #b5abff; --signal-glow: #9d8bff; --proof-glow: #f27fbd; --peach: #ffb49a;
-  --line: rgb(255 255 255 / 0.08); --line-strong: rgb(255 255 255 / 0.16); --mist: rgb(255 255 255 / 0.035);
-  --panel: linear-gradient(180deg, rgb(255 255 255 / 0.035), rgb(255 255 255 / 0.012)), rgb(22 18 50 / 0.8);
-  --gradient-brand: linear-gradient(100deg, #9d8bff 0%, #d56ad8 42%, #ff6fa5 70%, #ffb49a 100%);
+  --signal: light-dark(#5b45e0, #8b7bff); --signal-ink: light-dark(#5b45e0, #b5abff);
+  --signal-glow: light-dark(#6a55e8, #9d8bff); --proof-glow: light-dark(#d23a8a, #f27fbd); --peach: light-dark(#c95f3a, #ffb49a);
+  --line: light-dark(rgb(18 15 44 / 0.1), rgb(255 255 255 / 0.08));
+  --line-strong: light-dark(rgb(18 15 44 / 0.2), rgb(255 255 255 / 0.16));
+  --mist: light-dark(rgb(18 15 44 / 0.035), rgb(255 255 255 / 0.035));
+  --panel:
+    linear-gradient(180deg, light-dark(rgb(255 255 255 / 0.85), rgb(255 255 255 / 0.035)), light-dark(rgb(255 255 255 / 0.85), rgb(255 255 255 / 0.012))),
+    light-dark(transparent, rgb(22 18 50 / 0.8));
+  --gradient-brand: linear-gradient(100deg, light-dark(#5b45e0, #9d8bff) 0%, light-dark(#a43bb0, #d56ad8) 42%, light-dark(#d23a8a, #ff6fa5) 70%, light-dark(#c95f3a, #ffb49a) 100%);
+  /* Headings: ink fading to violet on paper, white fading to lavender on indigo. */
+  --headline: linear-gradient(180deg, light-dark(#120f2c, #ffffff) 30%, light-dark(rgb(63 34 215 / 0.8), rgb(214 210 240 / 0.62)) 110%);
+
+  /* Chrome surfaces and the footer's text, which needs more ink on paper than white needs on indigo. */
+  --header-bg: light-dark(rgb(246 245 251 / 0.8), rgb(12 11 29 / 0.72));
+  --footer-bg: light-dark(rgb(238 236 246 / 0.85), rgb(12 11 29 / 0.85));
+  --footer-text: light-dark(rgb(18 15 44 / 0.7), rgb(255 255 255 / 0.7));
+  --footer-link: light-dark(#4f4c69, rgb(255 255 255 / 0.55));
+  --footer-faint: light-dark(#67647f, rgb(255 255 255 / 0.5));
+  --footer-legal: light-dark(#67647f, rgb(255 255 255 / 0.45));
+  /* Figure and simulation plates: white cards on paper, the website's glass on indigo. */
+  --plate:
+    linear-gradient(180deg, light-dark(rgb(255 255 255 / 0.85), rgb(255 255 255 / 0.04)), light-dark(rgb(255 255 255 / 0.85), rgb(255 255 255 / 0.012))),
+    light-dark(transparent, rgb(22 18 50 / 0.55));
+  --plate-shadow: 0 1px 2px light-dark(rgb(18 15 44 / 0.05), transparent), 0 1px 0 light-dark(transparent, rgb(255 255 255 / 0.04)) inset;
+  /* The dark body of an endpoint, verifier or coin; white on paper. */
+  --art-fill: light-dark(#ffffff, #0b0a13);
+
+  /* Non-colour switches; the dark cases below flip them. */
+  --logo-filter: brightness(0);          /* partner logos: dark on paper */
+  --logo-invert-filter: brightness(0);
+}
+html[lang]:root[data-theme="dark"] { color-scheme: dark; --tint: 16%; --logo-filter: none; --logo-invert-filter: brightness(0) invert(1); }
+html[lang]:root[data-theme="system"] { color-scheme: light dark; }
+@media (prefers-color-scheme: dark) {
+  html[lang]:root[data-theme="system"] { --tint: 16%; --logo-filter: none; --logo-invert-filter: brightness(0) invert(1); }
 }
 
 /* ---------- frame ---------- */
 html body { font-size: 1.0625rem; }
-/* The website's page background (body in src/app/globals.css): one soft glow at the top, then flat ink. */
+/* The website's page background (body in src/app/globals.css): one soft glow at the top, then flat. */
 html body {
   background:
-    radial-gradient(ellipse 72rem 44rem at 82% -14rem, rgb(63 34 215 / 0.3), transparent 70%),
-    radial-gradient(ellipse 48rem 32rem at 104% 6rem, rgb(200 42 128 / 0.12), transparent 70%),
+    radial-gradient(ellipse 72rem 44rem at 82% -14rem, light-dark(rgb(91 69 224 / 0.12), rgb(63 34 215 / 0.3)), transparent 70%),
+    radial-gradient(ellipse 48rem 32rem at 104% 6rem, light-dark(rgb(200 42 128 / 0.06), rgb(200 42 128 / 0.12)), transparent 70%),
     var(--bg);
   background-repeat: no-repeat;
 }
@@ -70,49 +109,60 @@ html .shell { width: 100%; max-width: 76rem; margin-inline: auto; padding-inline
 
 /* ---------- header, as the website draws it ---------- */
 html .site-header {
-  position: sticky; top: 0; z-index: 40; color: #fff;
-  border-bottom: 1px solid var(--line); background: rgb(12 11 29 / 0.72);
+  position: sticky; top: 0; z-index: 40; color: var(--fg);
+  border-bottom: 1px solid var(--line); background: var(--header-bg);
   -webkit-backdrop-filter: blur(24px) saturate(150%); backdrop-filter: blur(24px) saturate(150%);
 }
 html .site-header .shell { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 1.5rem; height: 4rem; }
-@media (min-width: 64rem) { html .site-header .shell { grid-template-columns: 1fr auto 1fr; } }
-html .site-header .brand { display: inline-flex; align-items: center; gap: 0.625rem; justify-self: start; color: #fff; text-decoration: none; }
-html .site-header .brand svg { height: 1.25rem; width: auto; }
+/* The pill navigation needs about 70rem beside the brand, the theme switch, GitHub and the call to action. */
+@media (min-width: 70rem) { html .site-header .shell { grid-template-columns: 1fr auto 1fr; } }
+html .site-header .brand { display: inline-flex; align-items: center; gap: 0.625rem; justify-self: start; color: var(--fg); text-decoration: none; }
+html .site-header .brand svg { flex-shrink: 0; height: 1.25rem; width: auto; }
 html .site-header .brand .name { font-size: 1.125rem; font-weight: 600; letter-spacing: -0.01em; }
-html .site-header .brand .sep { display: none; width: 1px; height: 1rem; margin-left: 0.25rem; background: rgb(255 255 255 / 0.15); }
-html .site-header .brand .expansion { display: none; font-size: 0.8125rem; color: rgb(255 255 255 / 0.55); }
-@media (min-width: 80rem) { html .site-header .brand .sep, html .site-header .brand .expansion { display: block; } }
 html .site-nav { display: none; }
-@media (min-width: 64rem) { html .site-nav { display: block; } }
+@media (min-width: 70rem) { html .site-nav { display: block; } }
 html .site-nav ul {
   display: flex; align-items: center; list-style: none; margin: 0; padding: 0.25rem;
-  border: 1px solid var(--line); border-radius: 999px; background: rgb(255 255 255 / 0.03);
+  border: 1px solid var(--line); border-radius: 999px; background: color-mix(in srgb, var(--fg) 3%, transparent);
 }
 html .site-nav li { margin: 0; }
-html .site-nav a { display: block; border-radius: 999px; padding: 0.375rem 0.875rem; font-size: 0.875rem; color: rgb(255 255 255 / 0.6); text-decoration: none; transition: color 150ms, background-color 150ms; }
-html .site-nav a:hover { color: #fff; }
-html .site-nav a[aria-current="page"] { color: #fff; background: rgb(255 255 255 / 0.09); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.08); }
+html .site-nav a { display: block; border-radius: 999px; padding: 0.375rem 0.875rem; font-size: 0.875rem; color: color-mix(in srgb, var(--fg) 60%, transparent); text-decoration: none; transition: color 150ms, background-color 150ms; }
+html .site-nav a:hover { color: var(--fg); }
+html .site-nav a[aria-current="page"] { color: var(--fg); background: color-mix(in srgb, var(--fg) 9%, transparent); box-shadow: inset 0 1px 0 color-mix(in srgb, var(--fg) 8%, transparent); }
 html .site-header .actions { display: flex; align-items: center; gap: 0.5rem; justify-self: end; }
 html .site-btn {
   display: inline-flex; align-items: center; gap: 0.5rem; white-space: nowrap; text-decoration: none;
   border: 1px solid transparent; border-radius: 999px; padding: 0.4rem 0.875rem; font-size: 0.875rem; font-weight: 500;
   transition: background-color 150ms, color 150ms, border-color 150ms;
 }
-html .site-btn svg { width: 1rem; height: 1rem; }
-html .site-btn.ghost { color: rgb(255 255 255 / 0.8); }
-html .site-btn.ghost:hover { color: #fff; background: rgb(255 255 255 / 0.06); }
-html .site-btn.primary { background: #fff; color: var(--bg); }
-html .site-btn.primary:hover { background: #ece9ff; }
+html .site-btn svg { flex-shrink: 0; width: 1rem; height: 1rem; }
+html .site-btn.ghost { color: color-mix(in srgb, var(--fg) 80%, transparent); }
+html .site-btn.ghost:hover { color: var(--fg); background: color-mix(in srgb, var(--fg) 6%, transparent); }
+html .site-btn.primary { background: var(--fg); color: var(--bg); }
+html .site-btn.primary:hover { background: light-dark(#2a2550, #ece9ff); }
 @media (max-width: 40rem) { html .site-btn.primary { display: none; } }
+/* The colour-theme switch, as on the website: Light, Dark and System in one pill. The current choice
+   is marked from <html data-theme> itself (no attribute is light), so it is right before any script. */
+html .theme-switch { display: inline-flex; align-items: center; gap: 0.125rem; padding: 0.125rem; border: 1px solid color-mix(in srgb, var(--fg) 10%, transparent); border-radius: 999px; background: color-mix(in srgb, var(--fg) 3%, transparent); }
+html .theme-switch button {
+  display: inline-flex; align-items: center; justify-content: center; width: 1.75rem; height: 1.75rem; padding: 0;
+  border: 0; border-radius: 999px; background: transparent; color: color-mix(in srgb, var(--fg) 55%, transparent); cursor: pointer;
+  transition: color 150ms, background-color 150ms;
+}
+html .theme-switch button:hover { color: var(--fg); }
+html .theme-switch svg { width: 0.875rem; height: 0.875rem; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+html:not([data-theme="dark"]):not([data-theme="system"]) .theme-switch [data-theme-choice="light"],
+html[data-theme="dark"] .theme-switch [data-theme-choice="dark"],
+html[data-theme="system"] .theme-switch [data-theme-choice="system"] { background: color-mix(in srgb, var(--fg) 9%, transparent); color: var(--fg); }
 
-html .site-subnav { border-bottom: 1px solid var(--line); background: rgb(255 255 255 / 0.02); }
+html .site-subnav { border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--fg) 2%, transparent); }
 /* The two pages as the website's navigation pills: Sora, sentence case, the current one lit. */
 html .site-subnav .shell { display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem; min-height: 3rem; font-family: var(--font); font-size: 0.8125rem; letter-spacing: 0; text-transform: none; }
 html .site-subnav .label { display: inline-flex; align-items: center; gap: 0.625rem; color: var(--text-3); margin-right: 0.75rem; }
 html .site-subnav .label::before { content: ""; width: 1.5rem; height: 1px; background: linear-gradient(90deg, var(--signal-glow), var(--proof-glow)); }
-html .site-subnav a { color: rgb(255 255 255 / 0.6); text-decoration: none; padding: 0.375rem 0.875rem; border-radius: 999px; transition: color 150ms, background-color 150ms; }
-html .site-subnav a:hover { color: #fff; }
-html .site-subnav a[aria-current="page"] { color: #fff; background: rgb(255 255 255 / 0.09); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.08); }
+html .site-subnav a { color: color-mix(in srgb, var(--fg) 60%, transparent); text-decoration: none; padding: 0.375rem 0.875rem; border-radius: 999px; transition: color 150ms, background-color 150ms; }
+html .site-subnav a:hover { color: var(--fg); }
+html .site-subnav a[aria-current="page"] { color: var(--fg); background: color-mix(in srgb, var(--fg) 9%, transparent); box-shadow: inset 0 1px 0 color-mix(in srgb, var(--fg) 8%, transparent); }
 /* On phones the label goes so both pages fit one row. It sits after the label's own rule so it wins. */
 @media (max-width: 40rem) { html .site-subnav .label { display: none; } }
 
@@ -126,18 +176,18 @@ html :is(.hero .kicker, .part-tag)::before { content: ""; flex: none; width: 1.5
 html .part-tag .num { font-family: var(--font); }
 html .hero h1 {
   font-weight: 300; letter-spacing: -0.04em;
-  background-image: linear-gradient(180deg, #ffffff 30%, rgb(214 210 240 / 0.62) 110%);
+  background-image: var(--headline);
   -webkit-background-clip: text; background-clip: text; color: transparent;
 }
 html .hero h1 em { font-style: normal; font-weight: 400; background-image: var(--gradient-brand); -webkit-background-clip: text; background-clip: text; color: transparent; }
 html .hero .lede { color: var(--text-2); }
-html .route a { border: 1px solid var(--line-strong); border-radius: 999px; background: var(--mist); color: #fff; font-family: var(--font); font-size: 0.875rem; font-weight: 400; letter-spacing: 0; text-transform: none; padding: 0.5rem 1rem; }
+html .route a { border: 1px solid var(--line-strong); border-radius: 999px; background: var(--mist); color: var(--fg); font-family: var(--font); font-size: 0.875rem; font-weight: 400; letter-spacing: 0; text-transform: none; padding: 0.5rem 1rem; }
 html .route a b { font-family: var(--mono); font-weight: 500; color: var(--text-3); }
-html .route a:hover { border-color: #fff; }
-/* Headings as the website's: light, tight, white fading to lavender. */
+html .route a:hover { border-color: var(--fg); }
+/* Headings as the website's: light, tight, fading from full ink. */
 html :is(.act-band h2, main > section > h2) {
   font-weight: 300; letter-spacing: -0.035em;
-  background-image: linear-gradient(180deg, #ffffff 30%, rgb(214 210 240 / 0.62) 110%);
+  background-image: var(--headline);
   -webkit-background-clip: text; background-clip: text; color: transparent;
 }
 html main > section > h2 { font-weight: 400; letter-spacing: -0.03em; }
@@ -154,16 +204,16 @@ html .toc h2 { display: flex; align-items: center; gap: 0.625rem; margin-bottom:
 html .toc h2::before { content: ""; width: 1.5rem; height: 1px; background: linear-gradient(90deg, var(--signal-glow), var(--proof-glow)); }
 html .toc .toc__act, html .toc .read-pct { font-size: 0.75rem; color: var(--text-3); }
 html .toc .toc__act { margin-top: 1.25rem; }
-html .toc a[aria-current="true"] { font-weight: inherit; color: #fff; border-left-color: var(--signal); }
+html .toc a[aria-current="true"] { font-weight: inherit; color: var(--fg); border-left-color: var(--signal); }
 html .toc a[aria-current="true"] .num { color: var(--signal-ink); }
 html .toc a.done::after { font-weight: 400; }
 
 /* ---------- plates: figures, simulations, boxes ---------- */
 html .wide, html .check, html .table-wrap, html .step-list { border-color: var(--line); background: var(--panel); }
-/* Figures and simulations sit on the website's glass panels. */
+/* Figures and simulations sit on the website's panels: white cards on paper, glass on indigo. */
 html :is(.fig, .sim) {
-  border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: 0 1px 0 rgb(255 255 255 / 0.04) inset;
-  background: linear-gradient(180deg, rgb(255 255 255 / 0.04), rgb(255 255 255 / 0.012)), rgb(22 18 50 / 0.55);
+  border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--plate-shadow);
+  background: var(--plate);
   -webkit-backdrop-filter: blur(18px) saturate(1.4); backdrop-filter: blur(18px) saturate(1.4);
 }
 html .sim__head, html .sim__controls, html .sim__log { border-color: var(--line); }
@@ -177,7 +227,7 @@ html .callout { border-color: var(--line); }
 html .callout.key { border-left-color: var(--signal); }
 html .check .a { border-left-color: var(--ok); }
 html .step-card { background: var(--bg-2); border-color: var(--line); }
-html .step-list li:hover { background: rgb(255 255 255 / 0.04); }
+html .step-list li:hover { background: color-mix(in srgb, var(--fg) 4%, transparent); }
 html .step-list li[aria-current="step"] { background: var(--surface); box-shadow: inset 3px 0 0 var(--signal); }
 /* Diagram labels: bold at the website's heading weight, Sora a touch tighter (it runs wider than the
    engine's serif the drawings started in). checks/check-diagram-text.mjs keeps every label in its box. */
@@ -185,26 +235,30 @@ html svg .t:not(.mono):not(.take) { letter-spacing: -0.01em; }
 html svg .t.b { font-weight: 600; }
 html table { background: transparent; }
 html .table-wrap th { background: var(--bg-2); }
-html code { background: rgb(255 255 255 / 0.07); border-color: transparent; }
+html code { background: color-mix(in srgb, var(--fg) 7%, transparent); border-color: transparent; }
 html pre, html .astro-code { background: var(--bg-2) !important; border-color: var(--line); border-radius: var(--radius); }
-html a { text-decoration-color: rgb(181 171 255 / 0.45); }
+/* Code colours follow color-scheme too: the engine's own rules pick Shiki's dark colours whenever the
+   system is dark and there is no attribute, which here is the light theme. */
+html[lang]:root .astro-code, html[lang]:root .astro-code span { color: light-dark(var(--shiki-light), var(--shiki-dark)) !important; }
+html a { text-decoration-color: color-mix(in srgb, var(--link) 45%, transparent); }
 html .skip { background: var(--surface); }
 
 /* ---------- controls, as the website's buttons ---------- */
 html .btn {
   font-family: var(--font); font-size: 0.8rem; font-weight: 500; letter-spacing: 0;
-  border: 1px solid var(--line-strong); border-radius: 999px; background: var(--mist); color: #fff; box-shadow: none;
+  border: 1px solid var(--line-strong); border-radius: 999px; background: var(--mist); color: var(--fg); box-shadow: none;
   padding: 0.4rem 0.85rem;
 }
-html .btn:hover { transform: none; box-shadow: none; background: rgb(255 255 255 / 0.09); border-color: rgb(255 255 255 / 0.3); }
+html .btn:hover { transform: none; box-shadow: none; background: color-mix(in srgb, var(--fg) 9%, transparent); border-color: color-mix(in srgb, var(--fg) 30%, transparent); }
 html .btn:active { transform: none; box-shadow: none; }
-html .btn[aria-pressed="true"], html .btn.primary { background: #fff; color: var(--bg); border-color: #fff; }
+html .btn[aria-pressed="true"], html .btn.primary { background: var(--fg); color: var(--bg); border-color: var(--fg); }
 html .btn.danger { border-color: var(--bad); color: var(--bad); background: transparent; }
 html .btn.danger:hover { background: var(--bad-soft); }
 html .btn.danger[aria-pressed="true"] { background: var(--bad); color: #fff; }
 html .seg { border: 1px solid var(--line-strong); border-radius: 999px; background: var(--mist); box-shadow: none; }
 html .seg .btn + .btn { border-left-color: var(--line); }
 html .range input[type="range"], html .range input[type="checkbox"] { accent-color: var(--signal); }
+/* The engine's own switch (system, light, dark, with no attribute as system); the header's replaces it. */
 html .theme-toggle { display: none; }
 
 /* ---------- footer, as the website draws it ---------- */
@@ -212,11 +266,11 @@ html .theme-toggle { display: none; }
 @property --my { syntax: "<length-percentage>"; inherits: true; initial-value: 50%; }
 html .site-footer {
   position: relative; margin-top: 2rem; overflow-x: clip; line-height: 1.65;
-  border-top: 1px solid rgb(255 255 255 / 0.07); background: rgb(12 11 29 / 0.85); color: rgb(255 255 255 / 0.7);
+  border-top: 1px solid color-mix(in srgb, var(--fg) 7%, transparent); background: var(--footer-bg); color: var(--footer-text);
 }
 html .site-footer::before {
   content: ""; position: absolute; left: 50%; top: 0; height: 18rem; width: 64rem; max-width: 100%; transform: translateX(-50%); pointer-events: none;
-  background: radial-gradient(ellipse at top, rgb(108 55 235 / 0.14), transparent 70%);
+  background: radial-gradient(ellipse at top, light-dark(rgb(91 69 224 / 0.08), rgb(108 55 235 / 0.14)), transparent 70%);
 }
 html .site-footer .shell { position: relative; }
 html .site-footer p { margin: 0; }
@@ -229,7 +283,7 @@ html .site-footer__edge .channel { position: relative; flex: 1; height: 1.25rem;
 html .site-footer__edge .channel svg { position: absolute; inset: 0; width: 100%; height: 100%; max-width: none; }
 html .site-footer__edge .packet {
   position: absolute; top: 50%; left: 0; width: 0.375rem; height: 0.375rem; border-radius: 999px; opacity: 0; transform: translate(-50%, -50%);
-  background: #fff; box-shadow: 0 0 10px 3px rgb(157 139 255 / 0.8);
+  background: light-dark(#6a55e8, #fff); box-shadow: 0 0 10px 3px rgb(157 139 255 / 0.8);
 }
 html .site-footer__edge .packet.back { background: var(--peach); box-shadow: 0 0 10px 3px rgb(255 180 154 / 0.6); }
 @keyframes footer-packet { 0% { left: 0%; opacity: 0; } 4%, 40% { opacity: 1; } 44%, 100% { left: 100%; opacity: 0; } }
@@ -240,33 +294,33 @@ html .site-footer__edge .packet.back { background: var(--peach); box-shadow: 0 0
 
 html .site-footer__main { padding-top: 4rem; }
 html .site-footer__top { display: grid; gap: 3rem; }
-html .site-footer__brand a { display: inline-flex; align-items: center; gap: 0.625rem; color: #fff; font-size: 1.25rem; font-weight: 600; line-height: 1.4; letter-spacing: -0.01em; }
+html .site-footer__brand a { display: inline-flex; align-items: center; gap: 0.625rem; color: var(--fg); font-size: 1.25rem; font-weight: 600; line-height: 1.4; letter-spacing: -0.01em; }
 html .site-footer__brand svg { width: auto; height: 1.5rem; }
-html .site-footer__brand .expansion { margin-top: 0.5rem; font-size: 0.875rem; color: rgb(255 255 255 / 0.5); }
-html .site-footer__brand .tagline { margin-top: 1.25rem; max-width: 20rem; font-size: 0.9375rem; line-height: 1.625; color: rgb(255 255 255 / 0.7); }
+html .site-footer__brand .expansion { margin-top: 0.5rem; font-size: 0.875rem; color: var(--footer-faint); }
+html .site-footer__brand .tagline { margin-top: 1.25rem; max-width: 20rem; font-size: 0.9375rem; line-height: 1.625; color: var(--footer-text); }
 html .site-footer__cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2.5rem 2rem; }
-html .site-footer__cols h2 { margin: 0; font-size: 0.8125rem; font-weight: 500; line-height: inherit; letter-spacing: 0; color: #fff; }
+html .site-footer__cols h2 { margin: 0; font-size: 0.8125rem; font-weight: 500; line-height: inherit; letter-spacing: 0; color: var(--fg); }
 html .site-footer__cols ul { list-style: none; margin: 1rem 0 0; padding: 0; }
 html .site-footer__cols li { margin: 0; }
 html .site-footer__cols li + li { margin-top: 0.625rem; }
-html .site-footer__cols a { font-size: 0.9375rem; line-height: 1.375; color: rgb(255 255 255 / 0.55); transition: color 150ms; }
-html .site-footer__cols a:hover { color: #fff; }
+html .site-footer__cols a { font-size: 0.9375rem; line-height: 1.375; color: var(--footer-link); transition: color 150ms; }
+html .site-footer__cols a:hover { color: var(--fg); }
 html .site-footer__cols .ext {
-  display: inline-block; width: 0.875rem; height: 0.875rem; margin-left: 0.25rem; vertical-align: -0.15em; color: rgb(255 255 255 / 0.3);
+  display: inline-block; width: 0.875rem; height: 0.875rem; margin-left: 0.25rem; vertical-align: -0.15em; color: color-mix(in srgb, var(--fg) 30%, transparent);
   fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: color 150ms, transform 150ms;
 }
-html .site-footer__cols a:hover .ext { color: #fff; transform: translate(1px, -1px); }
+html .site-footer__cols a:hover .ext { color: var(--fg); transform: translate(1px, -1px); }
 
-html .site-footer__backing { display: grid; gap: 1.5rem; margin-top: 3.5rem; padding-top: 2rem; border-top: 1px solid rgb(255 255 255 / 0.07); }
+html .site-footer__backing { display: grid; gap: 1.5rem; margin-top: 3.5rem; padding-top: 2rem; border-top: 1px solid color-mix(in srgb, var(--fg) 7%, transparent); }
 html .site-footer__backing p { font-size: 0.75rem; color: var(--text-3); }
 html .site-footer__backing .logos { display: flex; flex-wrap: wrap; align-items: center; column-gap: 1.5rem; }
 html .site-footer__backing a { display: flex; min-height: 2.5rem; align-items: center; opacity: 0.6; transition: opacity 150ms; }
 html .site-footer__backing a:hover, html .site-footer__backing a:focus-visible { opacity: 1; }
-html .site-footer__backing img { width: auto; max-width: none; }
+html .site-footer__backing img { width: auto; max-width: none; filter: var(--logo-filter); }
 html .site-footer__backing img.lfdt { height: 0.875rem; }
 html .site-footer__backing img.hashgraph { height: 1.5rem; }
 html .site-footer__backing img.hedera, html .site-footer__backing img.hiero { height: 2rem; }
-html .site-footer__backing img.invert { filter: brightness(0) invert(1); }
+html .site-footer__backing img.invert { filter: var(--logo-invert-filter); }
 
 html .site-footer .site-footer__wordmark {
   --mx: 30%; --my: 85%;
@@ -274,7 +328,7 @@ html .site-footer .site-footer__wordmark {
   color: transparent; user-select: none;
   background-image:
     radial-gradient(30rem circle at var(--mx) var(--my), rgb(157 139 255 / 0.95), rgb(242 127 189 / 0.7) 36%, transparent 66%),
-    linear-gradient(180deg, rgb(255 255 255 / 0.1), rgb(255 255 255 / 0.02) 85%);
+    linear-gradient(180deg, light-dark(rgb(18 15 44 / 0.08), rgb(255 255 255 / 0.1)), light-dark(rgb(18 15 44 / 0.02), rgb(255 255 255 / 0.02)) 85%);
   -webkit-background-clip: text; background-clip: text;
   -webkit-mask-image: linear-gradient(180deg, #000 40%, transparent 100%); mask-image: linear-gradient(180deg, #000 40%, transparent 100%);
 }
@@ -284,13 +338,13 @@ html .site-footer .site-footer__wordmark {
   html .site-footer .site-footer__wordmark { animation: wordmark-sweep 9s ease-in-out infinite alternate; }
 }
 
-html .site-footer__legal { display: flex; flex-direction: column; gap: 1rem; padding: 1.5rem 0; border-top: 1px solid rgb(255 255 255 / 0.07); font-size: 0.8125rem; color: rgb(255 255 255 / 0.45); }
+html .site-footer__legal { display: flex; flex-direction: column; gap: 1rem; padding: 1.5rem 0; border-top: 1px solid color-mix(in srgb, var(--fg) 7%, transparent); font-size: 0.8125rem; color: var(--footer-legal); }
 html .site-footer__legal > div { max-width: 48rem; }
 html .site-footer__legal .about { margin-bottom: 0.75rem; }
-html .site-footer__legal .about a { color: rgb(255 255 255 / 0.7); text-decoration: underline; text-decoration-color: rgb(255 255 255 / 0.25); }
-html .site-footer__legal .about a:hover { color: #fff; text-decoration-color: currentColor; }
-html .site-footer__legal > a { display: inline-flex; flex-shrink: 0; align-items: center; gap: 0.375rem; color: rgb(255 255 255 / 0.7); transition: color 150ms; }
-html .site-footer__legal > a:hover { color: #fff; }
+html .site-footer__legal .about a { color: var(--footer-text); text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--fg) 25%, transparent); }
+html .site-footer__legal .about a:hover { color: var(--fg); text-decoration-color: currentColor; }
+html .site-footer__legal > a { display: inline-flex; flex-shrink: 0; align-items: center; gap: 0.375rem; color: var(--footer-text); transition: color 150ms; }
+html .site-footer__legal > a:hover { color: var(--fg); }
 html .site-footer__legal > a svg { width: 0.875rem; height: 0.875rem; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
 @media (min-width: 40rem) {
@@ -312,44 +366,48 @@ html .site-footer__legal > a svg { width: 0.875rem; height: 0.875rem; fill: none
    Every drawing's boxes and lines take the website's glow, so the plates read like its art.
    Figures stay static markup; nothing here needs a script. */
 html :is(.fig, .sim, .trailer) svg :is(.d-a, .d-b, .d-c, .d-ok, .d-bad, .d-money) { stroke-width: 1.25; filter: drop-shadow(0 0 6px var(--glow, transparent)); }
-/* Opaque, as the website's node cards are: dark with a little of the tone mixed in, so a line drawn
-   behind a box never shows through its label. */
-html svg .d-a { fill: #221e49; --glow: rgb(139 123 255 / 0.4); }
-html svg .d-b { fill: #2f1e41; --glow: rgb(242 127 189 / 0.4); }
-html svg .d-c { fill: #2b1c44; --glow: rgb(213 106 216 / 0.4); }
-html svg .d-ok { fill: #1b293e; --glow: rgb(79 216 168 / 0.35); }
-html svg .d-bad { fill: #301c36; --glow: rgb(255 107 94 / 0.35); }
-html svg .d-money { fill: #30253d; --glow: rgb(255 180 154 / 0.35); }
-html svg .d-surface, html svg .d-grey { fill: #100d26; stroke: rgb(255 255 255 / 0.14); }
+/* Opaque, as the website's node cards are: a little of the tone mixed into the plate (pale on paper,
+   dark on indigo), so a line drawn behind a box never shows through its label. */
+html svg .d-a { fill: light-dark(#ecebfd, #221e49); --glow: light-dark(rgb(106 85 232 / 0.18), rgb(139 123 255 / 0.4)); }
+html svg .d-b { fill: light-dark(#fbe8f2, #2f1e41); --glow: light-dark(rgb(210 58 138 / 0.18), rgb(242 127 189 / 0.4)); }
+html svg .d-c { fill: light-dark(#f5e8f8, #2b1c44); --glow: light-dark(rgb(155 54 168 / 0.18), rgb(213 106 216 / 0.4)); }
+html svg .d-ok { fill: light-dark(#e2f4ec, #1b293e); --glow: light-dark(rgb(18 122 85 / 0.16), rgb(79 216 168 / 0.35)); }
+html svg .d-bad { fill: light-dark(#fbe5e3, #301c36); --glow: light-dark(rgb(184 50 42 / 0.16), rgb(255 107 94 / 0.35)); }
+html svg .d-money { fill: light-dark(#fbebe3, #30253d); --glow: light-dark(rgb(168 74 42 / 0.16), rgb(255 180 154 / 0.35)); }
+html svg .d-surface, html svg .d-grey { fill: light-dark(#ffffff, #100d26); stroke: light-dark(rgb(18 15 44 / 0.18), rgb(255 255 255 / 0.14)); }
 html :is(.fig, .sim, .trailer) svg .line { stroke-linecap: round; filter: drop-shadow(0 0 3px var(--glow, transparent)); }
-html svg .line.a { --glow: rgb(139 123 255 / 0.6); }
-html svg .line.b { --glow: rgb(242 127 189 / 0.6); }
-html svg .line.c { --glow: rgb(213 106 216 / 0.6); }
-html svg .line.ok { --glow: rgb(79 216 168 / 0.5); }
-html svg .line.money { --glow: rgb(255 180 154 / 0.5); }
+html svg .line.a { --glow: light-dark(rgb(106 85 232 / 0.25), rgb(139 123 255 / 0.6)); }
+html svg .line.b { --glow: light-dark(rgb(210 58 138 / 0.25), rgb(242 127 189 / 0.6)); }
+html svg .line.c { --glow: light-dark(rgb(155 54 168 / 0.25), rgb(213 106 216 / 0.6)); }
+html svg .line.ok { --glow: light-dark(rgb(18 122 85 / 0.2), rgb(79 216 168 / 0.5)); }
+html svg .line.money { --glow: light-dark(rgb(168 74 42 / 0.2), rgb(255 180 154 / 0.5)); }
 
 /* ---------- the website's drawing vocabulary (art-*) ----------
    The landing page's actors, as classes on plain SVG shapes. `.claude/skills/clpr-figure/art.mjs`
    writes the markup; docs/figures.md says which actor gets which shape. Tones: a (Ledger A, violet),
-   b (Ledger B, pink), c (magenta), money (peach), ok, bad. */
+   b (Ledger B, pink), c (magenta), money (peach), ok, bad. On paper the white cores of stars and
+   validators would vanish, so there they take their tone instead. */
 html svg .art-orb { fill: var(--tone-wash); stroke: var(--tone-line); stroke-width: 1; }
-html svg .art-validator { fill: #fff; opacity: 0.8; filter: drop-shadow(0 0 3px var(--tone)); }
-html svg .art-star { fill: #fff; filter: drop-shadow(0 0 4px var(--tone)) drop-shadow(0 0 10px var(--tone)); }
+html svg .art-validator { fill: light-dark(var(--tone), #fff); opacity: 0.8; filter: drop-shadow(0 0 3px var(--tone)); }
+html svg .art-star { fill: light-dark(var(--tone), #fff); filter: drop-shadow(0 0 4px var(--tone)) drop-shadow(0 0 10px var(--tone-glow)); }
 html svg .art-halo { fill: none; stroke: var(--tone-line); stroke-width: 1; }
-html svg .art-endpoint { fill: #0b0a13; stroke: var(--tone); stroke-width: 1.5; filter: drop-shadow(0 0 4px var(--tone-glow)); }
-html svg .art-verifier { fill: #0b0a13; stroke: #f27fbd; stroke-width: 1.4; filter: drop-shadow(0 0 4px rgb(242 127 189 / 0.5)); }
+html svg .art-endpoint { fill: var(--art-fill); stroke: var(--tone); stroke-width: 1.5; filter: drop-shadow(0 0 4px var(--tone-glow)); }
+html svg .art-verifier { fill: var(--art-fill); stroke: var(--proof-glow); stroke-width: 1.4; filter: drop-shadow(0 0 4px light-dark(rgb(210 58 138 / 0.3), rgb(242 127 189 / 0.5))); }
 html svg .art-fibre { fill: none; stroke-width: 0.9; stroke-linecap: round; opacity: 0.55; }
 /* A lane keeps the gradient its stroke attribute names (art.mjs lane); every other bundle takes its tone. */
 html svg .art-fibre:not(.lane) { stroke: var(--tone); }
-html svg .art-coin { fill: #0b0a13; stroke: #ffb49a; stroke-width: 1.6; }
-html svg .art-coin-dot { fill: #ffb49a; }
-html svg .art-ring { fill: none; stroke: #f27fbd; stroke-width: 1.4; filter: drop-shadow(0 0 4px rgb(242 127 189 / 0.6)); }
-html svg :is(.art-orb, .art-validator, .art-star, .art-halo, .art-endpoint, .art-fibre) { --tone: #9d8bff; --tone-line: rgb(157 139 255 / 0.5); --tone-wash: rgb(139 123 255 / 0.09); --tone-glow: rgb(157 139 255 / 0.5); }
-html svg :is(.art-orb, .art-validator, .art-star, .art-halo, .art-endpoint, .art-fibre).b { --tone: #f27fbd; --tone-line: rgb(242 127 189 / 0.5); --tone-wash: rgb(242 127 189 / 0.09); --tone-glow: rgb(242 127 189 / 0.5); }
-html svg :is(.art-orb, .art-validator, .art-star, .art-halo, .art-endpoint, .art-fibre).c { --tone: #d56ad8; --tone-line: rgb(213 106 216 / 0.5); --tone-wash: rgb(213 106 216 / 0.09); --tone-glow: rgb(213 106 216 / 0.5); }
-html svg :is(.art-orb, .art-validator, .art-star, .art-halo, .art-endpoint, .art-fibre).money { --tone: #ffb49a; --tone-line: rgb(255 180 154 / 0.5); --tone-wash: rgb(255 180 154 / 0.09); --tone-glow: rgb(255 180 154 / 0.5); }
-html svg :is(.art-orb, .art-validator, .art-star, .art-halo, .art-endpoint, .art-fibre).ok { --tone: #4fd8a8; --tone-line: rgb(79 216 168 / 0.5); --tone-wash: rgb(79 216 168 / 0.08); --tone-glow: rgb(79 216 168 / 0.45); }
-html svg :is(.art-orb, .art-validator, .art-star, .art-halo, .art-endpoint, .art-fibre).bad { --tone: #ff6b5e; --tone-line: rgb(255 107 94 / 0.5); --tone-wash: rgb(255 107 94 / 0.08); --tone-glow: rgb(255 107 94 / 0.45); }
+/* The lane gradients (art.mjs lane, the journey trailer) run from Ledger A's violet to Ledger B's pink in either theme. */
+html svg linearGradient[id$="lane"] stop:first-child { stop-color: var(--signal-glow); }
+html svg linearGradient[id$="lane"] stop:last-child { stop-color: var(--proof-glow); }
+html svg .art-coin { fill: var(--art-fill); stroke: var(--peach); stroke-width: 1.6; }
+html svg .art-coin-dot { fill: var(--peach); }
+html svg .art-ring { fill: none; stroke: var(--proof-glow); stroke-width: 1.4; filter: drop-shadow(0 0 4px light-dark(rgb(210 58 138 / 0.35), rgb(242 127 189 / 0.6))); }
+html svg :is(.art-orb, .art-validator, .art-star, .art-halo, .art-endpoint, .art-fibre) { --tone: light-dark(#6a55e8, #9d8bff); --tone-line: light-dark(rgb(106 85 232 / 0.5), rgb(157 139 255 / 0.5)); --tone-wash: light-dark(rgb(106 85 232 / 0.07), rgb(139 123 255 / 0.09)); --tone-glow: light-dark(rgb(106 85 232 / 0.3), rgb(157 139 255 / 0.5)); }
+html svg :is(.art-orb, .art-validator, .art-star, .art-halo, .art-endpoint, .art-fibre).b { --tone: light-dark(#d23a8a, #f27fbd); --tone-line: light-dark(rgb(210 58 138 / 0.5), rgb(242 127 189 / 0.5)); --tone-wash: light-dark(rgb(210 58 138 / 0.07), rgb(242 127 189 / 0.09)); --tone-glow: light-dark(rgb(210 58 138 / 0.3), rgb(242 127 189 / 0.5)); }
+html svg :is(.art-orb, .art-validator, .art-star, .art-halo, .art-endpoint, .art-fibre).c { --tone: light-dark(#b84fc0, #d56ad8); --tone-line: light-dark(rgb(184 79 192 / 0.5), rgb(213 106 216 / 0.5)); --tone-wash: light-dark(rgb(184 79 192 / 0.07), rgb(213 106 216 / 0.09)); --tone-glow: light-dark(rgb(184 79 192 / 0.3), rgb(213 106 216 / 0.5)); }
+html svg :is(.art-orb, .art-validator, .art-star, .art-halo, .art-endpoint, .art-fibre).money { --tone: light-dark(#c95f3a, #ffb49a); --tone-line: light-dark(rgb(201 95 58 / 0.5), rgb(255 180 154 / 0.5)); --tone-wash: light-dark(rgb(201 95 58 / 0.07), rgb(255 180 154 / 0.09)); --tone-glow: light-dark(rgb(201 95 58 / 0.3), rgb(255 180 154 / 0.5)); }
+html svg :is(.art-orb, .art-validator, .art-star, .art-halo, .art-endpoint, .art-fibre).ok { --tone: light-dark(#1f9d6e, #4fd8a8); --tone-line: light-dark(rgb(31 157 110 / 0.5), rgb(79 216 168 / 0.5)); --tone-wash: light-dark(rgb(31 157 110 / 0.07), rgb(79 216 168 / 0.08)); --tone-glow: light-dark(rgb(31 157 110 / 0.28), rgb(79 216 168 / 0.45)); }
+html svg :is(.art-orb, .art-validator, .art-star, .art-halo, .art-endpoint, .art-fibre).bad { --tone: light-dark(#d6453a, #ff6b5e); --tone-line: light-dark(rgb(214 69 58 / 0.5), rgb(255 107 94 / 0.5)); --tone-wash: light-dark(rgb(214 69 58 / 0.07), rgb(255 107 94 / 0.08)); --tone-glow: light-dark(rgb(214 69 58 / 0.28), rgb(255 107 94 / 0.45)); }
 html svg .art-validator.dim { opacity: 0.35; }
 
 /* Motion, for simulations and the hero only (figures stay still): a bead travels along an
@@ -362,4 +420,4 @@ html svg .art-breathe { animation: art-pulse var(--dur, 3s) var(--delay, 0s) eas
   html svg .art-move { animation: none; offset-distance: var(--rest, 50%); }
   html svg .art-breathe { animation: none; opacity: 1; }
 }
-html svg .art-bundle { fill: rgb(11 10 19 / 0.6); stroke: #f27fbd; stroke-width: 1.3; stroke-dasharray: 3 3; }
+html svg .art-bundle { fill: light-dark(rgb(255 255 255 / 0.7), rgb(11 10 19 / 0.6)); stroke: var(--proof-glow); stroke-width: 1.3; stroke-dasharray: 3 3; }

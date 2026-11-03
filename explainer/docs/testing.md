@@ -10,10 +10,11 @@ rendering, with tools that run in seconds.
 |---|---|
 | `pnpm run build` | Astro build to `dist/` |
 | `pnpm run check` | `kse check-provenance`, `kse check-links` against `dist/`, `kse check-names` (a word in the gitignored `src/data/pack.local.json` `names.must_not_mention` (copy `pack.local.example.json`), appears nowhere on either page) and `kse check-vocab` (the specification's terms are the names), `checks/check-data.mjs` (data rows carry references; inventories match upstream), `kse content-map --check` (the generated map is current) and `kse check-orphans` (every component is imported somewhere) |
-| `pnpm run verify` | build, then `check`, `check:anchors`, `check:browser`, the dark-theme simulation pass and `overflow.mjs` at 400px on both pages; stops at the first failing gate. Run it before calling anything done |
+| `pnpm run verify` | build, then `check`, `check:anchors`, `check:browser`, the `DARK=1` simulation pass (the light default driven under a dark system, see D21), `overflow.mjs` at 400px on both pages, then `check:dark`; stops at the first failing gate. Run it before calling anything done |
+| `pnpm run check:dark` | the simulation, diagram text and 400px overflow checks again in the dark theme. kse's gates only emulate `prefers-color-scheme`, which no longer turns the pages dark, so `checks/browser/theme-preload.cjs` (loaded through `NODE_OPTIONS`) stores `THEME=dark` in every page they open, prints the background the first page rendered (`rgb(12, 11, 29)`) and fails the run if a page did not take the theme |
 | `pnpm run content-map` | regenerate `docs/content-map.md` from the references in `src/data/` and the components |
 | `pnpm exec kse check-scroll` | loads both built pages in Chromium and fails if either scrolls on its own within 2.5 s (a simulation once called `scrollIntoView` while initialising) |
-| `pnpm exec kse check-sims` | clicks every button of every simulation on both pages (and steps each step-through to its end) and fails on a console or page error, on a click that moves the window, or on SVG text under 10px at 400px; `DARK=1` for the dark theme |
+| `pnpm exec kse check-sims` | clicks every button of every simulation on both pages (and steps each step-through to its end) and fails on a console or page error, on a click that moves the window, or on SVG text under 10px at 400px; `DARK=1` emulates a dark system, which no longer turns the pages dark (light is the default; `check:dark` covers dark) |
 | `node checks/browser/check-diagram-text.mjs` | renders both built pages in the site theme and fails when a label in a figure or simulation comes within 3 units of its box's edge or the drawing's, runs into another box, or sits on another label |
 | `pnpm run check:browser` | the three checks above, in sequence; needs a Chromium (see Screenshots) |
 | `pnpm exec kse preview-diagram <Figure.astro> <out-prefix>` | renders one figure component with the engine's stylesheet and fonts (not the site theme; the diagram text check covers that), no build needed: light, dark and phone PNGs plus a report of text under 11px and elements outside the `viewBox` |
@@ -39,7 +40,8 @@ reports any console or page errors.
 ```bash
 pnpm exec kse shot / general.png 1280 true                         # full page, desktop
 pnpm exec kse shot /developers/ dev-phone.png 400 true             # full page, phone width
-DARK=1 pnpm exec kse shot /developers/ dev-dark.png 1280 true      # dark theme
+pnpm exec kse shot /developers/ dev-dark.png 1280 true '[data-theme-choice="dark"]'   # dark theme: click the switch
+THEME=dark NODE_OPTIONS=--require=./checks/browser/theme-preload.cjs pnpm exec kse shot / dark.png   # or preload it
 pnpm exec kse shot / journey.png 1280 false \
   '#journey-sim [data-dir="reverse"]|#journey-sim [data-role="next"]|#journey-sim [data-role="next"]'
 ```

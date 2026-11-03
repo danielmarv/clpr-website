@@ -37,7 +37,7 @@ const columns = [
 ];
 const external = (href: string) => /^https?:\/\//.test(href);
 const dataUrl = (svg: string) => `data:image/svg+xml,${encodeURIComponent(svg)}`;
-// Heights and the white treatment of the dark marks follow the website's footer.
+// Heights follow the website's footer; the theme shows the marks white on indigo and dark on paper.
 const backing = [
   { label: 'A lab of', logos: [
     { name: 'LF Decentralized Trust', href: 'https://www.lfdecentralizedtrust.org/', src: dataUrl(lfdt), width: 698.7, height: 39.1, class: 'lfdt' },

@@ -62,7 +62,8 @@ what a renumbered section or a new ADR means for a sentence on the page is a rea
 
 ## D9. Phone width and both themes are requirements, not polish
 
-Superseded in part by D16: the pages are now dark only, in the website's theme.
+D16 made the pages dark only, in the website's theme; D21 brought both themes back, in the website's
+palette.
 
 Explainers get read on phones and shared into dark-mode apps. Every component uses theme tokens,
 every wide drawing scrolls in its own frame, and `overflow.mjs` exists so a regression is a
@@ -147,7 +148,7 @@ footer. The look is applied as an override (`src/styles/site-theme.css` on top o
 theme, header and footer through the engine layout's slots) rather than by editing figures or
 simulations: the seven actor tokens keep their meaning, every drawing follows the new palette
 through the tokens, and the engine stays generic for other packs. This supersedes the paper look
-and the light theme of D9 and D10; the 400px requirement and the no-fetch rule stand, with the
+of D9 and D10 (and, until D21, their light theme); the 400px requirement and the no-fetch rule stand, with the
 fonts self-hosted. When the website's look changes, this stylesheet and the two chrome components
 change with it, and the copy under the website is rebuilt.
 
@@ -217,3 +218,34 @@ source supports. A fix that lives only in a changed sentence comes back at the n
 states until a maintainer confirms the rest; the bridge comparison says "many bridges" and uses
 only what the design and HIP-1535 say about them. If a later source supports a retired claim,
 remove its pattern in the same change that adds the evidence.
+
+## D21. Light by default, dark or the system's on request, as the website
+
+**Decision.** The pages follow the website: light by default, with a Light/Dark/System switch in the
+header. `<html data-theme>` holds the choice and `localStorage` key `theme` stores it (the key the
+website and the engine use, so a choice carries across). No attribute is light, even when the system
+is dark; dark applies for `dark`, and for `system` while the system is dark. `src/styles/site-theme.css`
+sets `color-scheme` to light, dark or `light dark` for those three cases and writes every colour token
+as a `light-dark(light, dark)` pair, so one declaration serves them all and the dark values are the
+ones the pages had before. It also outranks the engine's rules that follow the system when there is
+no attribute (its tokens, and Shiki's code colours). A head script in `Site.astro` restores a stored
+`light`, `dark` or `system` before first paint (the engine's own only knows the first two) and sets
+the browser's theme colour, which the switch keeps in step.
+
+**Why.** The website gained a light theme and made it the default, with the system's setting as a
+choice rather than the starting point. A visitor who chose a theme there would otherwise find the
+other one here, and the same header would behave differently on the two halves of one site.
+
+**Consequences.** On paper the actor colours are a step deeper (`--a` #5b45e0, `--b` #c0267a and so
+on) so labels keep 4.5:1, white star and validator cores take their tone, and the dark actor bodies
+(endpoints, verifiers, coins) turn white. Lane gradients are recoloured in CSS by their `-lane` id, so
+`art.mjs` output follows the theme. The header shows the pill navigation from 70rem and drops the
+"Cross Ledger Protocol" line, so the switch fits beside GitHub and the call to action. The engine's
+gates emulate only the system's setting, so `DARK=1` now drives the light default under a dark system; verify
+keeps that pass for the simulations under a dark system (it does not itself assert that the page stayed
+light). Dark itself is checked by
+`pnpm run check:dark`, which verify runs last: the simulation, diagram text and 400px overflow gates
+again, with `checks/browser/theme-preload.cjs` (loaded through `NODE_OPTIONS`, so the engine stays
+untouched) storing `THEME=dark` in every page they open and failing the run if a page did not take it.
+For a dark screenshot, click `[data-theme-choice="dark"]` first or use the same preload. Look at both
+themes when changing a figure.
