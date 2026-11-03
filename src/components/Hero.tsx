@@ -1,9 +1,9 @@
-import Image from "next/image";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 
 import { HeroMesh } from "@/components/HeroMesh";
+import { PartnerLogo } from "@/components/PartnerLogo";
 import { Button } from "@/components/ui/button";
-import { hero, links, origins } from "@/content/site";
+import { hero, origins } from "@/content/site";
 
 export function Hero() {
   return (
@@ -57,34 +57,12 @@ export function Hero() {
                   href={logo.href}
                   target="_blank"
                   rel="noreferrer"
-                  className="flex min-h-11 items-center opacity-50 transition-opacity hover:opacity-100 focus-visible:opacity-100"
+                  className="flex min-h-11 items-center transition-opacity hover:opacity-75"
                 >
-                  <Image
-                    src={logo.src}
-                    alt={logo.name}
-                    width={logo.width}
-                    height={logo.height}
-                    className={`${logo.className} brightness-0 dark:invert`}
-                  />
+                  <PartnerLogo logo={logo} />
                 </a>
               </li>
             ))}
-            <li>
-              <a
-                href={links.lfdt}
-                target="_blank"
-                rel="noreferrer"
-                className="flex min-h-11 items-center opacity-50 transition-opacity hover:opacity-100 focus-visible:opacity-100"
-              >
-                <Image
-                  src="/logos/lfdt-horizontal-white.svg"
-                  alt="LF Decentralized Trust"
-                  width={698.7}
-                  height={39.1}
-                  className="h-3.5 w-auto brightness-0 dark:brightness-100"
-                />
-              </a>
-            </li>
           </ul>
         </div>
       </div>

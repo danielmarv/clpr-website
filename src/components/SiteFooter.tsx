@@ -1,12 +1,12 @@
-import Image from "next/image";
 import Link from "next/link";
 import { ArrowUp, ArrowUpRight } from "lucide-react";
 
 import { ClprMark } from "@/components/ClprMark";
-import { footer, links, origins, site } from "@/content/site";
+import { PartnerLogo } from "@/components/PartnerLogo";
+import { footer, origins, site } from "@/content/site";
 import { format, isExternal } from "@/lib/utils";
 
-const [hashgraph, hedera, hiero] = origins.logos;
+const [hashgraph, hedera, hiero, lfdt] = origins.logos;
 
 function Hexagon({ tone }: { tone: string }) {
   return (
@@ -79,15 +79,10 @@ function FooterLink({ href, label }: { href: string; label: string }) {
   );
 }
 
-function Logo({ href, src, alt, width, height, className }: { href: string; src: string; alt: string; width: number; height: number; className: string }) {
+function Logo({ logo }: { logo: (typeof origins.logos)[number] }) {
   return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noreferrer"
-      className="flex min-h-10 items-center opacity-60 transition-opacity hover:opacity-100 focus-visible:opacity-100"
-    >
-      <Image src={src} alt={`${alt} (${footer.newTab})`} width={width} height={height} className={className} />
+    <a href={logo.href} target="_blank" rel="noreferrer" className="flex min-h-10 items-center transition-opacity hover:opacity-75">
+      <PartnerLogo logo={logo} alt={`${logo.name} (${footer.newTab})`} />
     </a>
   );
 }
@@ -137,27 +132,19 @@ export function SiteFooter() {
         >
           <div>
             <p className="text-[0.75rem] text-faint">{backing.stewardedBy}</p>
-            <Logo href={links.lfdt} src="/logos/lfdt-horizontal-white.svg" alt="LF Decentralized Trust" width={698.7} height={39.1} className="h-3.5 w-auto brightness-0 dark:brightness-100" />
+            <Logo logo={lfdt} />
           </div>
           <div>
             <p className="text-[0.75rem] text-faint">{backing.contributedBy}</p>
             <div className="flex flex-wrap items-center gap-x-6">
               {[hashgraph, hedera].map((logo) => (
-                <Logo
-                  key={logo.name}
-                  href={logo.href}
-                  src={logo.src}
-                  alt={logo.name}
-                  width={logo.width}
-                  height={logo.height}
-                  className={`${logo.className} brightness-0 dark:invert`}
-                />
+                <Logo key={logo.name} logo={logo} />
               ))}
             </div>
           </div>
           <div>
             <p className="text-[0.75rem] text-faint">{backing.builtInto}</p>
-            <Logo href={hiero.href} src={hiero.src} alt={hiero.name} width={hiero.width} height={hiero.height} className={`${hiero.className} brightness-0 dark:invert`} />
+            <Logo logo={hiero} />
           </div>
         </section>
       </div>

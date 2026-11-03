@@ -7,10 +7,14 @@
  */
 import ClprMark from './ClprMark.astro';
 import { SOURCES, PACK } from '../lib/sources';
-import lfdt from '../../../public/logos/lfdt-horizontal-white.svg?raw';
+import lfdt from '../../../public/logos/lfdt-horizontal-color.svg?raw';
+import lfdtDark from '../../../public/logos/lfdt-horizontal-white.svg?raw';
 import hashgraph from '../../../public/logos/hashgraph-black.svg?raw';
+import hashgraphDark from '../../../public/logos/hashgraph-white.svg?raw';
 import hedera from '../../../public/logos/hedera-lockup-black.svg?raw';
+import hederaDark from '../../../public/logos/hedera-lockup-white.svg?raw';
 import hiero from '../../../public/logos/hiero.svg?raw';
+import hieroDark from '../../../public/logos/hiero-white.svg?raw';
 
 const year = new Date().getFullYear();
 const columns = [
@@ -37,17 +41,18 @@ const columns = [
 ];
 const external = (href: string) => /^https?:\/\//.test(href);
 const dataUrl = (svg: string) => `data:image/svg+xml,${encodeURIComponent(svg)}`;
-// Heights follow the website's footer; the theme shows the marks white on indigo and dark on paper.
+// Heights follow the website's footer. Each mark in its own colours, and its version for dark
+// backgrounds; the theme shows one of the two.
 const backing = [
   { label: 'A lab of', logos: [
-    { name: 'LF Decentralized Trust', href: 'https://www.lfdecentralizedtrust.org/', src: dataUrl(lfdt), width: 698.7, height: 39.1, class: 'lfdt' },
+    { name: 'LF Decentralized Trust', href: 'https://www.lfdecentralizedtrust.org/', src: dataUrl(lfdt), srcDark: dataUrl(lfdtDark), width: 698.7, height: 39.1, class: 'lfdt' },
   ] },
   { label: 'Contributed by', logos: [
-    { name: 'Hashgraph', href: 'https://hashgraph.com/clpr/', src: dataUrl(hashgraph), width: 654.62, height: 141.73, class: 'hashgraph invert' },
-    { name: 'Hedera', href: 'https://hedera.com', src: dataUrl(hedera), width: 448.29, height: 138.93, class: 'hedera invert' },
+    { name: 'Hashgraph', href: 'https://hashgraph.com/clpr/', src: dataUrl(hashgraph), srcDark: dataUrl(hashgraphDark), width: 654.62, height: 141.73, class: 'hashgraph' },
+    { name: 'Hedera', href: 'https://hedera.com', src: dataUrl(hedera), srcDark: dataUrl(hederaDark), width: 448.29, height: 138.93, class: 'hedera' },
   ] },
   { label: 'Native service for', logos: [
-    { name: 'Hiero', href: 'https://hiero.org', src: dataUrl(hiero), width: 64, height: 20, class: 'hiero invert' },
+    { name: 'Hiero', href: 'https://hiero.org', src: dataUrl(hiero), srcDark: dataUrl(hieroDark), width: 64, height: 20, class: 'hiero' },
   ] },
 ];
 const hexagon = 'M0 -8.5L7.4 -4.25V4.25L0 8.5L-7.4 4.25V-4.25Z';
@@ -102,7 +107,8 @@ const hexagon = 'M0 -8.5L7.4 -4.25V4.25L0 8.5L-7.4 4.25V-4.25Z';
           <div class="logos">
             {group.logos.map((logo) => (
               <a href={logo.href} target="_blank" rel="noreferrer">
-                <img src={logo.src} alt={`${logo.name} (opens in a new tab)`} width={logo.width} height={logo.height} class={logo.class} />
+                <img src={logo.src} alt={`${logo.name} (opens in a new tab)`} width={logo.width} height={logo.height} class={`${logo.class} on-light`} />
+                <img src={logo.srcDark} alt={`${logo.name} (opens in a new tab)`} width={logo.width} height={logo.height} class={`${logo.class} on-dark`} />
               </a>
             ))}
           </div>

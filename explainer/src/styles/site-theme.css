@@ -80,13 +80,13 @@ html[lang]:root {
   --art-fill: light-dark(#ffffff, #0b0a13);
 
   /* Non-colour switches; the dark cases below flip them. */
-  --logo-filter: brightness(0);          /* partner logos: dark on paper */
-  --logo-invert-filter: brightness(0);
+  --logo-light: inline;                  /* partner logos: their own colours on paper */
+  --logo-dark: none;                     /* and their versions for dark backgrounds on indigo */
 }
-html[lang]:root[data-theme="dark"] { color-scheme: dark; --tint: 16%; --logo-filter: none; --logo-invert-filter: brightness(0) invert(1); }
+html[lang]:root[data-theme="dark"] { color-scheme: dark; --tint: 16%; --logo-light: none; --logo-dark: inline; }
 html[lang]:root[data-theme="system"] { color-scheme: light dark; }
 @media (prefers-color-scheme: dark) {
-  html[lang]:root[data-theme="system"] { --tint: 16%; --logo-filter: none; --logo-invert-filter: brightness(0) invert(1); }
+  html[lang]:root[data-theme="system"] { --tint: 16%; --logo-light: none; --logo-dark: inline; }
 }
 
 /* ---------- frame ---------- */
@@ -314,13 +314,14 @@ html .site-footer__cols a:hover .ext { color: var(--fg); transform: translate(1p
 html .site-footer__backing { display: grid; gap: 1.5rem; margin-top: 3.5rem; padding-top: 2rem; border-top: 1px solid color-mix(in srgb, var(--fg) 7%, transparent); }
 html .site-footer__backing p { font-size: 0.75rem; color: var(--text-3); }
 html .site-footer__backing .logos { display: flex; flex-wrap: wrap; align-items: center; column-gap: 1.5rem; }
-html .site-footer__backing a { display: flex; min-height: 2.5rem; align-items: center; opacity: 0.6; transition: opacity 150ms; }
-html .site-footer__backing a:hover, html .site-footer__backing a:focus-visible { opacity: 1; }
-html .site-footer__backing img { width: auto; max-width: none; filter: var(--logo-filter); }
+html .site-footer__backing a { display: flex; min-height: 2.5rem; align-items: center; transition: opacity 150ms; }
+html .site-footer__backing a:hover { opacity: 0.75; }
+html .site-footer__backing img { width: auto; max-width: none; }
+html .site-footer__backing img.on-light { display: var(--logo-light); }
+html .site-footer__backing img.on-dark { display: var(--logo-dark); }
 html .site-footer__backing img.lfdt { height: 0.875rem; }
 html .site-footer__backing img.hashgraph { height: 1.5rem; }
 html .site-footer__backing img.hedera, html .site-footer__backing img.hiero { height: 2rem; }
-html .site-footer__backing img.invert { filter: var(--logo-invert-filter); }
 
 html .site-footer .site-footer__wordmark {
   --mx: 30%; --my: 85%;
