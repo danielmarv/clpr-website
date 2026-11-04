@@ -17,18 +17,23 @@ export const links = {
   dco: "https://developercertificate.org/",
   lfTrademarks: "https://www.linuxfoundation.org/legal/trademark-usage",
   openIssues: "https://github.com/search?q=org%3ALFDT-CLPR+is%3Aissue+is%3Aopen&type=issues",
+  governanceRules: "https://github.com/LFDT-CLPR/governance/blob/main/GOVERNANCE.md",
+  teams: "https://github.com/LFDT-CLPR/governance/blob/main/teams.yml",
+  labsCharter: "https://github.com/LFDT-CLPR/governance/blob/main/lf-decentralized-trust-labs_Charter.pdf",
+  contributing: "https://github.com/LFDT-CLPR/.github/blob/main/CONTRIBUTING.md",
+  weeklyCall: "https://zoom-lfx.platform.linuxfoundation.org/meetings/lf-decentralized-trust-labs?view=week",
+  releaseCoverage: "https://genfinity.io/2026/09/24/hedera-hashgraph-clpr-linux-foundation-decentralized-trust-labs/",
 } as const;
 
+// The site's pages; the home page's sections are linked from the footer.
 export const nav = [
-  { label: "How it works", href: "#how-it-works" },
-  { label: "Why bridgeless", href: "#protocol" },
-  { label: "Use cases", href: "#use-cases" },
-  { label: "Architecture", href: "#architecture" },
-  { label: "Code", href: "#code" },
   { label: "Explainer", href: "/plumbing/" },
+  { label: "Issue Explorer", href: "/issues/" },
+  { label: "Governance", href: "/governance/" },
+  { label: "Blog", href: "/blog/" },
 ] as const;
 
-export const headerCta = { label: "Start contributing", href: "#get-involved" } as const;
+export const headerCta = { label: "Start contributing", href: "/#get-involved" } as const;
 
 export const hero = {
   eyebrow: "An LF Decentralized Trust Lab",
@@ -37,6 +42,13 @@ export const hero = {
     "CLPR (“Clipper”) is an open protocol for reliable, in-order messaging between independent ledger networks. The destination ledger verifies the source ledger’s state proofs, so trust comes from the ledgers, not from bridges, pooled liquidity or intermediary validators.",
   primaryCta: { label: "Start contributing", href: "#get-involved" },
   secondaryCta: { label: "Read the explainer", href: "/plumbing/" },
+  // The first two numbers come from GitHub when the page is built and every hour after.
+  stats: {
+    label: "CLPR in numbers",
+    repositories: "public repositories",
+    stars: "GitHub stars",
+    earlyAdopter: { value: "3", label: "early adopter use cases", href: "/blog/cross-ledger-early-adopter-program/" },
+  },
 } as const;
 
 export const story = {
@@ -232,6 +244,7 @@ export const repositories = {
   implementsLabel: "Implements",
   runsOnLabel: "Runs on",
   rulesLabel: "How the project is run",
+  starsLabel: "GitHub stars",
   facts: [
     { term: "Code license", detail: "Apache-2.0 with DCO sign-off" },
     { term: "Status", detail: "A lab for very early open projects: the specification is still changing and some economic parameters are open" },
@@ -318,8 +331,213 @@ export const involvement = {
     },
   ],
   actions: {
-    primary: { label: "Browse open issues", href: links.openIssues },
+    primary: { label: "Browse open issues", href: "/issues/" },
     secondary: { label: "Read the specification", href: links.spec },
+  },
+} as const;
+
+// Quoted from the announcement of 24 September 2026, as reported that day (links.releaseCoverage). Shown one at
+// a time as on hiero.org, each beside the white logo of the speaker's organization.
+export const voices = {
+  id: "voices",
+  eyebrow: "Community voices",
+  title: "Voices from the ecosystem.",
+  lead: "Builders, partners and community leaders on what open development makes possible.",
+  quotes: [
+    {
+      name: "Daniela Barbosa",
+      role: "General Manager of Decentralized Technologies at the Linux Foundation and Executive Director of LF Decentralized Trust",
+      logo: { name: "LF Decentralized Trust", src: "/logos/lfdt-horizontal-white.svg", width: 698.7, height: 39.1, className: "h-4 sm:h-5" },
+      text: "As a new LFDT lab, CLPR will leverage open development to shape a protocol that fuels collaboration across the industry. With this contribution, Hedera is once again showing its commitment to vendor neutral, collaborative development of critical shared technologies.",
+    },
+    {
+      name: "Dr. Leemon Baird",
+      role: "Co-Founder at Hedera and Chief Scientist at Hashgraph",
+      logo: { name: "Hedera", src: "/logos/hedera-lockup-white.svg", width: 448.29, height: 138.93, className: "h-10 sm:h-12" },
+      text: "That commitment to open collaboration is exactly what’s needed to solve one of the industry’s most persistent problems: network interoperability. When underpinning an application, CLPR is designed to fix that cryptographically so data, assets and messages move freely without a single point of failure to attack.",
+    },
+  ],
+  source: { label: "From the announcement of 24 September 2026", href: "/blog/clpr-joins-lf-decentralized-trust-labs/" },
+  carousel: {
+    label: "Community quotes",
+    logoLabel: "Ecosystem voice",
+    perspectives: "Community perspectives",
+    status: "Quote {index} of {total}",
+    pause: "Pause",
+    play: "Play",
+    pauseLabel: "Pause automatic quote rotation",
+    playLabel: "Resume automatic quote rotation",
+    previous: "Previous",
+    previousLabel: "Previous quote",
+    next: "Next",
+    nextLabel: "Next quote",
+  },
+} as const;
+
+// The structure of hiero.org/tsc. CLPR's governance (GOVERNANCE.md in the governance repository) has no TSC:
+// its Maintainers take the general decisions, so the page is theirs. Members appear once they are listed
+// in members.list; until then the page shows empty cards and points to teams.yml.
+type GovernanceMember = { name: string; role?: string; github?: string; photo?: string; bio?: string };
+
+export const governancePage = {
+  metaTitle: "Governance",
+  description: "Who maintains CLPR, how the lab takes its decisions, and where its governance is kept.",
+  kicker: "CLPR technical governance",
+  title: "The maintainers of CLPR",
+  lead: "The Maintainers take the decisions that affect the CLPR lab as a whole, in the open and under the Labs charter of LF Decentralized Trust.",
+  actions: {
+    primary: { label: "View the governance rules", href: links.governanceRules },
+    secondary: { label: "Open meeting calendar", href: links.weeklyCall },
+  },
+  about: {
+    eyebrow: "Governance",
+    title: "About the governance",
+    // {rules} is the link to GOVERNANCE.md.
+    body: "The roles, decisions and votes of the lab are set out in its {rules}, under the Labs charter of LF Decentralized Trust. Decisions are made by consensus where possible; when a vote is needed, the Maintainers hold it in the weekly call or over 14 days in the issue, and every decision is tracked in the governance repository.",
+    rulesLabel: "governance rules",
+    chips: ["Public rules", "Open weekly call", "Decisions tracked in issues"],
+  },
+  roles: [
+    {
+      name: "Maintainers",
+      body: "Take the decisions that affect the lab as a whole: new repositories, and adding or removing Committers and Maintainers.",
+    },
+    {
+      name: "Committers",
+      body: "Are named per repository. They review and merge pull requests, ladder issues for new contributors and take part in the discussions.",
+    },
+    {
+      name: "Contributors",
+      body: "Anyone who opens an issue, writes code or documentation, or reviews a pull request. Consistent contributors can be nominated as Committers.",
+    },
+  ],
+  members: {
+    eyebrow: "The maintainers",
+    title: "Who maintains CLPR",
+    body: "The Maintainers are contributors who steward CLPR and keep it open to everyone who wants to help. Their profiles are listed here as they are confirmed.",
+    countLabel: "members listed",
+    board: { label: "Current members", note: "Listed by surname" },
+    placeholders: 3,
+    placeholderName: "Profile to come",
+    noBio: "Biography not available.",
+    githubLabel: "GitHub profile",
+    empty: {
+      title: "Profiles are on their way",
+      body: "Until the profiles are listed here, every team of the lab and its members are in teams.yml in the governance repository.",
+      link: { label: "See the teams", href: links.teams },
+    },
+    list: [] as GovernanceMember[],
+  },
+  resources: {
+    eyebrow: "Resources",
+    title: "Where the work is kept",
+    lead: "Read the charter and the rules, and follow the lab's governance where it happens.",
+    action: "Open resource",
+    items: [
+      { platform: "GitHub", name: "LFDT Labs charter", body: "The formal scope and operating rules for CLPR as an LFDT lab.", href: links.labsCharter },
+      { platform: "GitHub", name: "Governance rules", body: "The roles, decision making and voting, in GOVERNANCE.md.", href: links.governanceRules },
+      { platform: "GitHub", name: "Teams", body: "Every team, its members and its rights on each repository, in teams.yml.", href: links.teams },
+      { platform: "LFX", name: "Weekly call", body: "The weekly CLPR call, open to everyone, on the LFX meeting calendar.", href: links.weeklyCall },
+    ],
+  },
+} as const;
+
+export const issueExplorer = {
+  metaTitle: "Issue Explorer",
+  description: "Every open, unassigned issue in the main CLPR repositories, filtered by difficulty or repository.",
+  kicker: "Contribute",
+  title: "Issue Explorer",
+  lead: "Every open CLPR issue that nobody has picked up yet. Filter by how much you want to take on, or by the repository you already know.",
+  chips: { open: "Open", unassigned: "Unassigned", repositories: "{count} repositories" },
+  counter: "{count} open issues",
+  counterOne: "1 open issue",
+  refreshed: "Refreshed {time} from GitHub",
+  unavailable: "GitHub could not be reached when this page was built. The issues are all on GitHub itself.",
+  // The repositories the explorer covers, as tiles that also filter the board; the others keep their
+  // issues on GitHub (see closing).
+  repositoriesLabel: "Repositories",
+  repositories: [
+    { name: "clpr-spec", body: "The specification, its decision records and the verifier documents." },
+    { name: "clpr-smart-contracts", body: "The Solidity CLPR Service and Verifier Contracts for EVM ledgers." },
+    { name: "clpr-endpoint", body: "The Java CLPR Endpoint for EVM ledgers: sync, proofs and bundle submission." },
+  ],
+  openOne: "1 open",
+  openMany: "{count} open",
+  search: { label: "Search issues", placeholder: "Search titles, repositories, labels…" },
+  sort: { label: "Sort", updated: "Recently active", created: "Newest", comments: "Most discussed" },
+  difficultyLabel: "Difficulty",
+  // In priority order: an issue labelled both "good first issue" and "beginner" shows as the first. A label
+  // matches a level when, lower-cased and without a "skill:"-style prefix, it is one of the level's names.
+  levels: [
+    { id: "good-first-issue", label: "Good first issue", names: ["good first issue", "first timers only", "first issue"], body: "Ideal for first-time contributors new to the project." },
+    { id: "beginner", label: "Beginner", names: ["beginner", "starter", "easy"], body: "Straightforward tasks that need light domain knowledge." },
+    { id: "intermediate", label: "Intermediate", names: ["intermediate"], body: "Moderately complex issues for developers gaining experience." },
+    { id: "advanced", label: "Advanced", names: ["advanced", "hard", "expert"], body: "Challenging issues requiring deep technical expertise." },
+  ],
+  everything: "Everything",
+  tally: { none: "No matching issues", one: "1 issue", many: "{count} issues", page: "page {page} of {total}" },
+  status: "{count} issues match the current filters.",
+  statusOne: "1 issue matches the current filters.",
+  clear: "Clear filters",
+  empty: {
+    title: "Nothing matches those filters",
+    body: "Try a broader search, or clear the filters to see every open issue.",
+  },
+  failed: {
+    title: "The issues could not be loaded",
+    body: "GitHub did not answer when this page was last built. It tries again within the hour, and every open issue is always on GitHub itself.",
+  },
+  issueName: "{title}, issue {number} in {repository}",
+  ages: { today: "today", yesterday: "yesterday", days: "{count} days ago", weeks: "{count} weeks ago", months: "{count} months ago", year: "a year ago", years: "{count} years ago" },
+  comments: "{count} comments",
+  pager: { label: "Issue pages", previous: "Previous page", next: "Next page", page: "Page {page}" },
+  // From CONTRIBUTING.md in the org profile and the Committers' role in GOVERNANCE.md.
+  steps: {
+    title: "How to pick one up",
+    items: [
+      { name: "Claim it", body: "Say on the issue that you would like to take it. A Committer of the repository can assign it to you." },
+      { name: "Fork and branch", body: "Fork the repository, create a branch, and build and test your change locally." },
+      { name: "Sign every commit", body: "Sign off for the Developer Certificate of Origin and GPG-sign: git commit --signoff -S." },
+      { name: "Open a pull request", body: "The repository's Committers review it and merge it once it meets the project's standards." },
+    ],
+  },
+  contributing: { label: "Read the contribution guidelines", href: links.contributing },
+  closing: {
+    title: "Looking further afield?",
+    body: "The explorer covers the main CLPR repositories. The governance and organization repositories keep their open issues on GitHub.",
+    cta: { label: "Search every open issue", href: links.openIssues },
+  },
+} as const;
+
+// The blog's labels; the posts are Markdown files in content/posts/ (src/lib/posts.ts, docs/blogs.md),
+// and the blog's title and subtitle are in content/posts/_index.md.
+export const blog = {
+  description: "News and announcements from the CLPR project.",
+  kicker: "Project news",
+  latestLabel: "Latest post",
+  readLabel: "Read the post",
+  backLabel: "All posts",
+  readingTime: "{minutes} min read",
+  postCount: "{count} posts",
+  postCountOne: "1 post",
+  pageOf: "Page {page} of {total}",
+  pager: { label: "Archive pages", first: "First", previous: "Previous", next: "Next", last: "Last", page: "Page {page}" },
+  rail: { label: "About this post", author: "Author", authors: "Authors", contents: "On this page", share: "Share" },
+  shareOn: "Share on {network}",
+  nearby: { label: "Nearby posts", older: "Older post", newer: "Newer post" },
+  more: { title: "More from the blog", all: "All posts" },
+  latestOn: "Latest post {date}",
+  photoBy: "Photo:",
+  tagsLabel: "Tags",
+  // Beside the newest post while there are fewer than three: what to follow between posts.
+  follow: {
+    title: "Follow the work",
+    body: "CLPR is built in the open. Watch the repositories, pick up an issue, or join the weekly call.",
+    links: [
+      { label: "LFDT-CLPR on GitHub", href: links.githubOrg },
+      { label: "Issue Explorer", href: "/issues/" },
+      { label: "Weekly call", href: links.weeklyCall },
+    ],
   },
 } as const;
 
@@ -337,14 +555,21 @@ export const footer = {
         { label: "Use cases", href: "/#use-cases" },
         { label: "Architecture", href: "/#architecture" },
         { label: "Code", href: "/#code" },
+      ],
+    },
+    {
+      title: "Learn",
+      links: [
         { label: "The plumbing of CLPR", href: "/plumbing/" },
         { label: "For developers", href: "/plumbing/developers/" },
         { label: "Glossary", href: "/plumbing/developers/#glossary" },
+        { label: "Blog", href: "/blog/" },
       ],
     },
     {
       title: "Build",
       links: [
+        { label: "Issue Explorer", href: "/issues/" },
         { label: "Specification", href: links.spec },
         { label: "Smart contracts", href: links.smartContracts },
         { label: "Endpoint", href: links.endpoint },
@@ -356,7 +581,8 @@ export const footer = {
     {
       title: "Project",
       links: [
-        { label: "Governance", href: links.governance },
+        { label: "Maintainers and committers", href: "/governance/" },
+        { label: "Governance repository", href: links.governance },
         { label: "Lab proposal", href: links.labProposal },
         { label: "Developer Certificate of Origin", href: links.dco },
         { label: "Apache License 2.0", href: links.apacheLicense },

@@ -21,11 +21,15 @@ const columns = [
   { title: 'Explore', links: [
     { label: 'How it works', href: '/#how-it-works' }, { label: 'Why bridgeless', href: '/#protocol' }, { label: 'Use cases', href: '/#use-cases' },
     { label: 'Architecture', href: '/#architecture' }, { label: 'Code', href: '/#code' },
+  ] },
+  { title: 'Learn', links: [
     { label: 'The plumbing of CLPR', href: import.meta.env.BASE_URL },
     { label: 'For developers', href: `${import.meta.env.BASE_URL}developers/` },
     { label: 'Glossary', href: `${import.meta.env.BASE_URL}developers/#glossary` },
+    { label: 'Blog', href: '/blog/' },
   ] },
   { title: 'Build', links: [
+    { label: 'Issue Explorer', href: '/issues/' },
     { label: 'Specification', href: 'https://github.com/LFDT-CLPR/clpr-spec' },
     { label: 'Smart contracts', href: 'https://github.com/LFDT-CLPR/clpr-smart-contracts' },
     { label: 'Endpoint', href: 'https://github.com/LFDT-CLPR/clpr-endpoint' },
@@ -33,7 +37,8 @@ const columns = [
     { label: 'All repositories', href: 'https://github.com/LFDT-CLPR' },
   ] },
   { title: 'Project', links: [
-    { label: 'Governance', href: 'https://github.com/LFDT-CLPR/governance' },
+    { label: 'Maintainers and committers', href: '/governance/' },
+    { label: 'Governance repository', href: 'https://github.com/LFDT-CLPR/governance' },
     { label: 'Lab proposal', href: 'https://github.com/LF-Decentralized-Trust/lab-proposals/issues/5' },
     { label: 'Developer Certificate of Origin', href: 'https://developercertificate.org/' },
     { label: 'Apache License 2.0', href: 'https://www.apache.org/licenses/LICENSE-2.0' },

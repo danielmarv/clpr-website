@@ -1,11 +1,24 @@
+import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
 import { HeroMesh } from "@/components/HeroMesh";
 import { PartnerLogo } from "@/components/PartnerLogo";
 import { Button } from "@/components/ui/button";
 import { hero, origins } from "@/content/site";
+import type { RepoStats } from "@/lib/github";
 
-export function Hero() {
+/** `repos` is null when GitHub could not be reached; the two numbers from it are then left out. */
+export function Hero({ repos }: { repos: RepoStats[] | null }) {
+  const { stats } = hero;
+  const numbers = [
+    ...(repos
+      ? [
+          { value: repos.length, label: stats.repositories },
+          { value: repos.reduce((sum, repo) => sum + repo.stars, 0), label: stats.stars },
+        ]
+      : []),
+    { value: stats.earlyAdopter.value, label: stats.earlyAdopter.label, href: stats.earlyAdopter.href },
+  ];
   return (
     <section data-scene="hero" aria-labelledby="hero-title" className="relative flex min-h-svh flex-col overflow-x-clip">
       <div className="shell grid flex-1 content-center items-center gap-6 pb-12 pt-20 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.08fr)] lg:gap-4 lg:pb-14 lg:pt-24">
@@ -42,6 +55,23 @@ export function Hero() {
               </a>
             </Button>
           </div>
+
+          <dl data-hero-reveal aria-label={stats.label} className="mt-8 flex flex-wrap gap-x-10 gap-y-5">
+            {numbers.map((number) => (
+              <div key={number.label} className="flex flex-col-reverse">
+                <dt className="mt-1 text-[0.8125rem] text-faint">
+                  {number.href ? (
+                    <Link href={number.href} className="underline decoration-fg/20 underline-offset-2 transition-colors hover:text-fg hover:decoration-current">
+                      {number.label}
+                    </Link>
+                  ) : (
+                    number.label
+                  )}
+                </dt>
+                <dd className="text-[1.75rem] font-light leading-none tracking-[-0.03em] text-fg">{number.value}</dd>
+              </div>
+            ))}
+          </dl>
         </div>
 
         <HeroMesh className="mx-auto aspect-square w-[min(86vw,40svh)] max-lg:order-1 lg:mx-0 lg:-mr-4 lg:w-[min(calc(100%_+_1rem),80svh)] lg:justify-self-end xl:-mr-8 xl:w-[min(calc(100%_+_2rem),80svh)] min-[85rem]:-mr-20 min-[85rem]:w-[min(calc(100%_+_5rem),80svh)]" />
