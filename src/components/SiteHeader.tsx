@@ -66,7 +66,7 @@ export function SiteHeader() {
 
   useEffect(() => {
     if (!open) return;
-    const wide = window.matchMedia("(min-width: 70rem)");
+    const wide = window.matchMedia("(min-width: 78rem)");
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") setOpen(false);
     };
@@ -100,8 +100,8 @@ export function SiteHeader() {
         {site.skipLink}
       </a>
 
-      {/* Beside the theme switch the pill nav needs 70rem; below that the menu button takes over. */}
-      <div className="shell grid h-16 grid-cols-[1fr_auto] items-center gap-6 min-[70rem]:grid-cols-[1fr_auto_1fr]">
+      {/* Beside the theme switch the pill nav needs 78rem; below that the menu button takes over. */}
+      <div className="shell grid h-16 grid-cols-[1fr_auto] items-center gap-6 min-[78rem]:grid-cols-[1fr_auto_1fr]">
         <Link
           href="/"
           aria-label={site.homeLabel}
@@ -112,7 +112,7 @@ export function SiteHeader() {
           <span className="text-[1.125rem] font-semibold tracking-[-0.01em]">{site.name}</span>
         </Link>
 
-        <nav aria-label="Main" className="hidden min-[70rem]:block">
+        <nav aria-label="Main" className="hidden min-[78rem]:block">
           <ul
             ref={listRef}
             className="relative flex items-center rounded-full border border-fg/8 bg-fg/3 p-1 backdrop-blur-md"
@@ -139,21 +139,21 @@ export function SiteHeader() {
           </ul>
         </nav>
 
-        <div className="flex items-center gap-1 justify-self-end min-[70rem]:gap-2">
+        <div className="flex items-center gap-1 justify-self-end min-[78rem]:gap-2">
           <ThemeSwitch className="mr-1" />
-          <Button asChild variant="ghost" size="sm" className="max-[70rem]:hidden">
+          <Button asChild variant="ghost" size="sm" className="max-[78rem]:hidden">
             <a href={links.githubOrg} target="_blank" rel="noreferrer">
               <GitHubMark />
               {site.githubLabel}
             </a>
           </Button>
-          <Button asChild size="sm" className="max-[70rem]:hidden">
+          <Button asChild size="sm" className="max-[78rem]:hidden">
             <a href={headerCta.href}>{headerCta.label}</a>
           </Button>
           <Button
             variant="ghost"
             size="icon"
-            className="min-[70rem]:hidden"
+            className="min-[78rem]:hidden"
             aria-expanded={open}
             aria-controls="mobile-menu"
             aria-label={open ? site.menuClose : site.menuOpen}
@@ -168,7 +168,7 @@ export function SiteHeader() {
         <nav
           id="mobile-menu"
           aria-label="Main"
-          className="fade-up h-[calc(100dvh-4rem)] overflow-y-auto border-t border-fg/7 bg-background/92 min-[70rem]:hidden"
+          className="fade-up h-[calc(100dvh-4rem)] overflow-y-auto border-t border-fg/7 bg-background/92 min-[78rem]:hidden"
         >
           <div className="shell flex min-h-full flex-col pb-8 pt-4">
             <ul className="flex flex-col">

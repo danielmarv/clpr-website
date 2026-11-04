@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Screenshots of every drawing and animation step on the website's landing page, for the audit:
- * the hero, each phase of the scroll story, then the comparison, architecture, code and get-involved
+ * the hero, each phase of the scroll story, then the comparison, use cases, architecture, code and get-involved
  * sections, at desktop width. Uses the explainer's Playwright.
  *
  *   pnpm build && pnpm start                                   # in one terminal (port 3000)
@@ -40,7 +40,7 @@ for (const [index, progress] of [0.12, 0.4, 0.64, 0.86].entries()) {
   await shot(`02-story-${index}`);
 }
 
-for (const [id, name] of [['protocol', '03-comparison'], ['architecture', '04-architecture'], ['code', '05-code'], ['get-involved', '06-get-involved']]) {
+for (const [id, name] of [['protocol', '03-comparison'], ['use-cases', '04-use-cases'], ['architecture', '05-architecture'], ['code', '06-code'], ['get-involved', '07-get-involved']]) {
   const section = sectionOf(id);
   await section.scrollIntoViewIfNeeded();
   await settle();

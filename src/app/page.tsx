@@ -8,6 +8,7 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteMotion } from "@/components/SiteMotion";
 import { Story } from "@/components/Story";
+import { UseCases } from "@/components/UseCases";
 
 // The overview; the explainer under /plumbing/ carries the detail.
 export default function HomePage() {
@@ -20,6 +21,7 @@ export default function HomePage() {
         <Hero />
         <Story />
         <Comparison />
+        <UseCases />
         <Extensibility />
         <Repositories />
         <GetInvolved />

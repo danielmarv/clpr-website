@@ -1,4 +1,4 @@
-import { ArrowRight, ArrowUpRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 import { HeroMesh } from "@/components/HeroMesh";
 import { PartnerLogo } from "@/components/PartnerLogo";
@@ -36,9 +36,9 @@ export function Hero() {
               </a>
             </Button>
             <Button asChild size="lg" variant="secondary">
-              <a href={hero.secondaryCta.href} target="_blank" rel="noreferrer">
+              <a href={hero.secondaryCta.href}>
                 {hero.secondaryCta.label}
-                <ArrowUpRight aria-hidden="true" />
+                <ArrowRight aria-hidden="true" />
               </a>
             </Button>
           </div>

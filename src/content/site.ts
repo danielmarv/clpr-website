@@ -16,25 +16,27 @@ export const links = {
   apacheLicense: "https://www.apache.org/licenses/LICENSE-2.0",
   dco: "https://developercertificate.org/",
   lfTrademarks: "https://www.linuxfoundation.org/legal/trademark-usage",
+  openIssues: "https://github.com/search?q=org%3ALFDT-CLPR+is%3Aissue+is%3Aopen&type=issues",
 } as const;
 
 export const nav = [
   { label: "How it works", href: "#how-it-works" },
   { label: "Why bridgeless", href: "#protocol" },
+  { label: "Use cases", href: "#use-cases" },
   { label: "Architecture", href: "#architecture" },
   { label: "Code", href: "#code" },
   { label: "Explainer", href: "/plumbing/" },
 ] as const;
 
-export const headerCta = { label: "Get involved", href: "#get-involved" } as const;
+export const headerCta = { label: "Start contributing", href: "#get-involved" } as const;
 
 export const hero = {
   eyebrow: "An LF Decentralized Trust Lab",
   title: "Cross-ledger messaging with no bridge to trust.",
   lead:
     "CLPR (“Clipper”) is an open protocol for reliable, in-order messaging between independent ledger networks. The destination ledger verifies the source ledger’s state proofs, so trust comes from the ledgers, not from bridges, pooled liquidity or intermediary validators.",
-  primaryCta: { label: "Read the explainer", href: "/plumbing/" },
-  secondaryCta: { label: "Read the specification", href: links.spec },
+  primaryCta: { label: "Start contributing", href: "#get-involved" },
+  secondaryCta: { label: "Read the explainer", href: "/plumbing/" },
 } as const;
 
 export const story = {
@@ -127,6 +129,62 @@ export const comparison = {
   caveat:
     "A Channel is only as trustworthy as its Verifier Contract, and anyone can register a Channel, so applications should check which verifier it uses.",
   explainer: { label: "Why a party in the middle is the weak point", href: "/plumbing/#bridges" },
+} as const;
+
+// The design's application patterns (§3.4), which it outlines without specifying, and the limits of what
+// CLPR proves.
+export const useCases = {
+  id: "use-cases",
+  eyebrow: "Use cases",
+  title: "One primitive, four kinds of application.",
+  lead:
+    "A CLPR message is bytes with an address, and every Data Message gets exactly one response. The design outlines four patterns built on that primitive. They are applications, not part of the protocol, and none is specified yet.",
+  patterns: [
+    {
+      name: "Remote smart contract call",
+      body: "A contract on one ledger calls a contract on another through a proxy on each side. The result comes back as the response, later rather than within the same call.",
+    },
+    {
+      name: "Escrow, mint, then burn",
+      body: "Assets are locked on the source ledger and minted on the destination. If minting succeeds, the locked assets may be burned; if it fails, they are released.",
+    },
+    {
+      name: "N-ledger atomic swap",
+      body: "Several ledgers change state together through two-phase commit, carried as ordinary messages. If any one of them fails, all of them roll back.",
+    },
+    {
+      name: "Native Hiero asset management",
+      body: "Hiero tokens, fungible and non-fungible, handled across Hiero networks by the messaging layer itself, with no smart-contract proxies. The design gives this one sentence so far.",
+    },
+  ],
+  limits: {
+    title: "What CLPR does not promise",
+    items: [
+      {
+        name: "Delivery depends on Endpoints",
+        body: "If nobody runs an Endpoint for a Channel, messages wait in the queue. Nothing is lost or faked; nothing moves either.",
+      },
+      {
+        name: "Nothing is secret",
+        body: "Message contents sit on both ledgers in plain view. CLPR proves a message is authentic and unaltered, not that it is private.",
+      },
+      {
+        name: "Authentic is not safe",
+        body: "CLPR proves a message came from the other ledger, not that it is sensible. Applications treat every arrival as untrusted input.",
+      },
+    ],
+    explainer: { label: "The limits in the explainer", href: "/plumbing/#limits" },
+  },
+  explainer: { label: "The four patterns in the explainer", href: "/plumbing/#patterns" },
+  art: {
+    call: "Call",
+    result: "Result",
+    locked: "Locked",
+    minted: "Minted",
+    together: "All commit, or all roll back",
+    hiero: "Hiero network",
+    outlined: "Outlined, not yet specified",
+  },
 } as const;
 
 export const extensibility = {
@@ -260,8 +318,8 @@ export const involvement = {
     },
   ],
   actions: {
-    primary: { label: "Read the specification", href: links.spec },
-    secondary: { label: "Follow LFDT-CLPR on GitHub", href: links.githubOrg },
+    primary: { label: "Browse open issues", href: links.openIssues },
+    secondary: { label: "Read the specification", href: links.spec },
   },
 } as const;
 
@@ -276,6 +334,7 @@ export const footer = {
       links: [
         { label: "How it works", href: "/#how-it-works" },
         { label: "Why bridgeless", href: "/#protocol" },
+        { label: "Use cases", href: "/#use-cases" },
         { label: "Architecture", href: "/#architecture" },
         { label: "Code", href: "/#code" },
         { label: "The plumbing of CLPR", href: "/plumbing/" },
