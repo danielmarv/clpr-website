@@ -40,7 +40,8 @@
         }
       ],
       "live": [
-        "hiero-native"
+        "hiero-native",
+        "early-adopter"
       ]
     },
     "story": {
@@ -306,6 +307,85 @@
         "lab-status"
       ]
     },
+    "voices": {
+      "live": [
+        "lfdt-release"
+      ]
+    },
+    "governancePage": {
+      "refs": [
+        {
+          "doc": "repo",
+          "id": "governance",
+          "path": "GOVERNANCE.md",
+          "label": "governance GOVERNANCE.md"
+        },
+        {
+          "doc": "repo",
+          "id": "governance",
+          "path": "teams.yml",
+          "label": "governance teams.yml"
+        },
+        {
+          "doc": "repo",
+          "id": "governance",
+          "path": "README.md",
+          "label": "governance README"
+        },
+        {
+          "doc": "repo",
+          "id": "governance",
+          "path": "lf-decentralized-trust-labs_Charter.pdf",
+          "label": "Labs charter (PDF)"
+        }
+      ],
+      "live": [
+        "teams",
+        "lab-status"
+      ]
+    },
+    "issueExplorer": {
+      "refs": [
+        {
+          "doc": "repo",
+          "id": "org-profile",
+          "path": "CONTRIBUTING.md",
+          "label": "org profile CONTRIBUTING"
+        },
+        {
+          "doc": "repo",
+          "id": "governance",
+          "path": "teams.yml",
+          "label": "governance teams.yml"
+        },
+        {
+          "doc": "repo",
+          "id": "governance",
+          "path": "GOVERNANCE.md",
+          "label": "governance GOVERNANCE.md"
+        }
+      ]
+    },
+    "blog": {
+      "refs": [
+        {
+          "doc": "design",
+          "anchor": "1-executive-summary",
+          "label": "design §1"
+        },
+        {
+          "doc": "repo",
+          "id": "org-profile",
+          "path": "profile/README.md",
+          "label": "org profile"
+        }
+      ],
+      "live": [
+        "lfdt-release",
+        "early-adopter",
+        "lab-status"
+      ]
+    },
     "footer": {
       "refs": [
         {
@@ -366,6 +446,38 @@
       "recorded": {
         "date": "2026-11-02",
         "result": "CLOSED Approved (2026-09-11)"
+      }
+    },
+    "teams": {
+      "claim": "The teams the governance page points to (teams.yml); the page lists no member profiles yet (governancePage.members.list is empty).",
+      "checks": [
+        "gh api repos/LFDT-CLPR/governance/contents/teams.yml -q .content | base64 -d"
+      ],
+      "recorded": {
+        "date": "2026-11-04",
+        "result": "clpr-maintainers: edward-swirldslabs (team maintainer), hendrikebbers, SimiHunjan; clpr-spec-committers: rbair23; clpr-smart-contracts-committers: BartoszSolkaBD, bootcodes, jasuwienas, Ferparishuertas, Neeharika-Sompalli, tinker-michaelj, viniciusjssouza, mhess-swl, JivkoKelchev; clpr-endpoint-committers: mxtartaglia-sl, timo0, lukasz-hashgraph, ashumahajan. Names are the members' public GitHub names (gh api users/<handle> -q .name)."
+      }
+    },
+    "lfdt-release": {
+      "claim": "The announcement of 24 September 2026: what CLPR is and who contributed it (LFDT press release), and the quotes by Daniela Barbosa and Dr. Leemon Baird with their titles (reported the same day; the original Hedera release with the quotes was not found).",
+      "checks": [
+        "curl -sL https://www.linuxfoundation.org/press/lf-decentralized-trust-adds-swift-wells-fargo-and-13-additional-new-members | grep -o 'CLPR[^<]*' | head -5",
+        "curl -sL https://genfinity.io/2026/09/24/hedera-hashgraph-clpr-linux-foundation-decentralized-trust-labs/ | grep -oE '(Cross ledger interoperability|Just weeks ago)[^<]*' | head -4"
+      ],
+      "recorded": {
+        "date": "2026-11-04",
+        "result": "LFDT release dated 24 September 2026: CLPR is a bridgeless cross-ledger messaging protocol lab contributed by Hedera and developed by the Hashgraph team; Barbosa's release quote does not mention CLPR and Baird is not quoted there. Genfinity (24 September 2026) carries both quotes as used on the site."
+      }
+    },
+    "early-adopter": {
+      "claim": "Hashgraph's Cross-Ledger Early Adopter Program: three use cases, three phases, a hosted testnet, an integration expert, who can take part, and that Hashgraph runs it.",
+      "checks": [
+        "curl -sL https://hashgraph.com/clpr/ | grep -o 'Early Adopter[^<]*' | head -3",
+        "curl -sL https://genfinity.io/2026/09/24/hedera-hashgraph-clpr-linux-foundation-decentralized-trust-labs/ | grep -oE '(three distinct use cases|three-phased)[^<]*' | head -2"
+      ],
+      "recorded": {
+        "date": "2026-11-04",
+        "result": "hashgraph.com/clpr invites institutions to register interest for the Cross-Ledger Early Adopter Navigator Program; Genfinity (24 September 2026): three use cases (cross-border payments and in-flight FX, cross-ledger settlement, collateral mobility), a three-phased virtual program, a Hashgraph-hosted testnet and an assigned integration expert."
       }
     }
   }

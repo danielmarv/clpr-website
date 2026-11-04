@@ -14,13 +14,12 @@ import { PACK, SOURCES } from '../lib/sources';
 interface Props { path: '/' | '/developers/' }
 const { path } = Astro.props;
 const base = import.meta.env.BASE_URL.endsWith('/') ? import.meta.env.BASE_URL : import.meta.env.BASE_URL + '/';
+// The website's pages, as in its header (src/content/site.ts nav there).
 const nav = [
-  { label: 'How it works', href: '/#how-it-works' },
-  { label: 'Why bridgeless', href: '/#protocol' },
-  { label: 'Use cases', href: '/#use-cases' },
-  { label: 'Architecture', href: '/#architecture' },
-  { label: 'Code', href: '/#code' },
   { label: 'Explainer', href: base, current: true },
+  { label: 'Issue Explorer', href: '/issues/' },
+  { label: 'Governance', href: '/governance/' },
+  { label: 'Blog', href: '/blog/' },
 ];
 // The website's three choices, with lucide's sun, moon and monitor.
 const themes = [

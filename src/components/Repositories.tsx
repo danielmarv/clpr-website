@@ -1,4 +1,4 @@
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, Star } from "lucide-react";
 
 import { CopyCommand } from "@/components/CopyCommand";
 import { GitHubMark } from "@/components/GitHubMark";
@@ -9,7 +9,22 @@ function repoPath(href: string): string {
   return href.replace(/^https:\/\/(github\.com\/)?/, "");
 }
 
-export function Repositories() {
+/** The repository's GitHub stars, when GitHub could be reached and the card is a repository of the org. */
+function Stars({ stars, href }: { stars: Record<string, number> | null; href: string }) {
+  const name = /^https:\/\/github\.com\/LFDT-CLPR\/([^/]+)$/.exec(href)?.[1];
+  const count = name ? stars?.[name] : undefined;
+  if (count === undefined) return null;
+  return (
+    <span className="inline-flex items-center gap-1 text-[0.8125rem] text-fg/60">
+      <Star className="size-3.5" aria-hidden="true" />
+      {count}
+      <span className="sr-only"> {repositories.starsLabel}</span>
+    </span>
+  );
+}
+
+/** `stars` maps repository names to their stars, or is null when GitHub could not be reached. */
+export function Repositories({ stars }: { stars: Record<string, number> | null }) {
   const { spec, implementations, governance } = repositories;
 
   return (
@@ -27,6 +42,7 @@ export function Repositories() {
               <div className="flex items-center gap-3">
                 <span className="rounded-full bg-fg px-2.5 py-0.5 text-[0.75rem] font-medium text-background">{repositories.featuredLabel}</span>
                 <span className="text-[0.8125rem] text-fg/60">{spec.kind}</span>
+                <Stars stars={stars} href={spec.href} />
               </div>
               <a
                 href={spec.href}
@@ -67,10 +83,13 @@ export function Repositories() {
                     <GitHubMark className="size-4 text-fg/45" />
                     {repo.kind}
                   </span>
-                  <ArrowUpRight
-                    className="size-5 text-fg/35 transition-[color,transform] group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-fg"
-                    aria-hidden="true"
-                  />
+                  <span className="flex items-center gap-3">
+                    <Stars stars={stars} href={repo.href} />
+                    <ArrowUpRight
+                      className="size-5 text-fg/35 transition-[color,transform] group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-fg"
+                      aria-hidden="true"
+                    />
+                  </span>
                 </div>
                 <p className="mt-6 font-mono text-[1rem] font-medium text-fg">{repo.name}</p>
                 {repo.status && (
@@ -99,7 +118,10 @@ export function Repositories() {
 
         <div data-motion-reveal className="mt-12 grid gap-8 border-t border-fg/[0.07] pt-10 lg:grid-cols-4 lg:gap-10">
           <a href={governance.href} target="_blank" rel="noreferrer" className="group block">
-            <span className="text-[0.75rem] text-faint">{repositories.rulesLabel}</span>
+            <span className="flex items-center gap-3 text-[0.75rem] text-faint">
+              {repositories.rulesLabel}
+              <Stars stars={stars} href={governance.href} />
+            </span>
             <span className="mt-1.5 flex items-center gap-2 font-mono text-[0.9375rem] font-medium text-fg">
               {governance.name}
               <ArrowUpRight

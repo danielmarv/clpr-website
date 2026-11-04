@@ -577,3 +577,152 @@
     animation: proof-travel 3.6s cubic-bezier(0.65, 0, 0.35, 1) infinite alternate;
   }
 }
+
+/* Blog posts: the Markdown body (PostBody). Tailwind's reset leaves Markdown unstyled, so the
+   reading styles are set here, in the site's tokens. */
+.post-prose {
+  font-size: 1.0625rem;
+  line-height: 1.75;
+  color: color-mix(in oklab, var(--fg) 82%, transparent);
+}
+.post-prose > * + * {
+  margin-top: 1.25em;
+}
+.post-prose :is(h1, h2) {
+  margin-top: 2.2em;
+  font-size: 1.5rem;
+  font-weight: 500;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  color: var(--fg);
+}
+.post-prose h3 {
+  margin-top: 1.8em;
+  font-size: 1.1875rem;
+  font-weight: 500;
+  line-height: 1.35;
+  color: var(--fg);
+}
+.post-prose :is(h1, h2, h3) {
+  scroll-margin-top: 6rem;
+}
+.post-prose :is(h1, h2, h3) + * {
+  margin-top: 0.75em;
+}
+.post-prose a {
+  color: var(--signal-ink);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in oklab, var(--signal-ink) 35%, transparent);
+  text-underline-offset: 2px;
+  transition: color 150ms, text-decoration-color 150ms;
+}
+.post-prose a:hover {
+  color: var(--fg);
+  text-decoration-color: currentColor;
+}
+.post-prose strong {
+  font-weight: 600;
+  color: var(--fg);
+}
+.post-prose :is(ul, ol) {
+  padding-left: 1.25em;
+}
+.post-prose ul {
+  list-style: disc;
+}
+.post-prose ol {
+  list-style: decimal;
+}
+.post-prose li + li {
+  margin-top: 0.4em;
+}
+.post-prose li::marker {
+  color: var(--signal-glow);
+}
+.post-prose blockquote {
+  border-left: 2px solid color-mix(in oklab, var(--signal-glow) 60%, transparent);
+  padding: 0.25em 0 0.25em 1.5em;
+  font-size: 1.125rem;
+  line-height: 1.7;
+  color: var(--fg);
+}
+.post-prose blockquote > * + * {
+  margin-top: 1em;
+}
+.post-prose blockquote p:last-child:has(strong:first-child) {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+.post-prose code {
+  border-radius: 0.375em;
+  background: color-mix(in oklab, var(--fg) 6%, transparent);
+  padding: 0.1em 0.35em;
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+}
+.post-prose pre {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-panel);
+  background: color-mix(in oklab, var(--fg) 4%, transparent);
+  padding: 1rem 1.25rem;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+.post-prose pre code {
+  background: none;
+  padding: 0;
+}
+.post-prose hr {
+  margin: 2.5em 0;
+  border: 0;
+  border-top: 1px solid var(--line);
+}
+.post-prose img {
+  border-radius: var(--radius-panel);
+}
+.post-prose-table {
+  max-width: 100%;
+  overflow-x: auto;
+}
+.post-prose-table table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.9375rem;
+}
+.post-prose-table :is(th, td) {
+  border-bottom: 1px solid var(--line);
+  padding: 0.75rem 1rem;
+  vertical-align: top;
+}
+.post-prose-table th {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+/* Community voices: a quote comes in from the side it was asked for (Voices.tsx), as on hiero.org. */
+@media (prefers-reduced-motion: no-preference) {
+  .voices-slide[data-direction="next"] {
+    animation: voices-enter-next 520ms cubic-bezier(0.22, 0.85, 0.28, 1) both;
+  }
+  .voices-slide[data-direction="previous"] {
+    animation: voices-enter-previous 520ms cubic-bezier(0.22, 0.85, 0.28, 1) both;
+  }
+}
+@keyframes voices-enter-next {
+  from {
+    opacity: 0;
+    translate: 1.75rem 0;
+  }
+}
+@keyframes voices-enter-previous {
+  from {
+    opacity: 0;
+    translate: -1.75rem 0;
+  }
+}
