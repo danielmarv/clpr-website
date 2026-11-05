@@ -37,6 +37,7 @@ const SCANNED = [
   'README.md',
   ...walk('src/components', new Set(['.tsx', '.ts'])),
   ...walk('src/app', new Set(['.tsx', '.ts'])),
+  ...walk('explainer/src/pages', new Set(['.astro'])),
   ...walk('content/posts', new Set(['.md'])),
 ];
 for (const file of SCANNED) {

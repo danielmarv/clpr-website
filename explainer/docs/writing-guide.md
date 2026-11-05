@@ -84,7 +84,7 @@ document vs. the Solidity). The changelog lists them so a maintainer can raise t
   a specification property.
 - That a step with no on-chain trace was "observed".
 - That nothing sits between the two ledgers. Endpoints relay every bundle: they can delay a
-  message but cannot forge one. Say "no bridge to trust", not "nothing in between".
+  message but cannot forge one. Say "proofs instead of a bridge", not "nothing in between" or "no bridge to trust".
 - That a verifier is immutable or can never change. Its address is fixed for the Channel's
   lifetime, but the contract may sit behind an upgradeable proxy.
 - That CLPR holds no funds. The CLPR Service is the custodian of Connector funds and endpoint

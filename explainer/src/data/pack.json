@@ -94,7 +94,7 @@
     ],
     [
       "\\bnothing (sits |is )?in (between|the middle)\\b",
-      "no bridge to trust: endpoints relay every bundle, and can delay a message but not forge one"
+      "proofs instead of a bridge: endpoints relay every bundle, and can delay a message but not forge one"
     ],
     [
       "\\bzero custody\\b",

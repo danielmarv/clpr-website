@@ -104,8 +104,30 @@ html .progress { z-index: 50; }
 html .progress > i { background: var(--gradient-brand); }
 html main > section { scroll-margin-top: 7.5rem; }
 @media (min-width: 1100px) { html .page > .toc-col { top: 6.75rem; max-height: calc(100vh - 6.75rem); padding-top: 28px; } }
+/* The Contents column can be hidden (Site.astro); the buttons exist only on wide screens, where the column does. */
+html .toc-toggle { display: none; align-items: center; gap: 0.5rem; padding: 0.35rem 0.75rem; border: 1px solid var(--line); border-radius: 999px; background: var(--panel); color: var(--text-2); font: 500 0.8125rem/1 var(--font); cursor: pointer; }
+html .toc-toggle:hover { color: var(--fg); }
+html .toc-toggle:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
+html .toc-toggle svg { width: 1rem; height: 1rem; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+@media (min-width: 1100px) {
+  html .toc-hide { display: inline-flex; position: absolute; top: 22px; right: 14px; padding: 0.4rem; }
+  /* Anchored to the container's left edge, where the logo and the landing page's content start. */
+  html.toc-collapsed .toc-show { display: inline-flex; position: fixed; top: 8.5rem; left: max(1rem, calc((100vw - 76rem) / 2 + 2rem)); z-index: 40; }
+  html.toc-collapsed .page { grid-template-columns: minmax(0, 1fr); }
+  html.toc-collapsed .page > .toc-col { display: none; }
+  html.toc-collapsed main { margin-inline: auto; }
+}
+/* Where the margin beside the centered column is too narrow for the word, the button shows its icon only. */
+@media (min-width: 1100px) and (max-width: 1249px) {
+  html .toc-show { padding: 0.4rem; }
+  html .toc-show .toc-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+}
 html .shell { width: 100%; max-width: 76rem; margin-inline: auto; padding-inline: 1.25rem; }
 @media (min-width: 40rem) { html .shell { padding-inline: 2rem; } }
+/* The page body uses the website's container, so the sidebar and text start where the header and the landing page's content do. */
+html .page { max-width: 76rem; padding-inline: 1.25rem; }
+@media (min-width: 40rem) { html .page { padding-inline: 2rem; } }
+@media (min-width: 1100px) { html:not(.toc-collapsed) main { max-width: none; } }
 
 /* ---------- header, as the website draws it ---------- */
 html .site-header {

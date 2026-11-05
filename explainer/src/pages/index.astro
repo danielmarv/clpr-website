@@ -10,14 +10,14 @@ const acts = sections.acts.general;
 ---
 <Site
   title="The plumbing of CLPR"
-  description="How a message gets from one blockchain to another with no bridge to trust. CLPR, the bridgeless Cross Ledger Protocol, explained from nothing, with simulations."
+  description="How a message gets from one blockchain to another, checked by proofs instead of a bridge. CLPR, the bridgeless Cross Ledger Protocol, explained from nothing, with simulations."
   sections={list}
   acts={acts}
   path="/"
 >
   <Hero
     kicker="An explainer · for everyone · no prior knowledge assumed"
-    lede="How a message gets from one blockchain to another with no bridge to trust. The Cross Ledger Protocol, explained from nothing."
+    lede="How a message gets from one blockchain to another, checked by proofs instead of a bridge. The Cross Ledger Protocol, explained from nothing."
     routes={acts.map((a) => ({ href: `#act-${a.id}`, numeral: a.numeral, label: a.name }))}
   >
     The <em>plumbing</em> of CLPR
