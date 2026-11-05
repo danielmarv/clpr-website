@@ -21,8 +21,8 @@ export const links = {
   teams: "https://github.com/LFDT-CLPR/governance/blob/main/teams.yml",
   labsCharter: "https://github.com/LFDT-CLPR/governance/blob/main/lf-decentralized-trust-labs_Charter.pdf",
   contributing: "https://github.com/LFDT-CLPR/.github/blob/main/CONTRIBUTING.md",
-  codeOfConduct: "https://github.com/LFDT-CLPR/.github/blob/main/CODE_OF_CONDUCT.md",
-  security: "https://github.com/LFDT-CLPR/.github/blob/main/SECURITY.md",
+  codeOfConduct: "https://github.com/LFDT-CLPR/.github",
+  security: "https://github.com/LFDT-CLPR/.github/security/policy",
   weeklyCall: "https://zoom-lfx.platform.linuxfoundation.org/meetings/lf-decentralized-trust-labs?view=week",
 } as const;
 
