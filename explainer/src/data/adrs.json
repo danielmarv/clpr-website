@@ -35,7 +35,7 @@
       "file": "2026-07-14-endpoint-sync-streaming-and-mtls.md",
       "date": "2026-07-14",
       "title": "CLPR Endpoint Sync Streaming Protocol and mTLS Root-of-Trust Model",
-      "summary": "Endpoints now talk over a two-way stream rather than a single request, because the old shape sent every message twice in steady state. The same record set the root of trust for mutual TLS between endpoints: a certificate authority on chain and a short-lived certificate per process.",
+      "summary": "Endpoints now talk over a two-way stream rather than a single request, because the old shape roughly halved throughput. The same record set the root of trust for mutual TLS between endpoints: a certificate authority on chain and a short-lived certificate per process.",
       "detail": "Replace the unary <code>sync</code> RPC with a bidirectional-streaming request/response cycle that eliminates systematic duplicate sends; adopt a P-384 root CA / Ed25519 leaf mTLS model.",
       "refs": [
         {

@@ -369,7 +369,7 @@ Each ledger publishes one `ClprLedgerConfiguration`: its identity and the limits
 ```protobuf
 message ClprLedgerConfiguration {
   uint32        protocol_version        = 1;  // both sides MUST agree; unknown → reject
-  string        chain_id                = 2;  // CAIP-2, e.g. "hedera:mainnet", "eip155:1"
+  string        chain_id                = 2;  // CAIP-2, e.g. "eip155:1", "eip155:10"
   bytes         service_address         = 3;  // this ledger's CLPR Service (contract addr / well-known constant)
   Timestamp     timestamp               = 4;  // consensus time of the last change; monotonic
   ClprThrottles throttles               = 5;
@@ -378,7 +378,7 @@ message ClprLedgerConfiguration {
 }
 ```
 
-**Identity is a compound key.** `chain_id` is a CAIP-2 string, but it does not uniquely identify a CLPR Service: two competing service contracts on Ethereum can both claim `eip155:1`. A peer is therefore identified by `(ChainID, ClprServiceAddress)`. Private networks may self-assign an unregistered namespace such as `hashsphere:acme-prod`.
+**Identity is a compound key.** `chain_id` is a CAIP-2 string, but it does not uniquely identify a CLPR Service: two competing service contracts on Ethereum can both claim `eip155:1`. A peer is therefore identified by `(ChainID, ClprServiceAddress)`. Private networks may self-assign an unregistered namespace such as `examplenet:prod`.
 
 <CompoundPeerIdentity />
 
@@ -551,52 +551,21 @@ The request is a hint; the bundle is the proof. Nothing a BundleRequest says can
 
 <Section id="verifiers" page="developers">
 
-A verifier implements two read-only methods. It holds no per-channel state: mutable trust material comes in and goes out through the `trust_anchor` parameters, and constant identity through `ChannelContext`.
-
-```text
-struct ChannelContext { bytes channel_id; bytes service_address }   // immutable per channel
-
-interface IClprVerifier {
-  function verifyConfig(bytes config_proof_bytes, bytes channel_id, bytes endpoint_manifest_proof_bytes)
-    returns (ChannelContext ctx, string chain_id, uint96 peer_config_nanos, ClprThrottles throttles,
-             bytes initial_trust_anchor, bytes initial_trust_anchor_id, ClprEndpointManifest endpoint_manifest)
-
-  function verifyBundle(bytes bundle_payload, bytes trust_anchor, ChannelContext ctx)
-    returns (ChannelSyncData sync_data, ClprMessagePayload[] messages,
-             uint64 anchor_message_id, bytes anchor_running_hash,
-             bytes new_trust_anchor, bytes new_trust_anchor_id, ClprEndpointManifest new_endpoint_manifest)
-}
-```
-
-`verifyConfig` runs once, at `completeChannel`; it MUST revert if any proof fails, if the manifest's `service_address` does not match, or if the manifest version is 0, and MUST NOT revert merely because the endpoint list is empty. `verifyBundle` runs on every submission and "is responsible for validating that the bundle data belongs to the (trust_anchor, ctx.service_address, ctx.channel_id) triple"; hash chain, ordering and replay are the service's job. EVM verifiers SHOULD fail fast on malformed input before expensive cryptography. `ChannelContext` exists for two reasons: EVM and QBFT verifiers need the channel id and peer service address to derive the storage slots they prove, and without them a valid Hiero proof for one channel could be passed off as another's when both trust the same ledger_id; the running hash catches that except in a narrow window at the start of a channel's life, which <a href={pinned('clpr-spec', 'ADR/2026-07-02-channel-context-verifier-interface.md')}>ADR 2026-07-02</a> addresses. It is kept apart from the trust anchor because identity must not live in a field designed to rotate.
+A verifier implements two read-only operations. One checks a peer's configuration proof once, when a channel is completed; the other checks every submitted bundle against the channel's current trust anchor and returns the messages it proves. It holds no per-channel state: mutable trust material comes in and goes out through the trust anchor, and constant identity through a channel context that names the channel and the peer service. `verifyBundle` is responsible for validating that the bundle data belongs to the (trust anchor, service address, channel id) triple; the hash chain, ordering and replay checks are the service's job. The exact signatures differ between the specification and each implementation, so read the interface in the language you build for.
 
 <VerifierIo />
 
 ### Trust anchors and rotation
 
-The trust anchor is opaque to the service: "it stores, passes, and replaces the anchor, but never inspects its contents." It is initialized from `verifyConfig` and changes through exactly one path, a non-empty `new_trust_anchor` returned by `verifyBundle`, applied atomically before any message in that bundle. No admin key, governance call or `ConfigUpdate` can set it; only the channel's verifier, by accepting a proof, can move it, and a verifier behind an upgradeable proxy can change what it accepts. A verifier that returns a new anchor without a state-proven commitment in the same proof MUST revert; that requirement is what prevents anchor injection by a compromised endpoint.
+The trust anchor is opaque to the service: "it stores, passes, and replaces the anchor, but never inspects its contents." It is initialized from `verifyConfig` and changes through exactly one path, a non-empty `new_trust_anchor` returned by `verifyBundle`, applied atomically before any message in that bundle. No admin key, governance call or `ConfigUpdate` can set it; only the channel's verifier, by accepting a proof, can move it, and a verifier behind an upgradeable proxy can change what it accepts. How a channel's first trust anchor is established depends on the verifier; operators should confirm a peer's identity out of band before relying on a new channel. A verifier that returns a new anchor without a state-proven commitment in the same proof MUST revert; that requirement is what prevents anchor injection by a compromised endpoint.
 
 <TrustAnchor />
 
-The endpoint carries the obligation to keep the remote anchor current. Every sync payload reports the peer's `trust_anchor_id`; the endpoint keeps a local ordered record of authorities it has seen and, when it cannot produce proofs the remote would accept, submits **transition bundles** until it can. Whether timing is tight depends on the anchor's encoding: a *single-authority* anchor must be advanced exactly at the boundary, while a *window* anchor (`current, next`) decouples submission from the rotation and is recommended for proof systems with frequent, predictable rotations such as Ethereum's roughly 27-hour sync committee. A proof system that cannot produce a proof verifiable by the old authority *and* committing to the new one "cannot support the CLPR trust anchor model".
+The endpoint carries the obligation to keep the remote anchor current. Every sync payload reports the peer's `trust_anchor_id`; the endpoint keeps a record of the authorities it has seen and, when it cannot produce proofs the remote would accept, submits **transition bundles** until it can. A proof system that cannot produce a proof verifiable by the old authority *and* committing to the new one "cannot support the CLPR trust anchor model".
 
-### The two production verifiers
+### Verifier families
 
-<div class="table-wrap">
-<table>
-<thead><tr><th></th><th class="wrap">Hiero (TSS / hinTS)</th><th class="wrap">QBFT (EVM ledger)</th></tr></thead>
-<tbody>
-<tr><td>Trust anchor</td><td class="wrap"><code>ledger_id</code>: the genesis-rooted identity of the network's threshold signing key. No secondary id.</td><td class="wrap"><code>abi.encode(validator, codeHash, epochLength, epochNumber)</code>, 128 bytes; id = big-endian epoch number. The reference verifier tracks one validator address and rejects multi-validator sets; <code>verifiers/qbft</code> describes a validator-set hash in that first word.</td></tr>
-<tr><td>Proof bytes</td><td class="wrap">A <code>StateProof</code> protobuf: <code>BlockStateProof</code> (ledger_id, BLS12-381 aggregate TSS signature over a 48-byte SHA-384 block root) plus one <code>MerkleLeafProof</code> per proven leaf</td><td class="wrap">RLP 5-tuple (7 items with an endpoint manifest proof): current block header with QBFT committed seals in <code>extraData</code>, epoch-boundary headers for rotation, EIP-1186 account proof for the CLPR Service, storage proofs, serialized bundle content</td></tr>
-<tr><td>What is proven</td><td class="wrap">The Channel leaf (tag 482) and one <code>ClprMessageValue</code> leaf (tag 498) per message; natively, a <code>ClprLedgerConfiguration</code> leaf for <code>verifyConfig</code>. The Solidity verifier decodes the configuration unproven, takes the ledger_id fixed at its deployment, and proves only the endpoint manifest.</td><td class="wrap">Five Channel slots: status + nextMessageId, ackedMessageId + receivedMessageId, sentRunningHash, receivedRunningHash and endpointManifestVersion; plus the running hash of the sender's latest message when the bundle carries messages</td></tr>
-<tr><td>Verification</td><td class="wrap">Recompute SHA-384 Merkle roots with domain prefixes (leaf 0x00, unary 0x01, binary 0x02), extend to the block root, check the TSS signature, extract and sanity-check leaves. The native path, through the system contract at <code>0x16e</code>, checks the signature against the channel's <em>stored</em> ledger_id (not one inside the proof). The Solidity <code>HieroVerifier</code> + <code>TSSVerifier</code> check the hinTS aggregate with the EIP-2537 BLS12-381 precompiles and a WRAPS proof against the ledger_id fixed when the verifier was deployed.</td><td class="wrap">Recover ECDSA signers from the committed seals and require a configured minimum number of seals, one of them from the anchor's validator; keccak the header; walk the account proof to <code>stateRoot</code>, pinning the service's code hash, then each storage proof; process epoch headers in sequence to advance the validator</td></tr>
-<tr><td>Who builds proofs</td><td class="wrap">The Hiero node itself; the relay fetches the finished proof and only parses it</td><td class="wrap">The relay, from <code>eth_getBlockByNumber</code> and <code>eth_getProof</code></td></tr>
-<tr><td>Rotation</td><td class="wrap">Not yet implemented. The native <code>VerifyBundleCall</code> returns an empty <code>newTrustAnchor</code>; the planned path is a WRAPS recursive proof binding the new verification key to the same ledger_id. The Solidity verifier returns the hash of the hinTS verification key as <code>newTrustAnchor</code>, a cache hint the service stores as the channel's anchor.</td><td class="wrap">Epoch-driven; each epoch header must be sealed by the previous validator, so history cannot be skipped; catch-up bounded per bundle by a relay setting, and the relay sends a bundle with more than one epoch header without messages</td></tr>
-</tbody>
-</table>
-</div>
-
-Both are documented under <a href={pinned('clpr-spec', 'verifiers')}>`verifiers/`</a> in the specification repository, which also prescribes the three files (`state_proof.md`, `verifier_contract.md`, `trust_anchor.md`) any new chain must add. The contracts repository additionally carries verifier code for other proof families (Ethereum beacon BLS, Sei/CometBFT, an Avalanche mock) which have READMEs in the contracts repository but no specification in clpr-spec and no stated maturity.
+Each proof family has its own verifier. A Hiero verifier checks a threshold signature by the network's validators over a summary of its state; a QBFT verifier checks validator seals on block headers and storage proofs against them. What a verifier proves, how it rotates its trust anchor and how mature it is differ per family and change as the implementations evolve, so this page does not tabulate them. They are documented under <a href={pinned('clpr-spec', 'verifiers')}>`verifiers/`</a> in the specification repository, which also prescribes the three files (`state_proof.md`, `verifier_contract.md`, `trust_anchor.md`) any new chain must add.
 
 <TwoStateTrees />
 
@@ -809,7 +778,7 @@ The text comes in two parts. The **design document** (`clpr-service.md`) explain
 
 <SpecDocumentMap />
 
-Three rules govern change. Any change to the bytes that travel between ledgers raises the protocol version, and two ledgers must agree on it or stop talking. Data an implementation does not recognize is rejected, never skipped. And the EVM contracts keep a written list of where they still differ from the text.
+Two rules govern change. Any change to the bytes that travel between ledgers raises the protocol version, and two ledgers must agree on it or stop talking. And data an implementation does not recognize is rejected, never skipped.
 
 Decisions that change the specification are recorded as **Architecture Decision Records**, named `YYYY-MM-DD-short-title.md`, with a fixed final form: an abstract ending in an enumerated "Changes in this ADR", a problem description per discrete problem, the options considered and non-goals, the complete solution and the tests that check it, plus optional appendices for line-by-line spec patches and implementation notes.
 
@@ -834,7 +803,7 @@ CLPR is incubated as a lab of **LF Decentralized Trust**, a Linux Foundation pro
 
 - **Oversight** by the foundation's Technical Advisory Council (TAC), which approves project proposals, including incubation and deprecation, organizes and removes sub-projects, and approves the processes for contributing.
 - **Licensing.** Inbound and outbound code under Apache License 2.0, every new inbound code contribution carrying a Developer Certificate of Origin sign-off; specifications under the Community Specification License 1.0; documentation under CC BY 4.0. Exceptions need a two-thirds vote of the entire TAC. Files should carry SPDX identifiers.
-- **Copyright** in new contributions stays with its holders, and no contributor is required to assign it. Project trademarks are transferred to LF Projects, LLC, which holds them for the project; the Hedera Governing Council undertook to donate the CLPR brand and trademark to LFDT once the lab was accepted.
+- **Copyright** in new contributions stays with its holders, and no contributor is required to assign it. Project trademarks are transferred to LF Projects, LLC, which holds them for the project.
 - **Openness.** Participation cannot be refused on any basis that is not reasonable and non-discriminatory, and "the output of all Project discussions, proposals, timelines, decisions, and status should be made open and easily visible to all".
 
 The mission of the Labs project is "to support development of very early open projects".
@@ -851,6 +820,6 @@ The lab's scope: collaboration on the specification, the reference implementatio
 
 <Cast detail />
 
-Plus a few terms that only appear on this page: **anchor message**, the last message in a bundle, whose running hash the state proof covers; **acknowledgement**, the peer's `received_message_id` as reported in `ChannelSyncData`, distinct from a response; **close-notification**, the final bundle an endpoint owes the remote once its side reaches CLOSED; **transition bundle**, a bundle whose proof advances the trust anchor, possibly carrying no messages; **NoProgress**, the rejection of a bundle satisfying none of the five progress criteria; **HashSphere**, a private or permissioned network running Hiero; **CAIP-2**, the `namespace:reference` chain identifier standard used for `chain_id`.
+Plus a few terms that only appear on this page: **anchor message**, the last message in a bundle, whose running hash the state proof covers; **acknowledgement**, the peer's `received_message_id` as reported in `ChannelSyncData`, distinct from a response; **close-notification**, the final bundle an endpoint owes the remote once its side reaches CLOSED; **transition bundle**, a bundle whose proof advances the trust anchor, possibly carrying no messages; **NoProgress**, the rejection of a bundle satisfying none of the five progress criteria; **CAIP-2**, the `namespace:reference` chain identifier standard used for `chain_id`.
 
 </Section>

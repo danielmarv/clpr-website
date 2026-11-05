@@ -141,7 +141,7 @@ export function IssueBoard({ issues, fetchedAt }: { issues: Issue[] | null; fetc
 
   return (
     <div ref={boardRef} className="scroll-mt-24">
-      <div role="group" aria-label={page.repositoriesLabel} className="grid gap-3 md:grid-cols-3">
+      <div role="group" aria-label={page.repositoriesLabel} className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
         {page.repositories.map((repository) => {
           const count = searched.filter((issue) => issue.repository === repository.name).length;
           const active = query.repository === repository.name;

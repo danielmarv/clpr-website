@@ -1,4 +1,4 @@
-// All user-facing copy and links. Sources: LF-Decentralized-Trust/lab-proposals#5, the LFDT-CLPR GitHub org and hashgraph.com/clpr.
+// All user-facing copy and links. Sources: LF-Decentralized-Trust/lab-proposals#5, the LFDT-CLPR GitHub org and the CLPR specification.
 
 export const links = {
   githubOrg: "https://github.com/LFDT-CLPR",
@@ -10,7 +10,7 @@ export const links = {
   hip1535: "https://github.com/hiero-ledger/hiero-improvement-proposals/blob/main/HIP/hip-1535.md",
   labProposal: "https://github.com/LF-Decentralized-Trust/lab-proposals/issues/5",
   lfdt: "https://www.lfdecentralizedtrust.org/",
-  hashgraph: "https://hashgraph.com/clpr/",
+  hashgraph: "https://hashgraph.com",
   hedera: "https://hedera.com",
   hiero: "https://hiero.org",
   apacheLicense: "https://www.apache.org/licenses/LICENSE-2.0",
@@ -21,8 +21,9 @@ export const links = {
   teams: "https://github.com/LFDT-CLPR/governance/blob/main/teams.yml",
   labsCharter: "https://github.com/LFDT-CLPR/governance/blob/main/lf-decentralized-trust-labs_Charter.pdf",
   contributing: "https://github.com/LFDT-CLPR/.github/blob/main/CONTRIBUTING.md",
+  codeOfConduct: "https://github.com/LFDT-CLPR/.github/blob/main/CODE_OF_CONDUCT.md",
+  security: "https://github.com/LFDT-CLPR/.github/blob/main/SECURITY.md",
   weeklyCall: "https://zoom-lfx.platform.linuxfoundation.org/meetings/lf-decentralized-trust-labs?view=week",
-  releaseCoverage: "https://genfinity.io/2026/09/24/hedera-hashgraph-clpr-linux-foundation-decentralized-trust-labs/",
 } as const;
 
 // The site's pages; the home page's sections are linked from the footer.
@@ -37,9 +38,9 @@ export const headerCta = { label: "Start contributing", href: "/#get-involved" }
 
 export const hero = {
   eyebrow: "An LF Decentralized Trust Lab",
-  title: "Cross-ledger messaging with no bridge to trust.",
+  title: "Bridgeless cross-ledger messaging, verified by proofs.",
   lead:
-    "CLPR (“Clipper”) is an open protocol for reliable, in-order messaging between independent ledger networks. The destination ledger verifies the source ledger’s state proofs, so trust comes from the ledgers, not from bridges, pooled liquidity or intermediary validators.",
+    "CLPR (“Clipper”) is an open protocol for reliable, in-order messaging between independent ledger networks. The destination ledger verifies the source ledger’s state proofs instead of relying on a bridge, pooled liquidity or an intermediary validator set. A Channel still rests on both ledgers and on the CLPR Service and Verifier Contract implementations at each end, which should be open to review.",
   primaryCta: { label: "Start contributing", href: "#get-involved" },
   secondaryCta: { label: "Read the explainer", href: "/plumbing/" },
   // The first two numbers come from GitHub when the page is built and every hour after.
@@ -47,7 +48,6 @@ export const hero = {
     label: "CLPR in numbers",
     repositories: "public repositories",
     stars: "GitHub stars",
-    earlyAdopter: { value: "3", label: "early adopter use cases", href: "/blog/cross-ledger-early-adopter-program/" },
   },
 } as const;
 
@@ -68,20 +68,20 @@ export const story = {
       index: "02",
       name: "One Channel",
       title: "A direct, ordered Channel.",
-      body: "Messages queue in order on the source ledger, linked by a running-hash chain, and cross in bundles. Every Data Message gets exactly one response.",
+      body: "Messages queue in order on the source ledger, linked by a running-hash chain, and cross in bundles. Each Data Message is answered with one response.",
     },
     {
       index: "03",
       name: "State proofs",
-      title: "Proofs, not promises.",
-      body: "The destination’s Verifier Contract checks the source ledger’s state proof itself. No bridge, no pooled liquidity, no intermediary validators.",
+      title: "Verified by proofs.",
+      body: "The destination’s Verifier Contract checks the source ledger’s state proof itself, without a bridge, pooled liquidity or an intermediary validator set.",
     },
   ],
 } as const;
 
 export const origins = {
-  label: "Contributed by Hashgraph, with a native Hiero service specified in HIP-1535, and hosted as an LF Decentralized Trust lab.",
-  text: "Contributed by Hashgraph under its agreement with the Hedera Governing Council. The ideas build on Dr. Leemon Baird’s proposals for cross-ledger communication. The first native implementation is part of Hiero.",
+  label: "A lab of LF Decentralized Trust, with a native Hiero service specified in HIP-1535.",
+  text: "CLPR originated at Hedera, was developed by the Hashgraph team and was contributed to LF Decentralized Trust, where it is developed in the open as a Lab under the Labs charter. The first native implementation is part of Hiero.",
   // Each mark in its own colours (src), and its version for dark backgrounds (srcDark).
   // Heights are tuned per logo so the marks read at a similar optical size.
   logos: [
@@ -95,9 +95,9 @@ export const origins = {
 export const comparison = {
   id: "protocol",
   eyebrow: "Why bridgeless",
-  title: "Trust lives in the ledgers, not in a bridge.",
+  title: "Proofs take the place of a trusted middle party.",
   lead:
-    "Interledger solutions often add an intermediary consensus layer or a federated bridge: a party in the middle that has to be trusted. CLPR has no such party. Each ledger verifies the other’s state with proofs it checks itself, and the Endpoints that carry those proofs cannot forge them.",
+    "Interledger solutions often add an intermediary consensus layer or a federated bridge: a party in the middle that has to be trusted. CLPR does not add one. Each ledger verifies the other’s state with proofs that its Verifier Contract checks, and the Endpoints that carry those proofs cannot forge them.",
   columns: { bridge: "Many bridges", clpr: "CLPR" },
   caption: "How CLPR differs from bridge-based interoperability",
   diagrams: {
@@ -115,12 +115,12 @@ export const comparison = {
     {
       aspect: "Where trust lives",
       bridge: "In a separate validator set, federation or custodian",
-      clpr: "In the two ledgers, through state proofs checked by Verifier Contracts",
+      clpr: "In the two ledgers, plus the CLPR Service and Verifier Contract implementations that check state proofs",
     },
     {
       aspect: "Custody",
       bridge: "Assets can sit with a custodian, whose keys become a target",
-      clpr: "No pooled user assets: each CLPR Service holds only Connector funds and Endpoint bonds",
+      clpr: "The protocol pools no user assets: each CLPR Service holds only Connector funds and Endpoint bonds. Applications built on CLPR may still hold assets",
     },
     {
       aspect: "When something goes offline",
@@ -139,7 +139,7 @@ export const comparison = {
     },
   ],
   caveat:
-    "A Channel is only as trustworthy as its Verifier Contract, and anyone can register a Channel, so applications should check which verifier it uses.",
+    "A Channel is only as trustworthy as its Verifier Contract and the CLPR Service implementations at each end. Anyone can register a Channel, so applications should check which verifier it uses. Verifier Contracts should be immutable, because an upgrade key would be a single point of compromise.",
   explainer: { label: "Why a party in the middle is the weak point", href: "/plumbing/#bridges" },
 } as const;
 
@@ -150,7 +150,7 @@ export const useCases = {
   eyebrow: "Use cases",
   title: "One primitive, four kinds of application.",
   lead:
-    "A CLPR message is bytes with an address, and every Data Message gets exactly one response. The design outlines four patterns built on that primitive. They are applications, not part of the protocol, and none is specified yet.",
+    "A CLPR message is bytes with an address, and each Data Message is answered by a response. The design outlines four patterns built on that primitive. They are applications, not part of the protocol, and none is specified yet.",
   patterns: [
     {
       name: "Remote smart contract call",
@@ -202,9 +202,9 @@ export const useCases = {
 export const extensibility = {
   id: "architecture",
   eyebrow: "Architecture",
-  title: "Bring any ledger that can prove its state.",
+  title: "Adding a new ledger type.",
   lead:
-    "CLPR is chain-agnostic. Supporting a new ledger type means building three components. The destination CLPR Service needs no change to its implementation, because each Verifier Contract translates the source ledger’s format into the local one.",
+    "CLPR is not tied to one ledger type. Supporting a new one means building three components. Where the CLPR Service is a smart contract, it needs no change, because each Verifier Contract translates the source ledger’s format into the local one.",
   components: [
     {
       name: "CLPR Service",
@@ -216,7 +216,7 @@ export const extensibility = {
     },
     {
       name: "Verifier Contracts",
-      body: "Each checks one ledger type’s proofs, and a Channel is bound to one for its whole lifetime. They verify incoming state proofs against the Channel’s trust anchor and decode bundles into the local data format.",
+      body: "Each checks one ledger type’s proofs, and a Channel is bound to one verifier address for its whole lifetime. They verify incoming state proofs against the Channel’s trust anchor and decode bundles into the local data format.",
     },
   ],
   footnote:
@@ -238,7 +238,7 @@ export const repositories = {
   eyebrow: "Open source",
   title: "Open specification, open implementations.",
   lead:
-    "The specification is normative and language-neutral: wire formats, state and algorithms that any language can implement on any ledger. The reference implementations show one way to do it.",
+    "The specification is normative and language-neutral: wire formats, state and algorithms that can be implemented in any language on a ledger able to verify state proofs. The reference implementations show one way to do it.",
   openLabel: "Open repository",
   featuredLabel: "Start here",
   implementsLabel: "Implements",
@@ -336,44 +336,6 @@ export const involvement = {
   },
 } as const;
 
-// Quoted from the announcement of 24 September 2026, as reported that day (links.releaseCoverage). Shown one at
-// a time as on hiero.org, each beside the white logo of the speaker's organization.
-export const voices = {
-  id: "voices",
-  eyebrow: "Community voices",
-  title: "Voices from the ecosystem.",
-  lead: "Builders, partners and community leaders on what open development makes possible.",
-  quotes: [
-    {
-      name: "Daniela Barbosa",
-      role: "General Manager of Decentralized Technologies at the Linux Foundation and Executive Director of LF Decentralized Trust",
-      logo: { name: "LF Decentralized Trust", src: "/logos/lfdt-horizontal-white.svg", width: 698.7, height: 39.1, className: "h-4 sm:h-5" },
-      text: "As a new LFDT lab, CLPR will leverage open development to shape a protocol that fuels collaboration across the industry. With this contribution, Hedera is once again showing its commitment to vendor neutral, collaborative development of critical shared technologies.",
-    },
-    {
-      name: "Dr. Leemon Baird",
-      role: "Co-Founder at Hedera and Chief Scientist at Hashgraph",
-      logo: { name: "Hedera", src: "/logos/hedera-lockup-white.svg", width: 448.29, height: 138.93, className: "h-10 sm:h-12" },
-      text: "That commitment to open collaboration is exactly what’s needed to solve one of the industry’s most persistent problems: network interoperability. When underpinning an application, CLPR is designed to fix that cryptographically so data, assets and messages move freely without a single point of failure to attack.",
-    },
-  ],
-  source: { label: "From the announcement of 24 September 2026", href: "/blog/clpr-joins-lf-decentralized-trust-labs/" },
-  carousel: {
-    label: "Community quotes",
-    logoLabel: "Ecosystem voice",
-    perspectives: "Community perspectives",
-    status: "Quote {index} of {total}",
-    pause: "Pause",
-    play: "Play",
-    pauseLabel: "Pause automatic quote rotation",
-    playLabel: "Resume automatic quote rotation",
-    previous: "Previous",
-    previousLabel: "Previous quote",
-    next: "Next",
-    nextLabel: "Next quote",
-  },
-} as const;
-
 // The structure of hiero.org/tsc. CLPR's governance (GOVERNANCE.md in the governance repository) has no TSC:
 // its Maintainers take the general decisions, so the page is theirs. Members appear once they are listed
 // in members.list; until then the page shows empty cards and points to teams.yml.
@@ -393,9 +355,9 @@ export const governancePage = {
     eyebrow: "Governance",
     title: "About the governance",
     // {rules} is the link to GOVERNANCE.md.
-    body: "The roles, decisions and votes of the lab are set out in its {rules}, under the Labs charter of LF Decentralized Trust. Decisions are made by consensus where possible; when a vote is needed, the Maintainers hold it in the weekly call or over 14 days in the issue, and every decision is tracked in the governance repository.",
+    body: "The roles, decisions and votes of the lab are set out in its {rules}, under the Labs charter of LF Decentralized Trust. Decisions are made by consensus where possible; when a vote is needed, the Maintainers hold it in the weekly call or over 14 days in the issue, and every decision of the Maintainers should be tracked by an issue in the governance repository.",
     rulesLabel: "governance rules",
-    chips: ["Public rules", "Open weekly call", "Decisions tracked in issues"],
+    chips: ["Public rules", "Open weekly call", "Decisions in the open"],
   },
   roles: [
     {
@@ -414,16 +376,14 @@ export const governancePage = {
   members: {
     eyebrow: "The maintainers",
     title: "Who maintains CLPR",
-    body: "The Maintainers are contributors who steward CLPR and keep it open to everyone who wants to help. Their profiles are listed here as they are confirmed.",
+    body: "The Maintainers are contributors who steward CLPR and keep it open to everyone who wants to help.",
     countLabel: "members listed",
     board: { label: "Current members", note: "Listed by surname" },
-    placeholders: 3,
-    placeholderName: "Profile to come",
     noBio: "Biography not available.",
     githubLabel: "GitHub profile",
     empty: {
-      title: "Profiles are on their way",
-      body: "Until the profiles are listed here, every team of the lab and its members are in teams.yml in the governance repository.",
+      title: "The maintainers are listed in the governance repository",
+      body: "Every team of the lab and its members are in teams.yml in the governance repository, which the maintainers keep current.",
       link: { label: "See the teams", href: links.teams },
     },
     list: [] as GovernanceMember[],
@@ -460,6 +420,7 @@ export const issueExplorer = {
     { name: "clpr-spec", body: "The specification, its decision records and the verifier documents." },
     { name: "clpr-smart-contracts", body: "The Solidity CLPR Service and Verifier Contracts for EVM ledgers." },
     { name: "clpr-endpoint", body: "The Java CLPR Endpoint for EVM ledgers: sync, proofs and bundle submission." },
+    { name: "clpr-e2e", body: "The end-to-end repository for CLPR." },
   ],
   openOne: "1 open",
   openMany: "{count} open",
@@ -512,8 +473,8 @@ export const issueExplorer = {
 // The blog's labels; the posts are Markdown files in content/posts/ (src/lib/posts.ts, docs/blogs.md),
 // and the blog's title and subtitle are in content/posts/_index.md.
 export const blog = {
-  description: "News and announcements from the CLPR project.",
-  kicker: "Project news",
+  description: "News and announcements from the CLPR lab.",
+  kicker: "Lab news",
   latestLabel: "Latest post",
   readLabel: "Read the post",
   backLabel: "All posts",
@@ -579,11 +540,13 @@ export const footer = {
       ],
     },
     {
-      title: "Project",
+      title: "Lab",
       links: [
         { label: "Maintainers and committers", href: "/governance/" },
         { label: "Governance repository", href: links.governance },
         { label: "Lab proposal", href: links.labProposal },
+        { label: "Code of Conduct", href: links.codeOfConduct },
+        { label: "Report a vulnerability", href: links.security },
         { label: "Developer Certificate of Origin", href: links.dco },
         { label: "Apache License 2.0", href: links.apacheLicense },
       ],
@@ -601,7 +564,7 @@ export const footer = {
   license:
     "Code is licensed under Apache-2.0; the Labs charter calls for specifications under the Community Specification License 1.0.",
   legal: {
-    text: "© {year} The Linux Foundation. All rights reserved. The Linux Foundation has registered trademarks and uses trademarks. For a list of trademarks of The Linux Foundation, please see our {trademarks} page.",
+    text: "© {year} The Linux Foundation. All rights reserved.{break}The Linux Foundation has registered trademarks and uses trademarks. For a list of trademarks of The Linux Foundation, please see our {trademarks} page.",
     trademarks: { label: "Trademark Usage", href: links.lfTrademarks },
   },
 } as const;

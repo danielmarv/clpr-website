@@ -74,10 +74,9 @@
       "name": "Responding to a compromised verifier",
       "steps": [
         "A vulnerability is discovered and a security advisory issued.",
-        "The service admin closes the affected channels; their queues drain.",
         "The verifier developer publishes a patched implementation.",
         "Connector operators create new channels with the patched verifier.",
-        "Application developers migrate. The window of exposure is between discovery and close."
+        "Application developers migrate. Closing a channel stops only new outgoing messages; the specification covers the rest."
       ],
       "refs": [{ "doc": "design", "anchor": "responding-to-a-compromised-verifier", "label": "design §4.7" }]
     },

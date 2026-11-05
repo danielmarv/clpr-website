@@ -129,10 +129,6 @@
       "Hiero status: specified by the approved HIP-1535, an opt-in service"
     ],
     [
-      "\\bon behalf of the Hedera Governing Council\\b",
-      "under its agreement with the Hedera Governing Council"
-    ],
-    [
       "\\bswitched off by default\\b|\\boff by default\\b|\\bv0\\.78\\.\\d+\\b",
       "state Hiero status only as HIP-1535 states it (Approved, opt-in)"
     ],

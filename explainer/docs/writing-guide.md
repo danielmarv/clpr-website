@@ -124,8 +124,7 @@ document vs. the Solidity). The changelog lists them so a maintainer can raise t
   endpoint is described as a prototype. Say "reference implementation", not "deployable today"
   or "production ready". The application patterns in design §3.4 are outlined, not specified.
 - Who the maintainers are, beyond what the governance repository says (`teams.yml` lists people,
-  not companies). Hashgraph acted "pursuant to its agreement with" the Hedera Governing Council,
-  not "on behalf of" it. Do not call CLPR "pending" a lab: it is one.
+  not companies). Do not call CLPR "pending" a lab: it is one.
 - That a Connector serves many Channels. A Connector is registered on one Channel; an operator's
   key can register Connectors on many.
 - That nearly every failure rejects the bundle. A bundle whose proof, numbering or hashes fail is

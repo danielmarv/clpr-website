@@ -5,7 +5,7 @@ import { site } from "@/content/site";
 import { THEME_COLOR, THEME_SCRIPT } from "@/lib/theme";
 import "./globals.css";
 
-// Sora (OFL) stands in for Styrene A, the licensed typeface on hashgraph.com/clpr.
+// Sora is licensed under the SIL Open Font License.
 const sora = localFont({
   src: "./fonts/sora-latin-wght-normal.woff2",
   variable: "--font-sora",

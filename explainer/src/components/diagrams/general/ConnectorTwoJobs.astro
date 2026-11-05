@@ -5,7 +5,7 @@ import { design, spec } from '../../../lib/sources';
 ---
 <Figure
   lead="One connector, two moments."
-  caption="Before a message is queued, the connector on the sending ledger says whether it will cover it. After the message runs, the connector on the receiving ledger is charged the gas used plus a margin, and all of it goes to the endpoint that submitted the bundle. No new token, no treasury."
+  caption="Before a message is queued, the connector on the sending ledger says whether it will cover it. After the message runs, the connector on the receiving ledger is charged the gas used plus a margin, and all of it goes to the account that submitted the bundle. No new token, no treasury."
   source={[
     { label: 'design §3.3.1', href: design('331-connectors') },
     { label: 'design §3.3.3', href: design('333-receiving-routing-and-paying') },

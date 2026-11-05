@@ -3,7 +3,7 @@
   "ledgers": [
     {
       "id": "hiero",
-      "name": "Hiero networks: Hedera and private HashSpheres",
+      "name": "Hiero networks, public and private",
       "proof": "A joint threshold signature by the network's validators over a summary of its state, plus the paths down to each record it proves",
       "status": "documented",
       "specDir": "verifiers/hiero",

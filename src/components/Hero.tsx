@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
 import { HeroMesh } from "@/components/HeroMesh";
@@ -17,7 +16,6 @@ export function Hero({ repos }: { repos: RepoStats[] | null }) {
           { value: repos.reduce((sum, repo) => sum + repo.stars, 0), label: stats.stars },
         ]
       : []),
-    { value: stats.earlyAdopter.value, label: stats.earlyAdopter.label, href: stats.earlyAdopter.href },
   ];
   return (
     <section data-scene="hero" aria-labelledby="hero-title" className="relative flex min-h-svh flex-col overflow-x-clip">
@@ -59,15 +57,7 @@ export function Hero({ repos }: { repos: RepoStats[] | null }) {
           <dl data-hero-reveal aria-label={stats.label} className="mt-8 flex flex-wrap gap-x-10 gap-y-5">
             {numbers.map((number) => (
               <div key={number.label} className="flex flex-col-reverse">
-                <dt className="mt-1 text-[0.8125rem] text-faint">
-                  {number.href ? (
-                    <Link href={number.href} className="underline decoration-fg/20 underline-offset-2 transition-colors hover:text-fg hover:decoration-current">
-                      {number.label}
-                    </Link>
-                  ) : (
-                    number.label
-                  )}
-                </dt>
+                <dt className="mt-1 text-[0.8125rem] text-faint">{number.label}</dt>
                 <dd className="text-[1.75rem] font-light leading-none tracking-[-0.03em] text-fg">{number.value}</dd>
               </div>
             ))}
