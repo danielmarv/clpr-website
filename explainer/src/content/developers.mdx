@@ -141,6 +141,7 @@ sendMessage([auth] caller, channel_id: bytes(32), connector_id: bytes(32),
             target_application: bytes, message_data: bytes) → { message_id: uint64 }
 ```
 
+{/* detail-allow: the application-facing callback interface, which the specification defines */}
 ```solidity
 interface IClprApplication {
     /// Called when a cross-ledger Data Message arrives. Return bytes become the reply.
@@ -157,6 +158,7 @@ Platform specifications define the gas budget, whether callbacks are synchronous
 
 A minimal echo application, with the caller check that any real deployment needs:
 
+{/* detail-allow: minimal sample application built on the callback interface */}
 ```solidity
 contract PingPong is IClprApplication {
     address public immutable clprService;
@@ -222,30 +224,7 @@ Everything between the two ledgers is re-verified on arrival; the on-chain half 
 
 One ordered queue per channel per direction carries three message classes in a single intermixed stream, sharing one running hash chain, one proof mechanism and one transport:
 
-```protobuf
-message ClprMessagePayload {
-  oneof payload {
-    ClprMessage        message       = 1;  // DATA: application content
-    ClprMessageReply   message_reply = 2;  // RESPONSE: outcome of a Data Message
-    ClprControlMessage control       = 3;  // CONTROL: protocol housekeeping (ConfigUpdate)
-  }
-}
-message ClprMessage {
-  bytes connector_id       = 1;  // keccak256(channel_id ‖ public_key ‖ salt); same on both ledgers
-  bytes target_application = 2;  // destination application address
-  bytes sender             = 3;  // stamped by the service from the caller; not caller-supplied
-  bytes message_data       = 4;  // opaque
-}
-message ClprMessageReply {
-  uint64                 message_id         = 1;  // the Data Message this answers
-  ClprMessageReplyStatus status             = 2;  // SUCCESS | APPLICATION_ERROR | CONNECTOR_NOT_FOUND | CONNECTOR_UNDERFUNDED
-  bytes                  message_reply_data = 3;
-}
-message ClprMessageValue {
-  ClprMessagePayload payload                       = 1;
-  bytes              running_hash_after_processing = 2;
-}
-```
+A queue entry is one of three classes. A **Data Message** carries application content: a connector id, a target application, the sender (stamped by the service from the caller, never caller-supplied) and opaque message data. A **Response** answers one Data Message with a status (`SUCCESS`, `APPLICATION_ERROR`, `CONNECTOR_NOT_FOUND` or `CONNECTOR_UNDERFUNDED`) and reply data. A **Control** message carries protocol housekeeping such as a configuration update. Each entry is stored with the running hash after it was processed.
 
 Queue entries are stored separately from the channel, keyed by `(channel_id, message_id)`, because they are read by id range during bundle construction and deleted after acknowledgement. On Hiero they live in a Merkle state map (directly provable); on EVM ledgers in contract storage, where gas cost makes aggressive deletion important.
 
@@ -413,7 +392,7 @@ Three fields are deliberately *not* on the Channel: `status`, `received_message_
 
 <ChannelVsSyncdata />
 
-**Initial values.** `acked_message_id` = 0; both running hashes are 32 zero bytes; `received_message_id` = 0; `next_message_id` = 1. The first Data Message ever enqueued has ID 1 and the first Response Message received must reference it.
+**Initial values.** Nothing has been sent, acknowledged or received, and both running hashes are 32 zero bytes. The first Data Message ever enqueued is the first message, and the first Response received must reference it.
 
 ### Registration: commit, then reveal
 
@@ -486,24 +465,7 @@ On permissionless ledgers, a seat on the endpoint manifest is the admin's to gra
 
 In the specification, every endpoint exposes one gRPC service with one method:
 
-```protobuf
-service ClprEndpointService {
-  rpc sync(stream ClprSyncPayload) returns (stream ClprSyncPayload);
-}
-
-message ClprSyncPayload {
-  bytes          channel_id      = 1;  // exactly 32 bytes
-  BundleRequest  bundle_request  = 2;  // absent when nothing more to request
-  BundleResponse bundle_response = 3;  // absent when carrying no bundle
-}
-message BundleRequest {                // UNPROVEN: shapes the peer's bundle, never changes state
-  uint64            current_received_message_id       = 1;
-  ClprChannelStatus current_status                    = 2;
-  bytes             current_trust_anchor_id           = 3;
-  uint64            current_endpoint_manifest_version = 4;
-}
-message BundleResponse { bytes bundle_payload = 1; }   // opaque; for the verifier
-```
+Every endpoint exposes one gRPC service with one bidirectional streaming `sync` method, whose payloads name a channel and carry an optional bundle request and an optional bundle response. The request describes the requester's own state (what it has received, its status, the trust anchor and manifest version it holds); it is unproven and shapes the peer's bundle without changing state. The response carries an opaque bundle payload for the verifier.
 
 A sync cycle is one bidirectional stream scoped to a single channel. Each side sends a `BundleRequest` describing its own state; the responder builds a minimal bundle starting at `current_received_message_id + 1`, or at its own `acked_message_id + 1` if the claim names a message it has not sent yet; a payload with both fields absent closes the stream. The connection and its TLS session may persist across cycles.
 
@@ -708,7 +670,7 @@ The repository records its design choices under `docs/`. The contracts are a ref
 
 ### Hiero: the native service
 
-On Hiero the CLPR Service is a native service inside the consensus node, reachable from the EVM at the system address `0x…016e`. Its state is part of the node's Merkle tree, which is why its queue can be proven directly. A native verification path for Hiero proofs (`VerifyConfigCall`/`VerifyBundleCall`) is documented alongside the verifiers, and verifiers for other ledgers are contracts deployed to Hiero.
+On Hiero the CLPR Service is a native service inside the consensus node, reachable from the EVM through a system contract. Its state is part of the node's Merkle tree, which is why its queue can be proven directly. A native verification path for Hiero proofs (`VerifyConfigCall`/`VerifyBundleCall`) is documented alongside the verifiers, and verifiers for other ledgers are contracts deployed to Hiero.
 
 ### The endpoint: `clpr-endpoint`
 

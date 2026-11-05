@@ -49,6 +49,10 @@ moves a pin; `clpr-sync` does both, and starts by running this.
 
 ## Ground rules
 
+- For each touched section, say whether it holds volatile detail (field numbers, layouts, addresses,
+  ports, formulas) or a `detail-allow` exception (`node explainer/checks/check-detail.mjs --list`), and
+  recommend deleting that detail instead of updating it.
+
 - Never edit `src/`, `docs/` or `src/data/sources.json`; never run `pnpm run sync:pin`.
 - Describe the change, not the code: a maintainer wants "the default leaf validity dropped from a
   day to twelve hours", not a diff hunk.

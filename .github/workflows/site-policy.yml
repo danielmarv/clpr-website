@@ -1,0 +1,23 @@
+# Runs the website's policy check on every change to its copy: neutrality, what LFDT's website
+# requirements ask for, blog sources and the pairing of site.ts blocks with site-refs.json.
+name: Site policy
+
+on:
+  pull_request:
+    paths: ['src/**', 'content/**', 'README.md', 'scripts/check-site-policy.mjs', '.github/workflows/site-policy.yml']
+  push:
+    branches: [main]
+    paths: ['src/**', 'content/**', 'README.md', 'scripts/check-site-policy.mjs', '.github/workflows/site-policy.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  policy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+      - run: node scripts/check-site-policy.mjs

@@ -159,6 +159,10 @@
     [
       "\\bone connector can serve many channels\\b|\\bone connector,? two channels\\b",
       "a connector is registered on one Channel; one operator can run connectors on many"
+    ],
+    [
+      "\\bwindow of (danger|exposure)\\b",
+      "what the specification says about a compromised verifier, without a timeline"
     ]
   ],
   "structure": {

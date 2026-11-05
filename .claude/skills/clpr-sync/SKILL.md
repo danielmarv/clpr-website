@@ -48,6 +48,10 @@ whether the site still matches the pins, and only this skill changes files or pi
 - **DCO.** Every commit is `git commit -s`. Use one commit per sync with the message format in
   step 7, on a `sync/<date>` branch, and open a pull request rather than pushing to `main` unless
   the user says otherwise.
+- **Never add volatile detail.** A sync keeps the pages short: field numbers, layouts, addresses, ports,
+  formulas and implementation names stay in the specification (`explainer/docs/writing-guide.md`,
+  Keep it stable). When upstream changes such a detail, delete it from the page if the sentence reads
+  without it. `node checks/check-detail.mjs` fails on the patterns; do not add `detail-allow` to pass.
 - **Never pin blind.** Re-pinning a repository is a claim that the site text matches that commit.
   Pin only what you reviewed in step 3.
 
@@ -162,11 +166,11 @@ disagree, and if any element id is duplicated (sim ids end in `-sim` or `-dev` f
 
 ```bash
 pnpm exec kse pin-upstream            # or: pnpm exec kse pin-upstream clpr-spec governance
-pnpm run verify                           # build, then every gate: provenance, links, vocabulary, data rows,
+pnpm run verify                           # (includes check-detail) build, then every gate: provenance, links, vocabulary, data rows,
                                          # content map, anchors, browser, dark-theme sims, overflow at 400px
 ```
 
-Only pin repositories whose changes you reviewed. `pin-upstream.mjs` also sets `lastSynced` to
+From the repository root also run `pnpm run check:policy`; it fails on vendor programs, endorsement quotes, hype, a missing LFDT footer item or a `site.ts` block without refs. Only pin repositories whose changes you reviewed. `pin-upstream.mjs` also sets `lastSynced` to
 today; the provenance table on both pages regenerates from the manifest at build time.
 
 Then run the `clpr-audit` skill on the sections and data rows you changed (all of them after a

@@ -26,6 +26,14 @@ jobs:
         run: |
           pnpm --filter clpr-explainer exec kse sync-upstream --report-only > report.md
           if grep -q '^- \*\*' report.md; then echo "changed=true" >> "$GITHUB_OUTPUT"; fi
+          {
+            echo
+            echo '## Detail still on the pages'
+            echo
+            echo 'A sync should delete this detail where it can, not update it (explainer/docs/writing-guide.md, Keep it stable).'
+            echo
+            (cd explainer && node checks/check-detail.mjs --list)
+          } >> report.md
           cat report.md
       - name: Open or update the tracking issue
         if: steps.cmp.outputs.changed == 'true'

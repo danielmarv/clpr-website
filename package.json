@@ -8,7 +8,8 @@
     "build:explainer": "node explainer/embed.mjs",
     "start": "next start",
     "lint": "eslint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "check:policy": "node scripts/check-site-policy.mjs"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.3.3",
