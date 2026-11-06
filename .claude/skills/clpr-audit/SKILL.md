@@ -40,6 +40,14 @@ and never edits: its output is a report the maintainer or the `clpr-sync` skill 
   and Hiero status. Judge every surface against that list. The `retiredVocab` patterns in
   `pack.json` flag some of them mechanically (`kse check-vocab` fails on them); both input steps
   list the hits.
+- **Stability.** Field names and numbers, layouts, addresses, ports, formulas and implementation names
+  go stale at every sync. Report such a statement as `too-detailed` and recommend deleting it, not
+  correcting it. `node checks/check-detail.mjs` (in `explainer/`) finds the mechanical cases; list each
+  `detail-allow` exception (`--list`) and judge whether its reason still holds.
+- **LFDT website requirements.** Judge every surface against the list in
+  `explainer/docs/writing-guide.md` (LFDT website requirements): lab not project, the footer items, no
+  vendor programs, quotes or hype, an organization named only as a plain fact. Run
+  `pnpm run check:policy` at the repository root first; every hit is a finding already.
 - **Framing.** CLPR is a messaging protocol. Judge every statement that implies it moves tokens,
   interprets payloads, guarantees delivery, removes trust, or is production ready. What it
   guarantees is authenticity, integrity and order; meaning belongs to applications.
@@ -70,6 +78,7 @@ and never edits: its output is a report the maintainer or the `clpr-sync` skill 
    - `quote-mismatch`: quoted text that is not verbatim upstream.
    - `overstatement`: an absolute ("nothing", "never", "only", "anyone", "every") wider than the
      passage. Name what upstream says CLPR does trust.
+   - `too-detailed`: volatile detail (see Stability); the fix is to delete it.
    - `non-neutral`: promotional wording, or a claim about another protocol, vendor or company, that
      no pinned source supports.
 

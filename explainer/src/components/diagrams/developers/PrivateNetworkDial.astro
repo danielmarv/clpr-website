@@ -46,7 +46,7 @@ import { design, spec } from '../../../lib/sources';
     <text x="496" y="216" class="t small">can be dialled</text>
     <text x="496" y="232" class="t small">responder in this cycle</text>
     <text x="496" y="256" class="t small muted">still sends its own</text>
-    <text x="496" y="272" class="t small muted">BundleRequest, and is answered</text>
+    <text x="496" y="272" class="t small muted">request, and is answered</text>
 
     <!-- 1: the private endpoint opens the stream -->
     <text x="360" y="166" class="t small center">opens the stream,</text>
@@ -65,13 +65,13 @@ import { design, spec } from '../../../lib/sources';
     <line x1="482" y1="250" x2="238" y2="250" class="line c" marker-end="url(#pnd-arrow-c)"/>
     <circle cx="458" cy="250" r="9" class="d-grey"/>
     <text x="458" y="254" class="t small center b">2</text>
-    <text x="360" y="266" class="t small center">a bundle, plus its own BundleRequest</text>
+    <text x="360" y="266" class="t small center">a bundle and its own request</text>
 
     <!-- 3: the private endpoint answers that request -->
     <line x1="238" y1="282" x2="482" y2="282" class="line c" marker-end="url(#pnd-arrow-c)"/>
     <circle cx="262" cy="282" r="9" class="d-grey"/>
     <text x="262" y="286" class="t small center b">3</text>
-    <text x="360" y="298" class="t small center">answers that request with a bundle</text>
+    <text x="360" y="298" class="t small center">answers with a bundle</text>
 
     <!-- The stream itself -->
     <text x="360" y="336" class="t small center muted">one bidirectional stream, one channel; the connection may persist across cycles</text>

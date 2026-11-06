@@ -94,7 +94,7 @@
     ],
     [
       "\\bnothing (sits |is )?in (between|the middle)\\b",
-      "no bridge to trust: endpoints relay every bundle, and can delay a message but not forge one"
+      "proofs instead of a bridge: endpoints relay every bundle, and can delay a message but not forge one"
     ],
     [
       "\\bzero custody\\b",
@@ -163,6 +163,14 @@
     [
       "\\bone connector can serve many channels\\b|\\bone connector,? two channels\\b",
       "a connector is registered on one Channel; one operator can run connectors on many"
+    ],
+    [
+      "\\bwindow of (danger|exposure)\\b",
+      "what the specification says about a compromised verifier, without a timeline"
+    ],
+    [
+      "\\bverifier contracts? (should be|are|is) immutable\\b",
+      "the verifier address is fixed for a Channel's lifetime; the contract may sit behind an upgradeable proxy"
     ]
   ],
   "structure": {

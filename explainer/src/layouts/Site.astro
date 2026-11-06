@@ -31,6 +31,7 @@ const themeColor = (PACK as { themeColor: { light: string; dark: string } }).the
     try { theme = localStorage.getItem('theme'); } catch (e) {}
     if (theme === 'light' || theme === 'dark' || theme === 'system') document.documentElement.setAttribute('data-theme', theme);
     else document.documentElement.removeAttribute('data-theme');
+    try { if (localStorage.getItem('toc-collapsed') === '1') document.documentElement.classList.add('toc-collapsed'); } catch (e) {}
     const dark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
     document.querySelectorAll('meta[name="theme-color"]').forEach((meta) => meta.setAttribute('content', dark ? themeColor.dark : themeColor.light));
   </script>
@@ -38,3 +39,37 @@ const themeColor = (PACK as { themeColor: { light: string; dark: string } }).the
   <slot />
   <SiteFooter slot="footer" />
 </Base>
+{/* The Contents column can be hidden on wide screens; the choice is kept across both pages. The
+    hidden state is applied before first paint by the head script above. */}
+<script>
+  const column = document.querySelector<HTMLElement>('.page > .toc-col');
+  if (column) {
+    const root = document.documentElement;
+    column.id = 'toc';
+    const icon = (arrow: string) =>
+      `<svg viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2" /><path d="M9 3v18" /><path d="${arrow}" /></svg>`;
+    const make = (className: string, label: string, arrow: string) => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = `toc-toggle ${className}`;
+      button.setAttribute('aria-controls', 'toc');
+      button.title = label;
+      button.innerHTML = `${icon(arrow)}<span class="${className === 'toc-hide' ? 'visually-hidden' : 'toc-label'}">${label}</span>`;
+      return button;
+    };
+    const hide = make('toc-hide', 'Hide contents', 'm16 15-3-3 3-3');
+    const show = make('toc-show', 'Contents', 'm14 9 3 3-3 3');
+    column.prepend(hide);
+    document.body.append(show);
+    const apply = (collapsed: boolean, moveFocus: boolean) => {
+      root.classList.toggle('toc-collapsed', collapsed);
+      hide.setAttribute('aria-expanded', String(!collapsed));
+      show.setAttribute('aria-expanded', String(!collapsed));
+      try { localStorage.setItem('toc-collapsed', collapsed ? '1' : '0'); } catch (e) {}
+      if (moveFocus) (collapsed ? show : hide).focus();
+    };
+    apply(root.classList.contains('toc-collapsed'), false);
+    hide.addEventListener('click', () => apply(true, true));
+    show.addEventListener('click', () => apply(false, true));
+  }
+</script>

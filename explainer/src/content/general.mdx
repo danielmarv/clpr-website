@@ -89,7 +89,7 @@ But people keep wanting to build things that span them: lock a token on one ledg
 
 <Section id="bridges" page="general">
 
-The obvious solution is to appoint someone to do the looking. Call them a relayer, an oracle, a committee, a bridge. They watch Ledger A, and when something relevant happens they tell Ledger B, signing the report with a key that Ledger B has been told to trust.
+The obvious solution is to appoint someone to do the looking. Call them a relayer, an oracle or a committee. They watch Ledger A, and when something relevant happens they tell Ledger B, signing the report with a key that Ledger B has been told to trust.
 
 That works, in the sense that messages arrive. The problem is what Ledger B is actually trusting. It is not trusting Ledger A. It is trusting whoever holds that key. If the key is stolen, or the committee members collude, or the program that produces the signature has a bug, Ledger B will accept a message that Ledger A never sent, and it has no way to notice.
 
@@ -119,7 +119,7 @@ CLPR ("Clipper", for **C**ross **L**edger **PR**otocol) starts from the trick in
 
 <EndpointCarriesProof />
 
-The party carrying the proof is still there; CLPR calls it an **endpoint**: a program that moves messages and their proofs between ledgers. But look at what it can and cannot do. It can deliver, delay, or refuse. It cannot forge a message, because none of its own keys can make Ledger B accept one. It cannot change a message either, because the changed message would no longer match the proof that came with it. Even with dishonest endpoints, no fabricated message can be accepted; whether messages keep arriving at all depends on at least one honest endpoint on each side.
+The party carrying the proof is still there; CLPR calls it an **endpoint**: a program that moves messages and their proofs between ledgers. But look at what it can and cannot do. It can deliver, delay, or refuse. It cannot forge a message, because Ledger B accepts a message only when the source ledger's proof checks out, whatever keys the endpoint holds. It cannot change a message either, because the changed message would no longer match the proof that came with it. Even with dishonest endpoints, no fabricated message can be accepted; whether messages keep arriving at all depends on at least one honest endpoint on each side.
 
 <Callout kind="term">
 A **state proof** is a cryptographic proof that a specific piece of data really is in a ledger's sealed record. In CLPR, state proofs carry the evidence of what is in another ledger's record; trust also rests on the verifier chosen for the channel.
@@ -154,7 +154,7 @@ One idea, proof instead of trust, has consequences all over the design. Set besi
 
 <SixDifferences />
 
-The first two are the point of the previous sections: no trusted party sits between the ledgers, and the receiving ledger does its own checking. The next two follow from them. There is no new token, because every fee, margin and fine is paid in a ledger's native token; and there is no pool of user deposits, because what travels is a message, and the only funds the CLPR Service holds are connectors' funds and endpoints' bonds. The fifth is what makes CLPR a pattern rather than a pair of chains: any ledger can join once it has a CLPR Service, endpoints and verifiers for its proofs, and the protocol itself does not change. The sixth is the one to remember when something goes wrong: an endpoint that is hacked, bribed or switched off can delay messages, but it cannot forge or change one.
+The first two are the point of the previous sections: no separate party sits between the ledgers to be trusted, and the receiving ledger does its own checking through its verifier. The next two follow from them. There is no new token, because every fee, margin and fine is paid in a ledger's native token; and the protocol pools no user deposits, because what travels is a message, and the only funds the CLPR Service holds are connectors' funds and endpoints' bonds (an application built on CLPR may still hold assets). The fifth is what makes CLPR a pattern rather than a pair of chains: a new ledger type can join once it has a CLPR Service, endpoints and verifiers for its proofs, and the protocol itself does not change. The sixth is the one to remember when something goes wrong: an endpoint that is hacked, bribed or switched off can delay messages, but it cannot forge or change one.
 
 One more property is easy to miss. If both ledgers are of the kind that keeps working correctly even when some of their own participants misbehave, the messages between them inherit that property, provided the channel's verifiers are correct and at least one honest endpoint on each side keeps them moving.
 
@@ -342,8 +342,8 @@ The roles rarely act alone. Four stories show them working together: setting up 
 
 <Stories />
 
-<Check q="A verifier is found to be compromised. Who acts first, and what is the window of danger?">
-The verifier developer, by issuing a security advisory; the service admin then closes the affected channels so no new messages are accepted while the ones in flight finish. The window of danger is the time between the vulnerability being discovered and the channels being closed. Then the verifier developer publishes a fix, connector operators open new channels with it, and applications move over.
+<Check q="A verifier is found to be compromised. What does closing a channel do about it?">
+A compromised verifier can accept fabricated messages, which is why a channel is only as trustworthy as its verifier. The verifier developer issues a security advisory, and the service admin closes the affected channels, so no new messages are sent on them. Closing does not stop the verifier at once: a closing channel still accepts incoming bundles until it reaches CLOSED. Then the verifier developer publishes a fix, connector operators open new channels with it, and applications move over.
 </Check>
 
 </Section>
@@ -406,7 +406,7 @@ CLPR is a set of ideas and also a set of files. Everything the lab publishes abo
 
 <Architecture />
 
-The two CLPR Services have no code in common. Both are written to the same text, down to the exact bytes a message is written as and the exact order of the checks, and both must conform to it; the contracts repository keeps a written list of where its code currently differs, and some of those differences are being settled by updating the text.
+The two CLPR Services have no code in common. Both are written to the same text, down to the exact bytes a message is written as and the exact order of the checks, and both must conform to it, and the EVM contracts still differ from it in places.
 
 <Repos />
 
@@ -418,8 +418,8 @@ If you remember six things, remember these.
 2. Two ledgers cannot see each other, and the usual fix, a trusted party in the middle, makes every message only as safe as that party.
 3. CLPR replaces the party with a proof: the receiving ledger checks the sending ledger's own validators' signature through the channel's verifier, and trusts that verifier and the CLPR Service on each side to be correct.
 4. Endpoints carry proofs, but nothing they carry is taken on their word. They can delay; they cannot forge. Whether a message is genuine is decided on the ledgers (**safety**); whether it arrives at all depends on endpoints (**liveness**).
-5. Messages are numbered and chained into a running hash, so one proof covers a whole batch and nothing can be inserted, dropped, reordered or replayed.
-6. Connectors pay, endpoints are reimbursed with a margin, and a connector that breaks its promise is fined. Every accepted data message gets exactly one reply.
+5. Messages are numbered and chained into a running hash, so one proof covers a whole batch, and the receiving CLPR Service, with a correct verifier, detects anything inserted, dropped, reordered or replayed.
+6. Connectors pay, endpoints are reimbursed with a margin, and a connector that breaks its promise is fined. Each accepted data message is answered by a reply.
 
 <SixThingsOnePicture />
 

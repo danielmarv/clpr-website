@@ -204,7 +204,7 @@
     {
       "name": "Running hash",
       "color": "var(--text-2)",
-      "plain": "A hash of everything ever sent on a channel, updated with each message so that nothing can be inserted, removed or reordered unnoticed.",
+      "plain": "A hash of everything ever sent on a channel, updated with each message so that the receiving CLPR Service, with a correct verifier, notices anything inserted, removed or reordered.",
       "spec": "SHA-256(previous_running_hash ‖ serialized_payload) in the specification (the EVM contracts hash the payload first: sha256(previous ‖ sha256(payload))), initialised to 32 zero bytes, kept separately for sent and received messages.",
       "refs": [
         {

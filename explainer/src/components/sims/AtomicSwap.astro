@@ -12,7 +12,7 @@ const { id = 'swap-sim' } = Astro.props as { id?: string };
 const refs = [{ doc: 'design', anchor: '343-n-ledger-atomic-swap-2pc', label: 'design §3.4.3' }] as const;
 ---
 <div class="sim swap" id={id}>
-  <div class="sim__head"><div><span class="kind">Simulation · an illustration</span><h3>Three ledgers change together, or not at all</h3></div><span class="pill grey" data-role="status">idle</span></div>
+  <div class="sim__head"><div><span class="kind">Simulation · an illustration</span><h3>A three-ledger atomic swap, illustrated</h3></div><span class="pill grey" data-role="status">idle</span></div>
   <div class="sim__body">
     <div class="sim__scroll">
       <svg viewBox="0 0 760 262" role="img" aria-label="Three ledgers side by side. An application on Ledger A sends prepare messages to B and C over two channels, collects their replies, then sends commit or roll back.">

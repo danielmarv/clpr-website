@@ -84,7 +84,7 @@ document vs. the Solidity). The changelog lists them so a maintainer can raise t
   a specification property.
 - That a step with no on-chain trace was "observed".
 - That nothing sits between the two ledgers. Endpoints relay every bundle: they can delay a
-  message but cannot forge one. Say "no bridge to trust", not "nothing in between".
+  message but cannot forge one. Say "proofs instead of a bridge", not "nothing in between" or "no bridge to trust".
 - That a verifier is immutable or can never change. Its address is fixed for the Channel's
   lifetime, but the contract may sit behind an upgradeable proxy.
 - That CLPR holds no funds. The CLPR Service is the custodian of Connector funds and endpoint
@@ -148,6 +148,28 @@ document vs. the Solidity). The changelog lists them so a maintainer can raise t
 - A reason for how ledgers or CLPR work that no source gives. Introduce it as "in general", or
   as the page's own explanation, or leave it out.
 
+## Keep it stable
+
+CLPR is still changing, and a page that records today's wire details has to be rewritten at every sync. The pages state what stays true across versions and leave the rest to the specification.
+
+Write: the roles and what each does, the lifecycle of a channel, the trust chain and what is not trusted, the guarantees and the limits, and why a design choice was made.
+
+Leave to the specification: field names and numbers, struct, interface and ABI layouts, state tree tags, fixed addresses, port numbers and defaults, formulas and parameters, how a hash is folded, class and module names of an implementation, and lists of where an implementation differs from the text.
+
+When a sync changes such a detail, delete it from the page if the sentence still reads without it. Update it only when a reader cannot follow the concept without it. `node checks/check-detail.mjs` (part of `pnpm run check`) fails on field numbers, fixed addresses, port numbers, tag numbers and code blocks that lay out fields or an interface. A deliberate exception carries `detail-allow: <reason>` on its line or the line before; the weekly upstream report lists them. Figures, simulations and journey rows that name fields show the pinned snapshot, which the notice at the top of the developer page says.
+
+## LFDT website requirements
+
+The site speaks for an LF Decentralized Trust lab, and LFDT's website requirements for projects and labs apply to every page. `scripts/check-site-policy.mjs` (run from the repository root with `pnpm run check:policy`, and in CI) checks the mechanical parts.
+
+- Say "lab", not "project". Show the affiliation line "An LF Decentralized Trust Lab", the LFDT logo and the Linux Foundation legal text, word for word, in the footer.
+- No promotion of commercial offerings, no sales leads, no vendor programs or registration links, no testimonials or quotes used as endorsement, no ads.
+- No hype or hyperbole: no slogans, no "no single point of failure", no claim the specification does not support. The trust model is the ledgers, the CLPR Services and the Verifier Contracts. A Verifier Contract's address is fixed for the Channel's lifetime, but the contract may be upgradeable: do not call it immutable.
+- Never hyphenate "open source".
+- An organization's name or logo appears only where the page is talking about that organization, as a plain statement of fact, such as where CLPR originated. Link its home page, never a program or registration page.
+- Link the Code of Conduct and the security reporting route.
+- Cite the primary source (the LFDT release) for facts, and end every blog post with `## Sources`. A blog post may quote the announcement it reports, word for word and attributed, and lists the report each quote was published in; the home page and the explainer carry no quotes.
+
 ## Editing checklist
 
 1. Is every protocol statement one of: spec, implementation, open? Is it labelled?
@@ -159,8 +181,10 @@ document vs. the Solidity). The changelog lists them so a maintainer can raise t
    horizontal scroll.
 6. If you corrected a claim that could come back, add its wording to `retiredVocab` in
    `src/data/pack.json` in the same change, so `kse check-vocab` fails on it from then on.
-6. No word of our own names a protocol part. `pnpm exec kse check-vocab` (also run by
+7. No word of our own names a protocol part. `pnpm exec kse check-vocab` (also run by
    `pnpm run check`) lists any that slipped in.
+8. Did you add a field name, number, address, port or layout? Take it out (see Keep it stable).
+9. From the repository root, `pnpm run check:policy` passes.
 
 ## Content rules shared with every engine pack
 

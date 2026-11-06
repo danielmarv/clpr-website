@@ -5,7 +5,7 @@ import { design, spec } from '../../../lib/sources';
 ---
 <Figure
   lead="Reject, pause, or fine."
-  caption="Nearly every failure is answered by rejecting a bundle and changing nothing. One is treated as corruption and pauses the channel; only the connector's failures are fined. With every endpoint offline, nothing is rejected: messages wait in the queue."
+  caption="A bundle that fails verification is rejected and changes nothing. Replies out of order are treated as corruption and pause the channel. A failure inside one message, such as a connector or an application error, produces a failure reply instead; only the connector's failures are fined. With every endpoint offline, nothing is rejected: messages wait in the queue."
   source={[
     { label: 'spec §4.2', href: spec('42-bundle-verification-algorithm') },
     { label: 'spec §4.5', href: spec('45-response-ordering-verification') },
@@ -15,7 +15,7 @@ import { design, spec } from '../../../lib/sources';
   kind="spec"
   minWidth={760}
 >
-  <svg viewBox="0 0 760 342" role="img" aria-label="Three horizontal lanes. Top: endpoint trouble, such as a tampered, replayed or oversized bundle or one whose proof fails, leads to the bundle being rejected and nothing changing. Middle: replies out of order, the one failure treated as corruption, leads to the channel being paused. Bottom: a connector's broken promise, not registered on the other side or out of funds, leads to a fine from its locked stake, paid to whoever submitted the bundle. Below: endpoints can only cause delay; with all of them offline, messages wait in the queue.">
+  <svg viewBox="0 0 760 342" role="img" aria-label="Three horizontal lanes. Top: endpoint trouble, such as a tampered or replayed bundle or one whose proof fails, leads to the bundle being rejected and nothing changing. Middle: replies out of order, the one failure treated as corruption, leads to the channel being paused. Bottom: a connector's broken promise, not registered on the other side or out of funds, leads to a fine from its locked stake, paid to whoever submitted the bundle. Below: endpoints can only cause delay; with all of them offline, messages wait in the queue.">
     <defs>
       <marker id="ftr-arrow-c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--c)" /></marker>
       <marker id="ftr-arrow-bad" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--bad)" /></marker>
@@ -28,7 +28,7 @@ import { design, spec } from '../../../lib/sources';
     <!-- Lane 1: endpoint trouble -->
     <rect x="16" y="44" width="216" height="70" rx="8" class="d-c" />
     <text x="124" y="68" class="t b center">Endpoint trouble</text>
-    <text x="124" y="86" class="t small center">tampered · replayed · oversized</text>
+    <text x="124" y="86" class="t small center">tampered · replayed</text>
     <text x="124" y="102" class="t small center">a proof that fails</text>
 
     <line x1="232" y1="79" x2="465" y2="79" class="line c" marker-end="url(#ftr-arrow-c)" />

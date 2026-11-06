@@ -53,6 +53,12 @@ documentation is in `docs/` (start at `docs/README.md`); this file is the short 
    illustrates; conventions in `docs/figures.md`. Simulations never scroll the window (use
    `scrollListTo` from `@kse/lib/scroll` for a list) and never rely on the `hidden` attribute
    inside SVG without the global `svg [hidden]` rule.
+9. **Keep it stable.** State what stays true across versions and leave field numbers, layouts, addresses,
+   ports, formulas and implementation names to the specification. When a sync changes such a detail,
+   delete it where the sentence reads without it. `checks/check-detail.mjs` (in `pnpm run check`) fails
+   on the patterns; an exception carries `detail-allow: reason`. The LFDT website requirements (neutral,
+   no vendor programs, quotes or hype) are in `docs/writing-guide.md`, and `pnpm run check:policy` at
+   the repository root enforces them for the website's own copy.
 
 ## Simulation components (`src/components/sims/*.astro`)
 

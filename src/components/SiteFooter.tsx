@@ -91,6 +91,7 @@ export function SiteFooter() {
   const year = new Date().getFullYear();
   const { backing, legal } = footer;
   const [beforeTrademarks, afterTrademarks] = format(legal.text, { year }).split("{trademarks}");
+  const [copyright, beforeLinks] = beforeTrademarks.split("{break}");
 
   return (
     <footer className="relative z-10 overflow-x-clip border-t border-fg/7 bg-background/85 text-fg/70 backdrop-blur-xl">
@@ -162,7 +163,9 @@ export function SiteFooter() {
             <p className="font-medium text-fg/70">{footer.affiliation}</p>
             <p>{footer.license}</p>
             <p>
-              {beforeTrademarks}
+              {copyright}
+              <br />
+              {beforeLinks}
               <a
                 href={legal.trademarks.href}
                 target="_blank"

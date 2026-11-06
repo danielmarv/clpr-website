@@ -9,7 +9,6 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { SiteMotion } from "@/components/SiteMotion";
 import { Story } from "@/components/Story";
 import { UseCases } from "@/components/UseCases";
-import { Voices } from "@/components/Voices";
 import { getRepos } from "@/lib/github";
 
 // The overview; the explainer under /plumbing/ carries the detail.
@@ -28,7 +27,6 @@ export default async function HomePage() {
         <UseCases />
         <Extensibility />
         <Repositories stars={stars} />
-        <Voices />
         <GetInvolved />
       </main>
       <SiteFooter />

@@ -36,10 +36,12 @@ const columns = [
     { label: 'Native Hiero integration', href: 'https://github.com/hiero-ledger/hiero-consensus-node/pull/27029' },
     { label: 'All repositories', href: 'https://github.com/LFDT-CLPR' },
   ] },
-  { title: 'Project', links: [
+  { title: 'Lab', links: [
     { label: 'Maintainers and committers', href: '/governance/' },
     { label: 'Governance repository', href: 'https://github.com/LFDT-CLPR/governance' },
     { label: 'Lab proposal', href: 'https://github.com/LF-Decentralized-Trust/lab-proposals/issues/5' },
+    { label: 'Code of Conduct', href: 'https://www.lfdecentralizedtrust.org/code-of-conduct' },
+    { label: 'Report a vulnerability', href: 'https://github.com/LFDT-CLPR/.github/security/policy' },
     { label: 'Developer Certificate of Origin', href: 'https://developercertificate.org/' },
     { label: 'Apache License 2.0', href: 'https://www.apache.org/licenses/LICENSE-2.0' },
   ] },
@@ -53,7 +55,7 @@ const backing = [
     { name: 'LF Decentralized Trust', href: 'https://www.lfdecentralizedtrust.org/', src: dataUrl(lfdt), srcDark: dataUrl(lfdtDark), width: 698.7, height: 39.1, class: 'lfdt' },
   ] },
   { label: 'Contributed by', logos: [
-    { name: 'Hashgraph', href: 'https://hashgraph.com/clpr/', src: dataUrl(hashgraph), srcDark: dataUrl(hashgraphDark), width: 654.62, height: 141.73, class: 'hashgraph' },
+    { name: 'Hashgraph', href: 'https://hashgraph.com', src: dataUrl(hashgraph), srcDark: dataUrl(hashgraphDark), width: 654.62, height: 141.73, class: 'hashgraph' },
     { name: 'Hedera', href: 'https://hedera.com', src: dataUrl(hedera), srcDark: dataUrl(hederaDark), width: 448.29, height: 138.93, class: 'hedera' },
   ] },
   { label: 'Native service for', logos: [
@@ -131,8 +133,8 @@ const hexagon = 'M0 -8.5L7.4 -4.25V4.25L0 8.5L-7.4 4.25V-4.25Z';
       <div>
         {PACK.footer.map((html) => <p class="about" set:html={html.replace('{{orgUrl}}', SOURCES.org.url).replace('{{labUrl}}', SOURCES.org.labUrl ?? '')} />)}
         <p class="affiliation">An LF Decentralized Trust Lab</p>
-        <p>Code is licensed under Apache-2.0; under the Labs charter, specifications are developed under the Community Specification License 1.0.</p>
-        <p>© {year} The Linux Foundation. All rights reserved. The Linux Foundation has registered trademarks and uses trademarks. For a list of trademarks of The Linux Foundation, please see our <a href="https://www.linuxfoundation.org/legal/trademark-usage" target="_blank" rel="noreferrer">Trademark Usage<span class="visually-hidden"> (opens in a new tab)</span></a> page.</p>
+        <p>Code is licensed under Apache-2.0; the Labs charter calls for specifications under the Community Specification License 1.0.</p>
+        <p>© {year} The Linux Foundation. All rights reserved.<br />The Linux Foundation has registered trademarks and uses trademarks. For a list of trademarks of The Linux Foundation, please see our <a href="https://www.linuxfoundation.org/legal/trademark-usage" target="_blank" rel="noreferrer">Trademark Usage<span class="visually-hidden"> (opens in a new tab)</span></a> page.</p>
       </div>
       <a href="#main">Back to top<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 7-7 7 7" /><path d="M12 19V5" /></svg></a>
     </div>

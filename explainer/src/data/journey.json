@@ -293,7 +293,7 @@
       "phase": "prove",
       "label": "pre-verify",
       "title": "The EVM endpoint dry-runs the submission",
-      "plain": "Before spending money submitting anything, the receiving endpoint runs the whole verification locally as a dry run. If it would fail, nobody pays for it.",
+      "plain": "Before spending money submitting anything, the receiving endpoint runs the whole verification locally as a dry run. A failure it can see locally is caught before anyone pays.",
       "protocol": "Endpoints MUST verify bundle proofs locally before submitting a transaction, otherwise they pay for payloads that fail post-consensus. The EVM relay simulates submitBundle with eth_call and skips the submission if it reverts.",
       "lit": [
         "epB"
@@ -593,7 +593,7 @@
       "phase": "return",
       "label": "verify seals",
       "title": "QBFT committed seals checked against the trust anchor",
-      "plain": "The Hiero ledger checks the other ledger's validator signatures on that block header against the validators it has on record for this channel, and follows any change of validators since.",
+      "plain": "The Hiero ledger checks the validator signatures on that block header against the validators it has on record for this channel, and follows any change of validators since. How many signatures are required depends on the verifier.",
       "protocol": "The QBFT verifier recovers the ECDSA signers from the header's committed seals and requires a threshold to match the validator set hash in the trust anchor. Epoch headers in the bundle advance the set; each must be sealed by the previous set, so history cannot be skipped. The reference QBFTVerifier tracks one validator address instead and needs MIN_COMMITTED_SEALS seals, one of them from that validator.",
       "lit": [
         "svcA",
@@ -970,7 +970,7 @@
       "phase": "prove",
       "label": "pre-verify",
       "title": "The Hiero endpoint pre-verifies the bundle locally",
-      "plain": "The receiving endpoint verifies everything locally first, so it never pays to submit something that will be rejected.",
+      "plain": "The receiving endpoint verifies everything locally first, so it avoids paying to submit anything it can see will be rejected.",
       "protocol": "Endpoints MUST verify bundle proofs before submitting, otherwise they pay for payloads that fail post-consensus.",
       "lit": [
         "epA"
@@ -1007,7 +1007,7 @@
       "phase": "cross",
       "label": "verify seals",
       "title": "QBFT committed seals verified against the trust anchor",
-      "plain": "The Hiero ledger checks the signatures in the block header against the validator list it holds for this channel.",
+      "plain": "The Hiero ledger checks the signatures in the block header against the validator list it holds for this channel; how many are required depends on the verifier.",
       "protocol": "The QBFT verifier recovers the ECDSA signers of the committed seals and requires a threshold to match the validator set hash stored in the Channel's trust anchor; epoch headers, if present, advance the set. The reference QBFTVerifier tracks one validator address instead and needs MIN_COMMITTED_SEALS seals, one of them from that validator.",
       "lit": [
         "svcA",

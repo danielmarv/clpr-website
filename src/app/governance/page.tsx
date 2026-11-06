@@ -8,7 +8,6 @@ import { GitHubMark } from "@/components/GitHubMark";
 import { HeroMesh } from "@/components/HeroMesh";
 import { Chips, PageShell } from "@/components/PageShell";
 import { footer, governancePage as page } from "@/content/site";
-import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = { title: page.metaTitle, description: page.description };
 
@@ -103,45 +102,45 @@ export default function GovernancePage() {
         <div className="shell">
           <BandHeader eyebrow={members.eyebrow} title={members.title} id="members-title">
             <p className="text-[1.0625rem] leading-[1.7] text-muted-foreground">{members.body}</p>
-            <p className="mt-6 flex items-center gap-4">
-              <span className="sr-only">
-                {listed.length} {members.countLabel}
-              </span>
-              <span aria-hidden="true" className="text-headline text-[3.5rem] font-light leading-none tracking-[-0.04em]">
-                {String(listed.length).padStart(2, "0")}
-              </span>
-              <span aria-hidden="true" className="max-w-[8rem] text-[0.8125rem] leading-snug text-faint">
-                {members.countLabel}
-              </span>
-            </p>
+            {listed.length > 0 && (
+              <p className="mt-6 flex items-center gap-4">
+                <span className="sr-only">
+                  {listed.length} {members.countLabel}
+                </span>
+                <span aria-hidden="true" className="text-headline text-[3.5rem] font-light leading-none tracking-[-0.04em]">
+                  {String(listed.length).padStart(2, "0")}
+                </span>
+                <span aria-hidden="true" className="max-w-[8rem] text-[0.8125rem] leading-snug text-faint">
+                  {members.countLabel}
+                </span>
+              </p>
+            )}
           </BandHeader>
 
-          <div
-            aria-hidden="true"
-            className="mt-12 flex justify-between border-b border-fg/10 pb-3 font-mono text-[0.75rem] uppercase tracking-[0.08em] text-faint"
-          >
-            <span>{members.board.label}</span>
-            <span>{members.board.note}</span>
-          </div>
+          {listed.length > 0 && (
+            <>
+              <div
+                aria-hidden="true"
+                className="mt-12 flex justify-between border-b border-fg/10 pb-3 font-mono text-[0.75rem] uppercase tracking-[0.08em] text-faint"
+              >
+                <span>{members.board.label}</span>
+                <span>{members.board.note}</span>
+              </div>
 
-          <ul className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {listed.length
-              ? listed.map((member) => (
+              <ul className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {listed.map((member) => (
                   <li key={member.name} data-motion-reveal>
                     <MemberCard member={member} />
                   </li>
-                ))
-              : Array.from({ length: members.placeholders }, (_, index) => (
-                  <li key={index} data-motion-reveal>
-                    <MemberCard />
-                  </li>
                 ))}
-          </ul>
+              </ul>
+            </>
+          )}
 
           {listed.length === 0 && (
             <div
               data-motion-reveal
-              className="mt-6 flex flex-col gap-4 rounded-panel border border-dashed border-fg/15 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-7"
+              className="mt-12 flex flex-col gap-4 rounded-panel border border-dashed border-fg/15 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-7"
             >
               <div>
                 <p className="text-[1rem] font-medium text-fg">{members.empty.title}</p>
@@ -209,13 +208,13 @@ function surname(name: string): string {
   return name.split(" ").pop() ?? name;
 }
 
-/** A member's card, or, without a member, the empty card that holds the place. */
-function MemberCard({ member }: { member?: Member }) {
-  const handle = member?.github?.replace(/^https:\/\/github\.com\//, "").replace(/\/$/, "");
+/** A listed member's card. */
+function MemberCard({ member }: { member: Member }) {
+  const handle = member.github?.replace(/^https:\/\/github\.com\//, "").replace(/\/$/, "");
   return (
     <article className="panel flex h-full flex-col overflow-hidden">
       <div className="relative aspect-[4/3] overflow-hidden border-b border-fg/[0.06] bg-[radial-gradient(70%_80%_at_50%_45%,rgb(139_123_255/0.12),transparent_75%)]">
-        {member?.photo ? (
+        {member.photo ? (
           <Image src={`/images/governance/${member.photo}`} alt="" fill sizes="(min-width: 1024px) 24rem, (min-width: 640px) 45vw, 100vw" className="object-cover" />
         ) : (
           <span aria-hidden="true" className="absolute inset-0 flex items-center justify-center">
@@ -226,11 +225,9 @@ function MemberCard({ member }: { member?: Member }) {
         )}
       </div>
       <div className="flex flex-1 flex-col p-6">
-        <h3 className={cn("text-[1.125rem] font-medium tracking-[-0.015em]", member ? "text-fg" : "text-faint")}>
-          {member?.name ?? page.members.placeholderName}
-        </h3>
-        {member?.role && <p className="mt-1 text-[0.875rem] text-muted-foreground">{member.role}</p>}
-        {member?.github ? (
+        <h3 className="text-[1.125rem] font-medium tracking-[-0.015em] text-fg">{member.name}</h3>
+        {member.role && <p className="mt-1 text-[0.875rem] text-muted-foreground">{member.role}</p>}
+        {member.github && (
           <a
             href={member.github}
             {...external}
@@ -240,10 +237,8 @@ function MemberCard({ member }: { member?: Member }) {
             {handle ?? page.members.githubLabel}
             <span className="sr-only"> ({footer.newTab})</span>
           </a>
-        ) : (
-          !member && <span aria-hidden="true" className="mt-3 h-3 w-28 rounded-full bg-fg/[0.07]" />
         )}
-        <p className="mt-4 line-clamp-5 text-[0.9375rem] leading-relaxed text-muted-foreground">{member?.bio ?? page.members.noBio}</p>
+        <p className="mt-4 line-clamp-5 text-[0.9375rem] leading-relaxed text-muted-foreground">{member.bio ?? page.members.noBio}</p>
       </div>
     </article>
   );
