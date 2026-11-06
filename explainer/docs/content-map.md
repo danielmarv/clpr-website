@@ -69,7 +69,7 @@ and `developers.mdx`; `file.json key[id]` is a data row; `journey step N` is a s
 | `14-message-queue` | BundleVerify.astro; QueueWindow.astro; dev §queue; journey step 18; journey step 26 |
 | `15-sync-protocol` | EndpointLoop.astro; PrivateNetworkDial.astro; PullNotPush.astro; SyncCycle.astro; catalog.json components[wire]; dev §sync; journey step 10; journey step 8; journey step 9 |
 | `21-channel` | ChannelVsSyncdata.astro; CommitReveal.astro; TwoSidedClose.astro; dev §channels |
-| `211-channel-status-transitions` | BundleVerify.astro; CommitReveal.astro; Ordering.astro |
+| `211-channel-status-transitions` | BundleVerify.astro; CommitReveal.astro; Ordering.astro; roles.json scenarios[compromised-verifier] |
 | `212-bundle-progress-criteria` | BundleVerify.astro; SyncCycle.astro; TrustAnchor.astro; dev §bundles; journey step 14 |
 | `22-connector` | BilateralConnector.astro; CommitReveal.astro; dev §connectors; journey step 4 |
 | `24-endpoint-manifest` | TwoManifests.astro; dev §endpoints |

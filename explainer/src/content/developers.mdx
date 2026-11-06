@@ -347,7 +347,7 @@ Each ledger publishes one `ClprLedgerConfiguration`: its identity and the limits
 
 The configuration holds the ledger's protocol version (both sides must agree; an unknown version is rejected), its CAIP-2 `chain_id`, the address of its CLPR Service, the consensus time of its last change, its throttles, and optionally an initial trust anchor with an id for it.
 
-**Identity is a compound key.** `chain_id` is a CAIP-2 string, but it does not uniquely identify a CLPR Service: two competing service contracts on Ethereum can both claim `eip155:1`. A peer is therefore identified by `(ChainID, ClprServiceAddress)`. Private networks may self-assign an unregistered namespace such as `examplenet:prod`.
+**Identity is a compound key.** `chain_id` is a CAIP-2 string, but it does not uniquely identify a CLPR Service: two competing service contracts on Ethereum can both claim `eip155:1`. A peer is therefore identified by `(ChainID, ClprServiceAddress)`. Private networks may self-assign an unregistered namespace such as `hashsphere:acme-prod`.
 
 <CompoundPeerIdentity />
 
@@ -715,7 +715,7 @@ CLPR is incubated as a lab of **LF Decentralized Trust**, a Linux Foundation pro
 
 - **Oversight** by the foundation's Technical Advisory Council (TAC), which approves project proposals, including incubation and deprecation, organizes and removes sub-projects, and approves the processes for contributing.
 - **Licensing.** Inbound and outbound code under Apache License 2.0, every new inbound code contribution carrying a Developer Certificate of Origin sign-off; specifications under the Community Specification License 1.0; documentation under CC BY 4.0. Exceptions need a two-thirds vote of the entire TAC. Files should carry SPDX identifiers.
-- **Copyright** in new contributions stays with its holders, and no contributor is required to assign it. Project trademarks are transferred to LF Projects, LLC, which holds them for the project.
+- **Copyright** in new contributions stays with its holders, and no contributor is required to assign it. Project trademarks are transferred to LF Projects, LLC, which holds them for the project; the Hedera Governing Council undertook to donate the CLPR brand and trademark to LFDT once the lab was accepted.
 - **Openness.** Participation cannot be refused on any basis that is not reasonable and non-discriminatory, and "the output of all Project discussions, proposals, timelines, decisions, and status should be made open and easily visible to all".
 
 The mission of the Labs project is "to support development of very early open projects".

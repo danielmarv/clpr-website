@@ -14,7 +14,7 @@
   }
 }
 
-/* Brand range: violet for messages, magenta for state proofs, peach for highlights only.
+/* Brand range from Hashgraph's CLPR presentation: violet for messages, magenta for state proofs, peach for highlights only.
    The page is paper in the light theme and a quiet ink in the dark one, so the brand colours read as accents. */
 :root {
   --bg: #f6f5fb;

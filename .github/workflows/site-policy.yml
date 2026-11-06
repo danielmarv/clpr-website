@@ -4,10 +4,10 @@ name: Site policy
 
 on:
   pull_request:
-    paths: ['src/**', 'content/**', 'README.md', 'scripts/check-site-policy.mjs', '.github/workflows/site-policy.yml']
+    paths: ['src/**', 'content/**', 'README.md', 'explainer/src/pages/**', 'explainer/src/components/SiteFooter.astro', 'scripts/check-site-policy.mjs', '.github/workflows/site-policy.yml']
   push:
     branches: [main]
-    paths: ['src/**', 'content/**', 'README.md', 'scripts/check-site-policy.mjs', '.github/workflows/site-policy.yml']
+    paths: ['src/**', 'content/**', 'README.md', 'explainer/src/pages/**', 'explainer/src/components/SiteFooter.astro', 'scripts/check-site-policy.mjs', '.github/workflows/site-policy.yml']
 
 permissions:
   contents: read

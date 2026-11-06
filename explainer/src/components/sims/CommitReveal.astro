@@ -179,7 +179,7 @@ const ledgers = [
     <Callout kind="impl">
       <p>The EVM contracts in <a href={LIFECYCLE} rel="noopener">clpr-smart-contracts (docs/lifecycle.md)</a> differ from the platform-neutral spec above in three places that matter here.</p>
       <ul style="margin-bottom:0">
-        <li><strong>The channel id is derived, not chosen.</strong> <code><a href={sol('src/logic/ChannelLogic.sol', 201)} rel="noopener">deriveChannelId(peerChainId, pubKey, salt)</a></code> = <code>keccak256(loChain ‖ hiChain ‖ pubKey ‖ salt)</code>, the two chain ids sorted by their own keccak256 so both ends compute the same value, and <code>completeChannel</code> re-derives it and rejects a mismatch. With the key above, salt <code>bytes32(0)</code> and the CAIP-2 examples <code>eip155:10</code> / <code>eip155:1</code> as illustrative chain ids, that would give <code data-role="evm-id">…</code>, not the free-form id this page picked. The pinned spec still defines the id as an "arbitrary 32-byte value chosen by registrant"; the EVM docs (lifecycle.md) expect it to move to this form.</li>
+        <li><strong>The channel id is derived, not chosen.</strong> <code><a href={sol('src/logic/ChannelLogic.sol', 201)} rel="noopener">deriveChannelId(peerChainId, pubKey, salt)</a></code> = <code>keccak256(loChain ‖ hiChain ‖ pubKey ‖ salt)</code>, the two chain ids sorted by their own keccak256 so both ends compute the same value, and <code>completeChannel</code> re-derives it and rejects a mismatch. With the key above, salt <code>bytes32(0)</code> and the spec's CAIP-2 examples <code>hedera:mainnet</code> / <code>eip155:1</code> as illustrative chain ids, that would give <code data-role="evm-id">…</code>, not the free-form id this page picked. The pinned spec still defines the id as an "arbitrary 32-byte value chosen by registrant"; the EVM docs (lifecycle.md) expect it to move to this form.</li>
         <li><strong>The commit call also names the id.</strong> <code><a href={sol('src/logic/ChannelLogic.sol', 82)} rel="noopener">registerChannel(channelId, commitment)</a></code> takes the channel id in the clear, only to build a reverse index so that <code>closeChannel</code> can purge an abandoned PENDING commitment; the id is not validated until <code>completeChannel</code>.</li>
         <li><strong>Key encoding and signature domain.</strong> The public key must be the 64-byte uncompressed secp256k1 key (X‖Y, no 0x04 prefix), and the reveal signature is over <code>keccak256(channelId ‖ address(this))</code>, bound to the specific service deployment, wrapped in the EIP-191 prefix <code>"\x19Ethereum Signed Message:\n32"</code> and checked with <code>ecrecover</code> against <code>address(keccak256(pubKey))</code> (<a href={sol('src/libraries/crypto/ECDSA.sol', 11)} rel="noopener">ECDSA.sol</a>). The spec's signature is over <code>keccak256(channel_id)</code> alone.</li>
       </ul>
@@ -303,7 +303,7 @@ const ledgers = [
   const hs = (b: Uint8Array | null): string => (b ? short(b) : UNAVAILABLE);
   const hf = (b: Uint8Array | null): string => (b ? '0x' + hex(b) : UNAVAILABLE);
   const HIERO_SERVICE = fromHex('000000000000000000000000000000000000016e');
-  const CHAIN_IDS = [enc.encode('eip155:10'), enc.encode('eip155:1')];
+  const CHAIN_IDS = [enc.encode('hedera:mainnet'), enc.encode('eip155:1')];
   const ZERO32 = new Uint8Array(32);
 
   // Which SVG parts are visible at each step 0..7 (not cumulative: each step is a full picture).

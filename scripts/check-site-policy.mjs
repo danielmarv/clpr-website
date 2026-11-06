@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 // Site policy check: the website speaks for an LF Decentralized Trust lab, so its copy stays neutral and
 // carries what LFDT's website requirements ask for. It covers what the explainer's gates do not reach:
-// src/content/site.ts, the components, the blog posts and the README. A line carrying `policy-allow`
-// is exempt.
+// src/content/site.ts, the components, the blog posts, the README and both footers. A line carrying
+// `policy-allow` is exempt.
 //   node scripts/check-site-policy.mjs
 import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { extname, join, relative } from 'node:path';
+import { extname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = join(fileURLToPath(import.meta.url), '..', '..');
@@ -22,15 +22,19 @@ function* walk(dir, extensions) {
 
 // Commercial programs and lead generation, marketing claims the design does not support, testimonials, and
 // the hyphenated spelling LFDT's requirements forbid.
+// A blog post may quote the announcement it reports, word for word, with the report it was published in under
+// Sources (explainer/docs/writing-guide.md), so the rules about quoted wording skip posts.
+const POSTS = 'content/posts/';
 const BANNED = [
   [/hashgraph\.com\/clpr/i, 'a link to a vendor program page'],
-  [/premier member/i, 'vendor membership promotion'],
-  [/genfinity/i, 'a commercial news source in place of the primary release'],
-  [/single point of failure to attack/i, 'a marketing claim the design does not support'],
+  [/premier member/i, 'vendor membership promotion', POSTS],
+  [/genfinity/i, 'a commercial news source in place of the primary release', POSTS],
+  [/single point of failure to attack/i, 'a marketing claim the design does not support', POSTS],
   [/no bridge to trust/i, 'an overstatement of the trust model'],
   [/proofs, not promises/i, 'a slogan'],
   [/\bopen-source\b/i, '"open source" is never hyphenated (LFDT requirements)'],
   [/\btestimonial|voices from the ecosystem/i, 'quotes used as endorsement (LFDT requirements)'],
+  [/verifier contracts? (should be|are|is) immutable/i, 'the specification allows an upgradeable verifier; only its address is fixed'],
 ];
 const SCANNED = [
   'src/content/site.ts',
@@ -43,20 +47,29 @@ const SCANNED = [
 for (const file of SCANNED) {
   read(file).split('\n').forEach((line, index) => {
     if (line.includes('policy-allow')) return;
-    for (const [pattern, why] of BANNED) if (pattern.test(line)) errors.push(`${file}:${index + 1}: ${why}`);
+    for (const [pattern, why, skip] of BANNED) {
+      if (!(skip && file.startsWith(skip)) && pattern.test(line)) errors.push(`${file}:${index + 1}: ${why}`);
+    }
   });
 }
 
-// What LFDT's requirements ask every lab website to carry.
-const site = read('src/content/site.ts');
-const REQUIRED = [
+// What LFDT's requirements ask every lab website to carry, in both footers: the website's, from site.ts, and the
+// explainer's, which repeats it by hand.
+const LEGAL = 'The Linux Foundation has registered trademarks and uses trademarks. For a list of trademarks of The Linux Foundation, please see our';
+const FOOTER_ITEMS = [
   ['An LF Decentralized Trust Lab', 'the affiliation line'],
-  ['The Linux Foundation has registered trademarks and uses trademarks. For a list of trademarks of The Linux Foundation, please see our {trademarks} page.', 'the legal text, word for word'],
+  ['© {year} The Linux Foundation. All rights reserved.', 'the copyright line'],
+  [LEGAL, 'the legal text, word for word'],
   ['https://www.linuxfoundation.org/legal/trademark-usage', 'the Trademark Usage link'],
-  ['codeOfConduct', 'a Code of Conduct link'],
-  ['security:', 'a security reporting link'],
+  ['https://www.lfdecentralizedtrust.org/code-of-conduct', 'the Code of Conduct link'],
+  ['https://github.com/LFDT-CLPR/.github/security/policy', 'the security reporting link'],
 ];
-for (const [text, what] of REQUIRED) if (!site.includes(text)) errors.push(`src/content/site.ts: missing ${what}`);
+const FOOTERS = ['src/content/site.ts', 'explainer/src/components/SiteFooter.astro'];
+for (const file of FOOTERS) {
+  const text = read(file);
+  for (const [needle, what] of FOOTER_ITEMS) if (!text.includes(needle)) errors.push(`${file}: missing ${what}`);
+}
+const site = read('src/content/site.ts');
 
 // Every blog post ends with its sources, as docs/blogs.md says.
 for (const file of walk('content/posts', new Set(['.md']))) {
@@ -74,4 +87,4 @@ if (errors.length) {
   console.error(`Site policy check failed:\n${errors.map((error) => `- ${error}`).join('\n')}`);
   process.exit(1);
 }
-console.log(`Site policy check passed: ${[...SCANNED].length} files, ${exported.length} content blocks paired with refs.`);
+console.log(`Site policy check passed: ${SCANNED.length} files, ${FOOTERS.length} footers, ${exported.length} content blocks paired with refs.`);

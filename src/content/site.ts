@@ -21,7 +21,7 @@ export const links = {
   teams: "https://github.com/LFDT-CLPR/governance/blob/main/teams.yml",
   labsCharter: "https://github.com/LFDT-CLPR/governance/blob/main/lf-decentralized-trust-labs_Charter.pdf",
   contributing: "https://github.com/LFDT-CLPR/.github/blob/main/CONTRIBUTING.md",
-  codeOfConduct: "https://github.com/LFDT-CLPR/.github",
+  codeOfConduct: "https://www.lfdecentralizedtrust.org/code-of-conduct",
   security: "https://github.com/LFDT-CLPR/.github/security/policy",
   weeklyCall: "https://zoom-lfx.platform.linuxfoundation.org/meetings/lf-decentralized-trust-labs?view=week",
 } as const;
@@ -80,8 +80,8 @@ export const story = {
 } as const;
 
 export const origins = {
-  label: "A lab of LF Decentralized Trust, with a native Hiero service specified in HIP-1535.",
-  text: "CLPR originated at Hedera, was developed by the Hashgraph team and was contributed to LF Decentralized Trust, where it is developed in the open as a Lab under the Labs charter. The first native implementation is part of Hiero.",
+  label: "Contributed by Hashgraph, with a native Hiero service specified in HIP-1535, and hosted as an LF Decentralized Trust lab.",
+  text: "Contributed by Hashgraph under its agreement with the Hedera Governing Council. The ideas build on Dr. Leemon Baird’s proposals for cross-ledger communication. The first native implementation is part of Hiero.",
   // Each mark in its own colours (src), and its version for dark backgrounds (srcDark).
   // Heights are tuned per logo so the marks read at a similar optical size.
   logos: [
@@ -139,7 +139,7 @@ export const comparison = {
     },
   ],
   caveat:
-    "A Channel is only as trustworthy as its Verifier Contract and the CLPR Service implementations at each end. Anyone can register a Channel, so applications should check which verifier it uses. Verifier Contracts should be immutable, because an upgrade key would be a single point of compromise.",
+    "A Channel is only as trustworthy as its Verifier Contract and the CLPR Service implementations at each end. Anyone can register a Channel, so applications should check which verifier it uses. A Channel is bound to one Verifier Contract address for its lifetime, but that contract may sit behind an upgradeable proxy, and whoever holds its upgrade key is a single point of compromise.",
   explainer: { label: "Why a party in the middle is the weak point", href: "/plumbing/#bridges" },
 } as const;
 
@@ -204,7 +204,7 @@ export const extensibility = {
   eyebrow: "Architecture",
   title: "Adding a new ledger type.",
   lead:
-    "CLPR is not tied to one ledger type. Supporting a new one means building three components. Where the CLPR Service is a smart contract, it needs no change, because each Verifier Contract translates the source ledger’s format into the local one.",
+    "CLPR is not tied to one ledger type. Supporting a new one means building three components. The destination CLPR Service needs no change to its implementation, because each Verifier Contract translates the source ledger’s format into the local one.",
   components: [
     {
       name: "CLPR Service",

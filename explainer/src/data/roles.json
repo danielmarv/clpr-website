@@ -74,11 +74,12 @@
       "name": "Responding to a compromised verifier",
       "steps": [
         "A vulnerability is discovered and a security advisory issued.",
+        "The service admin closes the affected channels; their queues drain.",
         "The verifier developer publishes a patched implementation.",
         "Connector operators create new channels with the patched verifier.",
-        "Application developers migrate. Closing a channel stops only new outgoing messages; the specification covers the rest."
+        "Application developers migrate. A closing channel still accepts incoming bundles until it reaches CLOSED, so closing alone does not stop the verifier."
       ],
-      "refs": [{ "doc": "design", "anchor": "responding-to-a-compromised-verifier", "label": "design §4.7" }]
+      "refs": [{ "doc": "design", "anchor": "responding-to-a-compromised-verifier", "label": "design §4.7" }, { "doc": "spec", "anchor": "211-channel-status-transitions", "label": "spec §2.1.1" }]
     },
     {
       "id": "connector-withdrawal",

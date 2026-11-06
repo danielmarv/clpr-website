@@ -124,7 +124,8 @@ document vs. the Solidity). The changelog lists them so a maintainer can raise t
   endpoint is described as a prototype. Say "reference implementation", not "deployable today"
   or "production ready". The application patterns in design §3.4 are outlined, not specified.
 - Who the maintainers are, beyond what the governance repository says (`teams.yml` lists people,
-  not companies). Do not call CLPR "pending" a lab: it is one.
+  not companies). Hashgraph acted "pursuant to its agreement with" the Hedera Governing Council,
+  not "on behalf of" it. Do not call CLPR "pending" a lab: it is one.
 - That a Connector serves many Channels. A Connector is registered on one Channel; an operator's
   key can register Connectors on many.
 - That nearly every failure rejects the bundle. A bundle whose proof, numbering or hashes fail is
@@ -163,11 +164,11 @@ The site speaks for an LF Decentralized Trust lab, and LFDT's website requiremen
 
 - Say "lab", not "project". Show the affiliation line "An LF Decentralized Trust Lab", the LFDT logo and the Linux Foundation legal text, word for word, in the footer.
 - No promotion of commercial offerings, no sales leads, no vendor programs or registration links, no testimonials or quotes used as endorsement, no ads.
-- No hype or hyperbole: no slogans, no "no single point of failure", no claim the specification does not support. The trust model is the ledgers, the CLPR Services and the Verifier Contracts, and Verifier Contracts should be immutable.
+- No hype or hyperbole: no slogans, no "no single point of failure", no claim the specification does not support. The trust model is the ledgers, the CLPR Services and the Verifier Contracts. A Verifier Contract's address is fixed for the Channel's lifetime, but the contract may be upgradeable: do not call it immutable.
 - Never hyphenate "open source".
 - An organization's name or logo appears only where the page is talking about that organization, as a plain statement of fact, such as where CLPR originated. Link its home page, never a program or registration page.
 - Link the Code of Conduct and the security reporting route.
-- Quote a primary source (the LFDT release), not a news site, and end every blog post with `## Sources`.
+- Cite the primary source (the LFDT release) for facts, and end every blog post with `## Sources`. A blog post may quote the announcement it reports, word for word and attributed, and lists the report each quote was published in; the home page and the explainer carry no quotes.
 
 ## Editing checklist
 

@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 
-/** The CLPR spiral; inherits the text color. */
+/** The CLPR spiral from Hashgraph's CLPR presentation; inherits the text color. */
 export function ClprMark({ className }: { className?: string }) {
   return (
     <svg

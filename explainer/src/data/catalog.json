@@ -288,7 +288,7 @@
       "k": "lab",
       "name": "The lab: LF Decentralized Trust",
       "where": "LFDT-CLPR/governance and .github",
-      "plain": "Where the specification, the smart contracts and the EVM endpoint are governed: an incubation space under the Linux Foundation's LF Decentralized Trust, open to anyone under the Apache License 2.0 with a Developer Certificate of Origin sign-off on every contribution.",
+      "plain": "Where the specification, the smart contracts and the EVM endpoint are governed: an incubation space under the Linux Foundation's LF Decentralized Trust, offered by the Hedera Governing Council and open to anyone under the Apache License 2.0 with a Developer Certificate of Origin sign-off on every contribution.",
       "detail": "governance/: the signed Labs charter (TAC oversight; Apache-2.0 code; DCO; CSL-1.0 specifications; CC BY 4.0 docs), teams.yml (clpr-maintainers with maintain rights everywhere; lfdt-staff with admin on .github and governance) and CODEOWNERS. .github/profile/README.md: scope of the lab, terminology, the four layers, the extension process.",
       "refs": [
         {

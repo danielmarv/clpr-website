@@ -176,8 +176,8 @@ Before watching a message travel, meet everyone it will pass through. Each card 
 
 <WhoLivesWhere />
 
-<Callout kind="note" title="Hiero and EVM ledgers">
-Two kinds of ledger come up constantly. **Hiero** is the open source ledger software: the node, its APIs, its state model; public and private networks can run it. **EVM ledgers** run smart contracts in the Ethereum Virtual Machine. On Hiero, the CLPR Service is part of the node software itself. On EVM ledgers, it is a smart contract instead: a program deployed on the ledger like any other. Same protocol, two implementations at different stages: the EVM contracts still differ from the text in places, and the Hiero one is specified by HIP-1535 as an opt-in service. The simulations below show one of each.
+<Callout kind="note" title="Hiero and Hedera">
+Two names come up constantly. **Hiero** is the open source ledger software: the node, its APIs, its state model. **Hedera** is the public network that runs it; private networks running the same software are called HashSpheres. On Hiero, the CLPR Service is part of the node software itself. On EVM ledgers, it is a smart contract instead: a program deployed on the ledger like any other. Same protocol, two implementations at different stages: the EVM contracts still differ from the text in places, and the Hiero one is specified by HIP-1535 as an opt-in service. The simulations below show one of each.
 </Callout>
 
 </Section>
@@ -343,14 +343,14 @@ The roles rarely act alone. Four stories show them working together: setting up 
 <Stories />
 
 <Check q="A verifier is found to be compromised. What does closing a channel do about it?">
-A compromised verifier can accept fabricated messages, which is why a channel is only as trustworthy as its verifier. Closing a channel stops new outgoing messages from the ledger that closes it; it does not by itself stop that verifier from checking incoming bundles. The verifier developer publishes a fix, connector operators open new channels with it, and applications move over. This page does not describe a response procedure; the specification is the reference for it.
+A compromised verifier can accept fabricated messages, which is why a channel is only as trustworthy as its verifier. The verifier developer issues a security advisory, and the service admin closes the affected channels, so no new messages are sent on them. Closing does not stop the verifier at once: a closing channel still accepts incoming bundles until it reaches CLOSED. Then the verifier developer publishes a fix, connector operators open new channels with it, and applications move over.
 </Check>
 
 </Section>
 
 <Section id="extend" page="general">
 
-CLPR is a pattern, not a pair of chains. Adding a new kind of ledger needs no change to the protocol. Where a ledger's CLPR Service is a smart contract, anyone can deploy the new verifier on it and register a channel there; where the service is built into the node, as on Hiero, a new verifier means node software. It needs three things. First, a CLPR Service on the new ledger. Second, endpoints that can build proofs in the new ledger's format. Third, a pair of verifiers: one runs on the new ledger and checks the existing ledger's proofs; the other runs on the existing ledger and checks the new ledger's proofs.
+CLPR is a pattern, not a pair of chains. Adding a new kind of ledger needs no change to the protocol or to existing implementations; anyone can deploy the new verifier on a ledger it connects to and register a channel there. It needs three things. First, a CLPR Service on the new ledger. Second, endpoints that can build proofs in the new ledger's format. Third, a pair of verifiers: one runs on the new ledger and checks the existing ledger's proofs; the other runs on the existing ledger and checks the new ledger's proofs.
 
 <Extend />
 
@@ -410,7 +410,7 @@ The two CLPR Services have no code in common. Both are written to the same text,
 
 <Repos />
 
-CLPR is an **LF Decentralized Trust lab**, part of a Linux Foundation project whose mission is to support development of very early open projects, under the technical oversight of the LF Decentralized Trust's Technical Advisory Council. The reference implementations are early: the endpoint is a prototype. The CLPR Service built into Hiero nodes is specified by HIP-1535, whose status is Approved, and is an opt-in service: networks that do not enable it are unaffected.
+The ideas come from earlier proposals for cross-ledger communication and from a practical need: Hiero-based networks, public ones such as Hedera and private ones called HashSpheres, needed fast, asynchronous messaging between them that stays correct even when some participants misbehave. Under its agreement with the Hedera Governing Council, Hashgraph wrote the initial text and built initial versions of the three pieces of software above; the endpoint is a prototype. CLPR is now an **LF Decentralized Trust lab**, part of a Linux Foundation project whose mission is to support development of very early open projects, under the technical oversight of the LF Decentralized Trust's Technical Advisory Council; the Council undertook to donate the CLPR brand once the lab was accepted. The CLPR Service built into Hiero nodes is specified by HIP-1535, whose status is Approved, and is an opt-in service: networks that do not enable it are unaffected.
 
 If you remember six things, remember these.
 
@@ -418,7 +418,7 @@ If you remember six things, remember these.
 2. Two ledgers cannot see each other, and the usual fix, a trusted party in the middle, makes every message only as safe as that party.
 3. CLPR replaces the party with a proof: the receiving ledger checks the sending ledger's own validators' signature through the channel's verifier, and trusts that verifier and the CLPR Service on each side to be correct.
 4. Endpoints carry proofs, but nothing they carry is taken on their word. They can delay; they cannot forge. Whether a message is genuine is decided on the ledgers (**safety**); whether it arrives at all depends on endpoints (**liveness**).
-5. Messages are numbered and chained into a running hash, so one proof covers a whole batch and an honest verifier detects anything inserted, dropped, reordered or replayed.
+5. Messages are numbered and chained into a running hash, so one proof covers a whole batch, and the receiving CLPR Service, with a correct verifier, detects anything inserted, dropped, reordered or replayed.
 6. Connectors pay, endpoints are reimbursed with a margin, and a connector that breaks its promise is fined. Each accepted data message is answered by a reply.
 
 <SixThingsOnePicture />
